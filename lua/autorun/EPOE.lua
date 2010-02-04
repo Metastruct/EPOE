@@ -130,15 +130,6 @@ if SERVER then return end
 
 
 
-
-
-
-
-
-
-
-
-
 ------------------------------ TEXT BOX ------------------------
 local EDITOR = {}
 
