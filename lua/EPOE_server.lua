@@ -8,22 +8,26 @@
 */
 
 
-
-EPOE.Subs = EPOE.Subs or {}
-local Subscribers=EPOE.Subs
 _Msg=_Msg     or Msg
 _MsgN=_MsgN   or MsgN
 _print=_print or print
+
 
 local _Msg=_Msg
 local _MsgN=_MsgN
 local _print=_print
 
+if !EPOE then _print("Could not load EPOE server (EPOE not loaded)") return end
+
+EPOE.Subs = EPOE.Subs or {}
+local Subscribers=EPOE.Subs
 
 
-// Also prevent deadloops
+// Prevent deadloops
 local Hooked = false
 
+
+// Our safeguards :)
 EPOE.MAX_IN_TICK=250
 EPOE.MAX_QUEUE=500
 
@@ -192,6 +196,8 @@ function EPOE.RemoveHooks()
 	--(DEBUG)_D("UnHooked")
 end
 
+
+// TODO FIXME WARNING YADDA YADDA: CHECK FOR MSG SIZE :|
 function EPOE.Send(rp,str)
 	local _Hooked=Hooked
 	Hooked=false
@@ -207,17 +213,17 @@ end
 
 function EPOE.Subscribe(ply,_,args)
 	local mode=args[1]
-	if ply and ply:IsValid() and ply:IsPlayer() and ply:IsSuperAdmin() and args[1] then
-		if mode == "1" || mode == "subscribe" || mode == "sub" then
+	if ply and ply:IsValid() and ply:IsPlayer() and args[1] then
+		if  ply:IsSuperAdmin() and (mode == "1" || mode == "subscribe" || mode == "sub") then
 			EPOE.Subscribe(ply)
 			ply:ChatPrint("EPOE: Subscribed")
-			--(DEBUG)_D("Subcriber",ply,"subs=",#Subscribers)
+			_print("EPOE: "..tostring(ply).." Subscribed!")
 		elseif mode == "0" || mode == "unsubscribe" || mode == "unsub"  then
-			EPOE.Subscribe(ply,true)
-			ply:ChatPrint("EPOE: Unsubscribed")
-			--(DEBUG)_D("UnSubcriber!",ply,"subs=",#Subscribers)
-		elseif mode=="ply" then
-			// todo player control
+			if Subscribers[ply] then
+				EPOE.Subscribe(ply,true)
+				ply:ChatPrint("EPOE: Unsubscribed")
+				_print("EPOE: "..tostring(ply).." Unsubscribed!")
+			end
 		else
 			--(DEBUG)_D("Err cmd",cmd,ply,mode)
 		end
