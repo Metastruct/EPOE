@@ -780,6 +780,11 @@ function EDITOR:OnMouseWheeled(delta)
 	self.ScrollBar:SetScroll(self.Scroll[1] - 1)
 end
 
+function EDITOR:ScrollDown()
+	self.Scroll[1] = #self.Rows
+	self.ScrollBar:SetScroll(self.Scroll[1] - 1)
+end
+
 function EDITOR:OnShortcut()
 end
 
@@ -1816,7 +1821,11 @@ vgui.Register("EPOE", EDITOR, "Panel")
 
 
 
-function Asd()
+function EPOE_UI()
+	if EPOE.Frame and EPOE.Frame:IsValid() then 
+		EPOE.Frame:Remove()
+		return
+	end
 	EPOE.Frame=vgui.Create('DFrame')
 	EPOE.Frame:SetSizable(true)
 
@@ -1839,15 +1848,16 @@ function Asd()
 	
 	
 end
-concommand.Add('asd',Asd)
+concommand.Add('EPOE_UI',EPOE_UI)
 
 
 local text=""
-hook.Add('EPOE','Hax',function(moar)
+hook.Add('EPOE','Messages_to_consoles',function(moar)
 	Msg(moar)
-	if EPOE.TextBox then
+	if EPOE.TextBox and EPOE.TextBox:IsValid() then
 		text=text..tostring(moar)
 		EPOE.TextBox:SetText(text)
+		EPOE.TextBox:ScrollDown()
 	end
 end)
 
