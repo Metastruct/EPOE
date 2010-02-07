@@ -210,7 +210,7 @@ function EDITOR:OnMousePressed(code)
 		
 		self.LastClick = CurTime()
 		self:RequestFocus()
-		self.Blink = RealTime()
+		--self.Blink = RealTime()
 		self.MouseDown = true
 		
 		self.Caret = self:CursorToCaret()
@@ -236,14 +236,14 @@ function EDITOR:OnMousePressed(code)
 		end
 		
 		if self:HasSelection() then
-			menu:AddOption("Cut", function()
+			/*menu:AddOption("Cut", function()
 				if self:HasSelection() then
 					self.clipboard = self:GetSelection()
 					self.clipboard = string.Replace(self.clipboard, "\n", "\r\n")
 					SetClipboardText(self.clipboard)
 					self:SetSelection()
 				end
-			end)
+			end)*/
 			menu:AddOption("Copy", function()
 				if self:HasSelection() then
 					self.clipboard = self:GetSelection()
@@ -252,7 +252,7 @@ function EDITOR:OnMousePressed(code)
 				end
 			end)
 		end
-		
+		/*
 		menu:AddOption("Paste", function()
 			if self.clipboard then
 				self:SetSelection(self.clipboard)
@@ -265,7 +265,7 @@ function EDITOR:OnMousePressed(code)
 			menu:AddOption("Delete", function()
 				self:SetSelection()
 			end)
-		end
+		end*/
 		
 		menu:AddSpacer()
 		
@@ -274,7 +274,7 @@ function EDITOR:OnMousePressed(code)
 		end)
 		
 		menu:AddSpacer()
-		
+		/*
 		menu:AddOption("Indent", function()
 			self:Indent(false)
 		end)
@@ -292,7 +292,7 @@ function EDITOR:OnMousePressed(code)
 				self:CommentSelection(true)
 			end)
 		end
-		
+		*/
 		menu:Open()
 	end
 end
@@ -411,10 +411,10 @@ function EDITOR:PaintTextOverlay()
 	if self.TextEntry:HasFocus() and self.Caret[2] - self.Scroll[2] >= 0 then
 		local width, height = self.FontWidth, self.FontHeight
 		
-		if (RealTime() - self.Blink) % 0.8 < 0.4 then
+		/*if (RealTime() - self.Blink) % 0.8 < 0.4 then
 			surface.SetDrawColor(240, 240, 240, 255)
 			surface.DrawRect((self.Caret[2] - self.Scroll[2]) * width + width * 3 + 6, (self.Caret[1] - self.Scroll[1]) * height, 1, height)
-		end
+		end*/
 		
 		-- Bracket highlighting by: {Jeremydeath}
 		local WindowText = self:GetValue()
@@ -519,10 +519,10 @@ function EDITOR:Paint()
 		self.Caret = self:CursorToCaret()
 	end
 	
-	surface.SetDrawColor(0, 0, 0, 255)
+	surface.SetDrawColor(0, 0, 0, 40)
 	surface.DrawRect(0, 0, self.FontWidth * 3 + 4, self:GetTall())
 	
-	surface.SetDrawColor(32, 32, 32, 255)
+	surface.SetDrawColor(32, 32, 32, 40)
 	surface.DrawRect(self.FontWidth * 3 + 5, 0, self:GetWide() - (self.FontWidth * 3 + 5), self:GetTall())
 	
 	self.Scroll[1] = math.floor(self.ScrollBar:GetScroll() + 1)
@@ -1284,7 +1284,7 @@ function EDITOR:ContextHelp()
 end
 
 function EDITOR:_OnKeyCodeTyped(code)
-	self.Blink = RealTime()
+	--self.Blink = RealTime()
 	
 	local alt = input.IsKeyDown(KEY_LALT) or input.IsKeyDown(KEY_RALT)
 	if alt then return end
@@ -1329,7 +1329,7 @@ function EDITOR:_OnKeyCodeTyped(code)
 		elseif code == KEY_F then
 			self:FindWindow()
 		elseif code == KEY_H then
-			self:FindAndReplaceWindow()
+			--self:FindAndReplaceWindow()
 		elseif code == KEY_K then
 			self:CommentSelection(shift)
 		elseif code == KEY_Q then
@@ -1396,7 +1396,7 @@ function EDITOR:_OnKeyCodeTyped(code)
 			local row = self.Rows[self.Caret[1]]:sub(1,self.Caret[2]-1)
 			local diff = (row:find("%S") or (row:len()+1))-1
 			local tabs = string.rep("    ", math.floor(diff / 4))
-			if GetConVarNumber('wire_expression2_autoindent') ~= 0 and (string.match("{" .. row .. "}", "^%b{}.*$") == nil) then tabs = tabs .. "    " end
+			if false and (string.match("{" .. row .. "}", "^%b{}.*$") == nil) then tabs = tabs .. "    " end
 			self:SetSelection("\n" .. tabs)
 		elseif code == KEY_UP then
 			if self.Caret[1] > 1 then
@@ -1828,10 +1828,15 @@ function EPOE_UI()
 	end
 	EPOE.Frame=vgui.Create('DFrame')
 	EPOE.Frame:SetSizable(true)
-
+	EPOE.Frame:SetText('EPOE')
 	EPOE.Frame:SetPos(0,200)
 	EPOE.Frame:SetSize(ScrW()/3,ScrH()/4)
-
+	
+	function EPOE.Frame:Paint()
+			surface.SetDrawColor(32, 32, 32, 40)
+			surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
+	end
+	
 	EPOE.TextBox=vgui.Create('EPOE',EPOE.Frame)
 
 	EPOE.Frame.OldPL=EPOE.Frame.PerformLayout
@@ -1851,16 +1856,20 @@ end
 concommand.Add('EPOE_UI',EPOE_UI)
 
 
+
+hook.Add('EPOE','MsgToCon',function(moar)
+	Msg(moar) -- todo :)
+end)
+
 local text=""
-hook.Add('EPOE','Messages_to_consoles',function(moar)
-	Msg(moar)
+hook.Add('EPOE','MsgToEPOETxtBox',function(moar)
 	if EPOE.TextBox and EPOE.TextBox:IsValid() then
 		text=text..tostring(moar)
 		EPOE.TextBox:SetText(text)
 		EPOE.TextBox:ScrollDown()
 	end
 end)
-
+	
 
 
 
