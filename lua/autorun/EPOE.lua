@@ -1833,7 +1833,7 @@ function EPOE_UI()
 	EPOE.Frame:SetSize(ScrW()/3,ScrH()/4)
 	
 	function EPOE.Frame:Paint()
-			surface.SetDrawColor(32, 32, 32, 40)
+			surface.SetDrawColor(32, 32, 32, 70)
 			surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
 	end
 	
