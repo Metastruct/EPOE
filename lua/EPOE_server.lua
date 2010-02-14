@@ -233,7 +233,6 @@ function EPOE.Subscribe(ply,_,args)
 end
 concommand.Add( EPOE.TagHuman, EPOE.Subscribe )
 
-
 function EPOE.Subscribe(ply,unsubscribe)
 	if ply and ply:IsValid() and ply:IsPlayer() then
 		if !unsubscribe then

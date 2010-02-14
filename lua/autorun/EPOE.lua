@@ -133,6 +133,10 @@ if SERVER then return end
 ------------------------------ TEXT BOX ------------------------
 local EDITOR = {}
 
+local fadetime = CreateClientConVar("EPOE_UI_fadetime", 0.15, true, false)
+
+local transparent = 255
+
 surface.CreateFont("Courier New", 16, 400, false, false, "EPOE")
 surface.CreateFont("Courier New", 16, 700, false, false, "EPOEBold")
 
@@ -155,6 +159,11 @@ function EDITOR:Init()
 	
 	self.ScrollBar = vgui.Create("DVScrollBar", self)
 	self.ScrollBar:SetUp(1, 1)
+	self.ScrollBar.Paint = nil
+	self.ScrollBar.PaintOver = nil
+	self.ScrollBar:SetAlpha(0)
+	self.ScrollBar:SetVisible(false)
+	
 	
 	self.TextEntry = vgui.Create("TextEntry", self)
 	self.TextEntry:SetMultiline(true)
@@ -337,7 +346,7 @@ function EDITOR:PaintLine(row)
 	local width, height = self.FontWidth, self.FontHeight
 	
 	if row == self.Caret[1] and self.TextEntry:HasFocus() then
-		surface.SetDrawColor(48, 48, 48, 255)
+		surface.SetDrawColor(48, 48, 48, transparent)
 		surface.DrawRect(width * 3 + 5, (row - self.Scroll[1]) * height, self:GetWide() - (width * 3 + 5), height)
 	end
 	
@@ -346,7 +355,7 @@ function EDITOR:PaintLine(row)
 		local line, char = start[1], start[2]
 		local endline, endchar = stop[1], stop[2]
 		
-		surface.SetDrawColor(0, 0, 160, 255)
+		surface.SetDrawColor(0, 0, 160, transparent)
 		local length = self.Rows[row]:len() - self.Scroll[2] + 1
 		
 		char = char - self.Scroll[2]
@@ -365,7 +374,7 @@ function EDITOR:PaintLine(row)
 		end
 	end
 	
-	draw.SimpleText(tostring(row), "EPOE", width * 3, (row - self.Scroll[1]) * height, Color(128, 128, 128, 255), TEXT_ALIGN_RIGHT)
+	draw.SimpleText(tostring(row), "EPOE", width * 3, (row - self.Scroll[1]) * height, Color(128, 128, 128, transparent), TEXT_ALIGN_RIGHT)
 	
 	local offset = -self.Scroll[2] + 1
 	for i,cell in ipairs(self.PaintRows[row]) do
@@ -375,18 +384,18 @@ function EDITOR:PaintLine(row)
 				offset = line:len()
 				
 				if cell[2][2] then
-					draw.SimpleText(line, "EPOEBold", width * 3 + 6, (row - self.Scroll[1]) * height, cell[2][1])
+					draw.SimpleText(line, "EPOEBold", width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
 				else
-					draw.SimpleText(line, "EPOE", width * 3 + 6, (row - self.Scroll[1]) * height, cell[2][1])
+					draw.SimpleText(line, "EPOE", width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
 				end
 			else
 				offset = offset + cell[1]:len()
 			end
 		else
 			if cell[2][2] then
-				draw.SimpleText(cell[1], "EPOEBold", offset * width + width * 3 + 6, (row - self.Scroll[1]) * height, cell[2][1])
+				draw.SimpleText(cell[1], "EPOEBold", offset * width + width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
 			else
-				draw.SimpleText(cell[1], "EPOE", offset * width + width * 3 + 6, (row - self.Scroll[1]) * height, cell[2][1])
+				draw.SimpleText(cell[1], "EPOE", offset * width + width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
 			end
 			
 			offset = offset + cell[1]:len()
@@ -407,7 +416,7 @@ function EDITOR:PerformLayout()
 end
 
 function EDITOR:PaintTextOverlay()
-	
+	transparent = math.Clamp(transparent - fadetime:GetFloat(), 0, 255)
 	if self.TextEntry:HasFocus() and self.Caret[2] - self.Scroll[2] >= 0 then
 		local width, height = self.FontWidth, self.FontHeight
 		
@@ -465,9 +474,9 @@ function EDITOR:PaintTextOverlay()
 					if (CaretPos - BrackSt) >= 0 and (CaretPos - BrackSt) <= 1 then
 						local width, height = self.FontWidth, self.FontHeight
 						local StartX = BrackSt - LinePos - 2
-						surface.SetDrawColor(255, 0, 0, 50)
-						surface.DrawRect((StartX-(self.Scroll[2]-1)) * width + width * 4 + OffsetSt - 1, (self.Caret[1] - self.Scroll[1]) * height+1, width-2, height-2)
-						surface.DrawRect((EndX-(self.Scroll[2]-1)) * width + width * 3 + 6, (EndLine - self.Scroll[1]) * height+1, width-2, height-2)
+						--surface.SetDrawColor(255, 0, 0, 0)
+					--	surface.DrawRect((StartX-(self.Scroll[2]-1)) * width + width * 4 + OffsetSt - 1, (self.Caret[1] - self.Scroll[1]) * height+1, width-2, height-2)
+				--		surface.DrawRect((EndX-(self.Scroll[2]-1)) * width + width * 3 + 6, (EndLine - self.Scroll[1]) * height+1, width-2, height-2)
 					end
 				end
 			elseif Bracket == ")" or Bracket == "]" or Bracket == "}" then
@@ -496,9 +505,9 @@ function EDITOR:PaintTextOverlay()
 					if (CaretPos - BrackSt) >= 0 and (CaretPos - BrackSt) <= 1 then
 						local width, height = self.FontWidth, self.FontHeight
 						local StartX = BrackSt - LinePos - 2
-						surface.SetDrawColor(255, 0, 0, 50)
-						surface.DrawRect((StartX-(self.Scroll[2]-1)) * width + width * 4 - 2, (self.Caret[1] - self.Scroll[1]) * height+1, width-2, height-2)
-						surface.DrawRect((EndX-(self.Scroll[2]-1)) * width + width * 3 + 8 + OffsetSt, (EndLine - self.Scroll[1]) * height+1, width-2, height-2)
+						-- surface.SetDrawColor(255, 0, 0, 0)
+						-- surface.DrawRect((StartX-(self.Scroll[2]-1)) * width + width * 4 - 2, (self.Caret[1] - self.Scroll[1]) * height+1, width-2, height-2)
+						-- surface.DrawRect((EndX-(self.Scroll[2]-1)) * width + width * 3 + 8 + OffsetSt, (EndLine - self.Scroll[1]) * height+1, width-2, height-2)
 					end
 				end
 			end
@@ -518,11 +527,11 @@ function EDITOR:Paint()
 	if self.MouseDown then
 		self.Caret = self:CursorToCaret()
 	end
-	
-	surface.SetDrawColor(0, 0, 0, 40)
+		
+	surface.SetDrawColor(0, 0, 0, transparent/1.5)
 	surface.DrawRect(0, 0, self.FontWidth * 3 + 4, self:GetTall())
 	
-	surface.SetDrawColor(32, 32, 32, 40)
+	surface.SetDrawColor(32, 32, 32, transparent/1.5)
 	surface.DrawRect(self.FontWidth * 3 + 5, 0, self:GetWide() - (self.FontWidth * 3 + 5), self:GetTall())
 	
 	self.Scroll[1] = math.floor(self.ScrollBar:GetScroll() + 1)
@@ -1819,7 +1828,7 @@ vgui.Register("EPOE", EDITOR, "Panel")
 
 
 
-
+local cvar = CreateClientConVar("EPOE_UI_enable", 0, true, false)
 
 function EPOE_UI()
 	if EPOE.Frame and EPOE.Frame:IsValid() then 
@@ -1828,13 +1837,15 @@ function EPOE_UI()
 	end
 	EPOE.Frame=vgui.Create('DFrame')
 	EPOE.Frame:SetSizable(true)
-	EPOE.Frame:SetText('EPOE')
+	EPOE.Frame:SetDraggable(true)
+	EPOE.Frame:SetTitle('')
+	EPOE.Frame:ShowCloseButton(false)
 	EPOE.Frame:SetPos(0,200)
-	EPOE.Frame:SetSize(ScrW()/3,ScrH()/4)
+	EPOE.Frame:SetSize(ScrW()/1.75,ScrH()/4)
 	
 	function EPOE.Frame:Paint()
-			surface.SetDrawColor(32, 32, 32, 70)
-			surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
+		surface.SetDrawColor(32, 32, 32, 0)
+		surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
 	end
 	
 	EPOE.TextBox=vgui.Create('EPOE',EPOE.Frame)
@@ -1845,16 +1856,25 @@ function EPOE_UI()
 		EPOE.TextBox:SetPos(5,30)
 		EPOE.Frame:OldPL()
 	end
+	
+	EPOE.Frame.OnCursorEntered = function() transparent = 255 end
+	
 	EPOE.Frame:SetMouseInputEnabled(true)
 	EPOE.Frame:SetKeyboardInputEnabled(true)
 	EPOE.TextBox:SetMouseInputEnabled(true)
 	EPOE.TextBox:SetKeyboardInputEnabled(true)
 
-	
+	RunConsoleCommand("EPOE_UI_enable", "1")
+	RunConsoleCommand("EPOE", "1")
 	
 end
 concommand.Add('EPOE_UI',EPOE_UI)
 
+hook.Add("InitPostEntity", "enable/disable epoe", function()
+	if cvar:GetBool() then
+		EPOE_UI()
+	end
+end)
 
 
 hook.Add('EPOE','MsgToCon',function(moar)
@@ -1864,9 +1884,22 @@ end)
 local text=""
 hook.Add('EPOE','MsgToEPOETxtBox',function(moar)
 	if EPOE.TextBox and EPOE.TextBox:IsValid() then
-		text=text..tostring(moar)
+--[[		moar = string.ToTable(moar)
+ 		local counter = 0
+		local combined = ""
+		for key, letter in pairs(moar) do
+			counter = counter + 1
+			if counter >= 60 then
+				combined = combined..letter.."\n"
+				counter = 0
+			else
+				combined = combined..letter
+			end
+ 		end ]]
+		text=text..tostring(--[[ combined ]]moar)
 		EPOE.TextBox:SetText(text)
 		EPOE.TextBox:ScrollDown()
+		transparent = 255
 	end
 end)
 	
