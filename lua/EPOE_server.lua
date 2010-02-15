@@ -100,6 +100,9 @@ local function trampoline(ttype,...)
 			if type(v) == "string" then
 				MsgTable[k]=string.Trim(v,'\n')
 			end
+			if type(v) == "function" then
+				MsgTable[k]=tostring(v) -- TODO
+			end
 		end
 		
 		EPOE.QueuePush(glon.encode({ttype,MsgTable}))
