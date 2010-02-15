@@ -1668,7 +1668,7 @@ end
 
 do -- E2 Syntax highlighting
 	local function istype(tp)
-		return wire_expression_types[tp:upper()] or tp == "number"
+		return false
 	end
 	
 	-- keywords[name][nextchar!="("]
