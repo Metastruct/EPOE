@@ -1,0 +1,4 @@
+"AddonInfo"
+{
+	"name"				"Stub info"
+}
