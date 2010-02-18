@@ -1,13 +1,13 @@
 /* 
 
-	Enhanced perception for errors
+	Enhanced Perception Of Errors
 	Idea taken from ENE(Z)
 	
-	Copyright (C) Python1320, CapsAdmin
+	Copyright (C) 2010        Python1320, CapsAdmin
 	
 */
 
-
+-- Overrides, don't reoverride.
 _Msg=_Msg     or Msg
 _MsgN=_MsgN   or MsgN
 _print=_print or print
@@ -17,7 +17,7 @@ local _Msg=_Msg
 local _MsgN=_MsgN
 local _print=_print
 
-if !EPOE then _print("Could not load EPOE server (EPOE not loaded)") return end
+if !EPOE then error("Could not load EPOE Server (EPOE not found)") end
 
 EPOE.Subs = EPOE.Subs or {}
 local Subscribers=EPOE.Subs
@@ -27,25 +27,30 @@ local Subscribers=EPOE.Subs
 local Hooked = false
 
 
-// Our safeguards :)
-EPOE.MAX_IN_TICK=250
-EPOE.MAX_QUEUE=500
+// Safeguards
+EPOE.MAX_IN_TICK=250 -- Maximum number of calls during a tick before the queue is discarded
+EPOE.MAX_QUEUE=500 -- Maximum number of entries in the queue. Low for many lua coders?
 
 /* Deadloop protection */
 local lasttime=CurTime()
 local count=0
 /* ============ */
 
-// LILO
+// Last in last out queue type
 EPOE.Queue=EPOE.Queue or {}
 local queue=EPOE.Queue
 
-EPOE.TramplineLock = false
+EPOE.TRAMPOLINE_LOCK = false
 
 EPOE.MAX_IN_TICK=EPOE.MAX_IN_TICK-1
 
 local humans=player.GetHumans
 local function trampoline(ttype,...) 
+		
+		if !EPOE then return end
+		
+		if EPOE.TRAMPOLINE_LOCK then return end
+		
 		if not EPOE then --(DEBUG)_D("EPOE vanished")
 			return end
 		if not Hooked then --(DEBUG)_D("Nothooked")
@@ -54,36 +59,30 @@ local function trampoline(ttype,...)
 			return end
 			
 		
-		if EPOE.TramplineLock then return end
 		
 		if lasttime==CurTime() then
 				count=count+1
 				if count > EPOE.MAX_IN_TICK then
-					_MsgN('EPOE: Deadloop protection! During CurTime() the trampoline was ran '..tostring(count) ..'>'..tostring(EPOE.MAX_IN_TICK)..' times! (Locking the trampoline for the rest of the tick + killing queue)')
 					EPOE.KillQueue()
-					EPOE.TramplineLock=true
+					EPOE.TRAMPOLINE_LOCK=true
+					error('EPOE: Deadloop protection! During CurTime() the trampoline was ran '..tostring(count) ..'>'..tostring(EPOE.MAX_IN_TICK)..' times! (Locking the trampoline for the rest of the tick + killing queue)')
 					return
 				end
 		else
 			count=0
 			lasttime=CurTime()
-			EPOE.TramplineLock=false
+			EPOE.TRAMPOLINE_LOCK=nil
 		end
 		
-	
-		
-		
-
-		--(DEBUG)_D("Trampoline! ",ttype,"\"",...,"\"")
+		--(DEBUG)_D("trampoline! ",ttype,"\"",...,"\"")
 		
 		local MsgTable={...}
+		
 		if #MsgTable==0 then
 			--(DEBUG)_D("	TBLEMPTY")
 			return
 		end
 
-	
-		
 		local lastmsg=MsgTable[#MsgTable]
 		
 		// Testing if it is a newline script after all.
@@ -94,8 +93,6 @@ local function trampoline(ttype,...)
 			end
 		end
 		
-		
-		
 		for k,v in pairs(MsgTable) do
 			if type(v) == "string" then
 				MsgTable[k]=string.Trim(v,'\n')
@@ -105,10 +102,12 @@ local function trampoline(ttype,...)
 			end
 		end
 		
-		EPOE.QueuePush(glon.encode({ttype,MsgTable}))
+		-- 							{newline_type,	message_table	}
+		EPOE.QueuePush(glon.encode(	{ttype,			MsgTable		}	))
 		
 		
-		Hooked=true
+		--Hooked=true
+		
 end
 
 
@@ -134,8 +133,7 @@ end
 
 
 function EPOE.Tick()
-	local _Hooked=Hooked
-	Hooked=false
+	local _Hooked=Hooked Hooked=false
 	if #queue==0 then 
 		--(DEBUG)_D("Removing tick hook")
 		hook.Remove('Tick',EPOE.Tag)
@@ -146,6 +144,7 @@ function EPOE.Tick()
 	if #queue>EPOE.MAX_QUEUE then
 		EPOE.KillQueue()
 		--(DEBUG)_D("Killing queue!!!!")
+		Hooked=_Hooked
 		return
 	end
 	
@@ -156,6 +155,7 @@ function EPOE.Tick()
 end
 
 function EPOE.Limbo(var)
+	if !var then return end
 	local hasplayers=false
 	local rp=RecipientFilter()
 	for ply,status in pairs(Subscribers) do
@@ -193,8 +193,8 @@ function EPOE.RemoveHooks()
 	Hooked=false
 	--(DEBUG)_D("UnHooking")
 	Msg=_Msg
-	MsgN=MsgN
-	print=print
+	MsgN=_MsgN
+	print=_print
 	hook.Remove("LuaError",EPOE.Tag)
 	--(DEBUG)_D("UnHooked")
 end
@@ -206,6 +206,10 @@ function EPOE.Send(rp,str)
 	Hooked=false
 	
 	--(DEBUG)_D("Sending msg")
+	if string.len(str) > 250 then --TODO
+		ErrorNoHalt"EPOE: Too long message, not sending"
+	end
+	
 	umsg.Start(EPOE.Tag,rp)
 		umsg.String(str)
 	umsg.End()

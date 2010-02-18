@@ -1,53 +1,82 @@
 /* 
 
-	Enhanced perception for errors
+	Enhanced Perception Of Errors
 	Idea taken from ENE(Z)
 	
-	Copyright (C) Python1320, CapsAdmin
+	Copyright (C) 2010        Python1320, CapsAdmin
 	
 */
+
 
 Msg("Loading EPOE ("..(SERVER and "server" or "client")..").. ")
 
 if !glon then require"glon" end
+if !glon then error"Glon not found??" end
 
-if EPOE then ErrorNoHalt("Warning! MUST NOT Reload!") return end
+--if EPOE then ErrorNoHalt("Warning! MUST NOT Reload!") return end
+if EPOE then 
+	ErrorNoHalt"Warning: Reloading EPOE!"
+	EPOE.RELOADED=true
+end
 
 EPOE=EPOE or {}
+
+-- usermessage name
 EPOE.Tag='E\''
+
 EPOE.TagHuman='EPOE'
+
+-- Tags
 EPOE.T_HasEnd=true
 EPOE.T_NoEnd=false
 
+
+-- Debug function
 /*function _D(...)
 	local Msg=_Msg or Msg
 	local print=_print or print
 	print(EPOE.Tag or "EOPE",...)
 end*/
+
+
+
+
+--[[ EPOE HOOK STRUCT:
+	
+	hook.Add('EPOE',-,function(STRING_MESSAGE,RAW_MESSAGE) end)
+
+]]
+
+
 if CLIENT then
+
+	-- The client "CORE"
+	-- TODO: datastream?
 	function EPOE.RecvMsg(msg)
+		
 		local msg=msg:ReadString()
 		msg=glon.decode(msg)
 		local str=/*"E ("..tostring(msg[1]).."):"..*/EPOE.ToString(msg[2])
 		str=str..((msg[1]==EPOE.T_HasEnd) and '\n' or '')
 		
-		hook.Call('EPOE',nil,str)
+		hook.Call('EPOE',nil,str,msg[2] or nil)
+		
 	end
 	usermessage.Hook(EPOE.Tag,EPOE.RecvMsg)
+	
 end
 
-function EPOE.Subscribe(unwant)
-	if !want then
+function EPOE.Subscribe(unsubscribe)
+	if !unsubscribe then
 		RunConsoleCommand(EPOE.TagHuman,'1')
 	else
 		RunConsoleCommand(EPOE.TagHuman,'0')
 	end
 end
 
-
-function EPOE.ToString(t) // Aghhhh
+-- Decode the message to a nice format
+function EPOE.ToString(t)
 		local 		nl,tab  = "",  ""
-		--if nice then 	nl,tab = "\n", "\t"	end
 
 		local function MakeTable ( t, nice, indent, done)
 			local str = ""
@@ -106,44 +135,39 @@ function EPOE.ToString(t) // Aghhhh
 
 	
 if SERVER then
-	AddCSLuaFile'EPOE.lua'
 	include 'EPOE_server.lua'
 	if EPOE.InitHooks then EPOE.InitHooks() else error"FAILED LOADING EPOE!" end
-	
+	AddCSLuaFile'EPOE.lua'
 end
 
 
 MsgN("EPOE Loaded.")
 
 
-if SERVER then return end
+if SERVER then return end ------------------------------ CLIENT ------------------------------------------------------
 
 
 
 
 
+-- Taken from Wiremod/E2, sorry guys :s
 
-
-
-
-
-
-
-
------------------------------- TEXT BOX ------------------------
 local EDITOR = {}
 
 local fadetime = CreateClientConVar("EPOE_UI_fadetime", 0.15, true, false)
 
 local transparent = 255
 
-surface.CreateFont("Courier New", 16, 400, false, false, "EPOE")
-surface.CreateFont("Courier New", 16, 700, false, false, "EPOEBold")
+local EPOEFONT="EPOE"
+local EPOEFONT_BOLD="EPOEB"
+
+surface.CreateFont("Courier New", 16, 400, false, false, EPOEFONT)
+surface.CreateFont("Courier New", 16, 700, false, false, EPOEFONT_BOLD)
 
 function EDITOR:Init()
 	self:SetCursor("beam")
 	
-	surface.SetFont("EPOE")
+	surface.SetFont(EPOEFONT)
 	self.FontWidth, self.FontHeight = surface.GetTextSize(" ")
 	
 	self.Rows = {""}
@@ -228,7 +252,7 @@ function EDITOR:OnMousePressed(code)
 		end
 	elseif code == MOUSE_RIGHT then
 		local menu = DermaMenu()
-		
+		--[[
 		if self:CanUndo() then
 			menu:AddOption("Undo", function()
 				self:DoUndo()
@@ -238,21 +262,21 @@ function EDITOR:OnMousePressed(code)
 			menu:AddOption("Redo", function()
 				self:DoRedo()
 			end)
-		end
-		
+		end]]
+		--[[
 		if self:CanUndo() or self:CanRedo() then
 			menu:AddSpacer()
-		end
+		end]]
 		
 		if self:HasSelection() then
-			/*menu:AddOption("Cut", function()
+			--[[menu:AddOption("Cut", function()
 				if self:HasSelection() then
 					self.clipboard = self:GetSelection()
 					self.clipboard = string.Replace(self.clipboard, "\n", "\r\n")
 					SetClipboardText(self.clipboard)
 					self:SetSelection()
 				end
-			end)*/
+			end)]]
 			menu:AddOption("Copy", function()
 				if self:HasSelection() then
 					self.clipboard = self:GetSelection()
@@ -261,7 +285,7 @@ function EDITOR:OnMousePressed(code)
 				end
 			end)
 		end
-		/*
+		--[[
 		menu:AddOption("Paste", function()
 			if self.clipboard then
 				self:SetSelection(self.clipboard)
@@ -274,16 +298,17 @@ function EDITOR:OnMousePressed(code)
 			menu:AddOption("Delete", function()
 				self:SetSelection()
 			end)
-		end*/
+		end
 		
 		menu:AddSpacer()
+		]]
 		
 		menu:AddOption("Select all", function()
 			self:SelectAll()
 		end)
-		
+		--[[
 		menu:AddSpacer()
-		/*
+		
 		menu:AddOption("Indent", function()
 			self:Indent(false)
 		end)
@@ -301,7 +326,13 @@ function EDITOR:OnMousePressed(code)
 				self:CommentSelection(true)
 			end)
 		end
-		*/
+		]]
+		
+		menu:AddOption("Find text", function()
+			self:FindWindow()
+		end)		
+			
+		
 		menu:Open()
 	end
 end
@@ -317,7 +348,14 @@ function EDITOR:OnMouseReleased(code)
 end
 
 function EDITOR:SetText(text)
-	self.Rows = string.Explode("\n", text)
+	if type(text)=="string" then 
+		self.Rows = string.Explode("\n", text)
+	elseif type(text)=="table" then
+		self.Rows = text
+	else
+		ErrorNoHalt"EPOE TEXTBOX: INVALID INPUT"
+		return
+	end
 	if self.Rows[#self.Rows] != "" then
 		self.Rows[#self.Rows + 1] = ""
 	end
@@ -374,7 +412,7 @@ function EDITOR:PaintLine(row)
 		end
 	end
 	
-	draw.SimpleText(tostring(row), "EPOE", width * 3, (row - self.Scroll[1]) * height, Color(128, 128, 128, transparent), TEXT_ALIGN_RIGHT)
+	draw.SimpleText(tostring(row), EPOEFONT, width * 3, (row - self.Scroll[1]) * height, Color(128, 128, 128, transparent), TEXT_ALIGN_RIGHT)
 	
 	local offset = -self.Scroll[2] + 1
 	for i,cell in ipairs(self.PaintRows[row]) do
@@ -384,18 +422,18 @@ function EDITOR:PaintLine(row)
 				offset = line:len()
 				
 				if cell[2][2] then
-					draw.SimpleText(line, "EPOEBold", width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
+					draw.SimpleText(line, EPOEFONT_BOLD, width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
 				else
-					draw.SimpleText(line, "EPOE", width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
+					draw.SimpleText(line, EPOEFONT, width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
 				end
 			else
 				offset = offset + cell[1]:len()
 			end
 		else
 			if cell[2][2] then
-				draw.SimpleText(cell[1], "EPOEBold", offset * width + width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
+				draw.SimpleText(cell[1], EPOEFONT_BOLD, offset * width + width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
 			else
-				draw.SimpleText(cell[1], "EPOE", offset * width + width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
+				draw.SimpleText(cell[1], EPOEFONT, offset * width + width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
 			end
 			
 			offset = offset + cell[1]:len()
@@ -1864,39 +1902,45 @@ function EPOE_UI()
 end
 concommand.Add('EPOE_UI',EPOE_UI)
 
-hook.Add("InitPostEntity", "enable/disable epoe", function()
+hook.Add("InitPostEntity", "EpoeCheck", function()
 	if cvar:GetBool() then
 		EPOE_UI()
 	end
 end)
 
 
-hook.Add('EPOE','MsgToCon',function(moar)
-	Msg(moar) -- todo :)
+hook.Add('EPOE','EPOEMsg',function(Text)
+	Msg(Text)
 end)
 
-local text=""
-hook.Add('EPOE','MsgToEPOETxtBox',function(moar)
+local MaxHistoryLines=2000
+local TextHistory={"Enhanced Perception Of Errors (EPOE) Loaded!"}
+
+
+function EPOE.AddText(newText)
+	
+	table.insert(TextHistory,tostring(--[[ Need tostring? ]]newText))
+	
+	while (#TextHistory >= MaxHistoryLines) do
+		table.remove( TextHistory, 1 ) -- oh wow that was simple , lol
+	end
+	
 	if EPOE.TextBox and EPOE.TextBox:IsValid() then
---[[		moar = string.ToTable(moar)
- 		local counter = 0
-		local combined = ""
-		for key, letter in pairs(moar) do
-			counter = counter + 1
-			if counter >= 60 then
-				combined = combined..letter.."\n"
-				counter = 0
-			else
-				combined = combined..letter
-			end
- 		end ]]
-		text=text..tostring(--[[ combined ]]moar)
-		EPOE.TextBox:SetText(text)
+		EPOE.TextBox:SetText(TextHistory) -- This now accepts strings and string tables :)
 		EPOE.TextBox:ScrollDown()
 		transparent = 255
+	else
+		return false
 	end
+end
+
+
+hook.Add('EPOE','EPOEMsgBox',function(newText)
+	EPOE.AddText(newText)
 end)
 	
-
-
-
+concommand.Add('EPOE_CLEAR',function()
+	TextHistory={""}
+	EPOE.TextBox:SetText("")
+	EPOE.TextBox:ScrollDown()
+end)
