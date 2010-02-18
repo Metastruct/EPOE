@@ -59,7 +59,7 @@ if CLIENT then
 		local str=/*"E ("..tostring(msg[1]).."):"..*/EPOE.ToString(msg[2])
 		str=str..((msg[1]==EPOE.T_HasEnd) and '\n' or '')
 		
-		hook.Call('EPOE',nil,str,msg[2] or nil)
+		hook.Call('EPOE',nil,str or nil,msg[2] or nil,msg[1] or nil)
 		
 	end
 	usermessage.Hook(EPOE.Tag,EPOE.RecvMsg)
@@ -1897,10 +1897,26 @@ function EPOE_UI()
 	EPOE.TextBox:SetKeyboardInputEnabled(true)
 
 	RunConsoleCommand("EPOE_UI_enable", "1")
-	RunConsoleCommand("EPOE", "1")
+	EPOE.Subscribe()
 	
 end
 concommand.Add('EPOE_UI',EPOE_UI)
+concommand.Add('+epoe',function()
+	if !EPOE.Frame or !EPOE.Frame:IsValid() then 
+		EPOE_UI()
+	else
+		EPOE.Frame:SetVisible(true)
+	end
+
+end)
+concommand.Add('+epoe',function()
+	if !EPOE.Frame or !EPOE.Frame:IsValid() then 
+		return
+	else
+		EPOE.Frame:SetVisible(false)
+	end
+
+end)
 
 hook.Add("InitPostEntity", "EpoeCheck", function()
 	if cvar:GetBool() then
@@ -1913,20 +1929,23 @@ hook.Add('EPOE','EPOEMsg',function(Text)
 	Msg(Text)
 end)
 
-local MaxHistoryLines=2000
-local TextHistory={"Enhanced Perception Of Errors (EPOE) Loaded!"}
+local MaxHistoryLines=500
+local TextHistory="Enhanced Perception Of Errors (EPOE) Loaded!"
 
 
 function EPOE.AddText(newText)
 	
-	table.insert(TextHistory,tostring(--[[ Need tostring? ]]newText))
+	TextHistory=TextHistory..tostring(--[[ Need tostring? ]]newText)
 	
-	while (#TextHistory >= MaxHistoryLines) do
-		table.remove( TextHistory, 1 ) -- oh wow that was simple , lol
+	local trim=string.Explode("\n",TextHistory)
+	while (#trim >= MaxHistoryLines) do
+		table.remove( trim, 1 ) -- oh wow that was simple , lol. new REV: I take that back :(
+		MsgN	"EPOE DEBUG: Removed history"
 	end
+	TextHistory=string.Implode("\n",trim or {"POPE Failed :("})
 	
 	if EPOE.TextBox and EPOE.TextBox:IsValid() then
-		EPOE.TextBox:SetText(TextHistory) -- This now accepts strings and string tables :)
+		EPOE.TextBox:SetText(TextHistory) -- This now accepts strings and string tables :) But it's no use
 		EPOE.TextBox:ScrollDown()
 		transparent = 255
 	else
