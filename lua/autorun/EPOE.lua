@@ -158,16 +158,16 @@ local fadetime = CreateClientConVar("EPOE_UI_fadetime", 0.15, true, false)
 
 local transparent = 255
 
-local EPOEFONT="EPOE"
-local EPOEFONT_BOLD="EPOEB"
+EPOE.FONT="EPOE"
+EPOE.FONT_BOLD="EPOEB"
 
-surface.CreateFont("Courier New", 16, 400, false, false, EPOEFONT)
-surface.CreateFont("Courier New", 16, 700, false, false, EPOEFONT_BOLD)
+surface.CreateFont("Courier New", 16, 400, false, false, EPOE.FONT)
+surface.CreateFont("Courier New", 16, 700, false, false, EPOE.FONT_BOLD)
 
 function EDITOR:Init()
 	self:SetCursor("beam")
 	
-	surface.SetFont(EPOEFONT)
+	surface.SetFont(EPOE.FONT)
 	self.FontWidth, self.FontHeight = surface.GetTextSize(" ")
 	
 	self.Rows = {""}
@@ -412,7 +412,7 @@ function EDITOR:PaintLine(row)
 		end
 	end
 	
-	draw.SimpleText(tostring(row), EPOEFONT, width * 3, (row - self.Scroll[1]) * height, Color(128, 128, 128, transparent), TEXT_ALIGN_RIGHT)
+	draw.SimpleText(tostring(row), EPOE.FONT, width * 3, (row - self.Scroll[1]) * height, Color(128, 128, 128, transparent), TEXT_ALIGN_RIGHT)
 	
 	local offset = -self.Scroll[2] + 1
 	for i,cell in ipairs(self.PaintRows[row]) do
@@ -422,18 +422,18 @@ function EDITOR:PaintLine(row)
 				offset = line:len()
 				
 				if cell[2][2] then
-					draw.SimpleText(line, EPOEFONT_BOLD, width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
+					draw.SimpleText(line, EPOE.FONT_BOLD, width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
 				else
-					draw.SimpleText(line, EPOEFONT, width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
+					draw.SimpleText(line, EPOE.FONT, width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
 				end
 			else
 				offset = offset + cell[1]:len()
 			end
 		else
 			if cell[2][2] then
-				draw.SimpleText(cell[1], EPOEFONT_BOLD, offset * width + width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
+				draw.SimpleText(cell[1], EPOE.FONT_BOLD, offset * width + width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
 			else
-				draw.SimpleText(cell[1], EPOEFONT, offset * width + width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
+				draw.SimpleText(cell[1], EPOE.FONT, offset * width + width * 3 + 6, (row - self.Scroll[1]) * height, Color(cell[2][1].r,cell[2][1].g,cell[2][1].b,transparent))
 			end
 			
 			offset = offset + cell[1]:len()
@@ -1254,7 +1254,7 @@ end
 function EDITOR:CommentSelection(shift) -- Multi-line comment feature ((shift-)ctrl-k) (idea by Jeremydeath)
 	if not self:HasSelection() then return end
 	
-	local comment_char = self:GetParent().E2 and "#" or "//"
+	local comment_char = "--"
 	
 	-- Comment a selection --
 	-- remember scroll position

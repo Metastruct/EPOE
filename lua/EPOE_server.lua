@@ -32,8 +32,8 @@ EPOE.MAX_IN_TICK=250 -- Maximum number of calls during a tick before the queue i
 EPOE.MAX_QUEUE=500 -- Maximum number of entries in the queue. Low for many lua coders?
 
 /* Deadloop protection */
-local lasttime=CurTime()
-local count=0
+	local lasttime=CurTime()
+	local count=0
 /* ============ */
 
 // Last in last out queue type
@@ -65,7 +65,7 @@ local function trampoline(ttype,...)
 				if count > EPOE.MAX_IN_TICK then
 					EPOE.KillQueue()
 					EPOE.TRAMPOLINE_LOCK=true
-					error('EPOE: Deadloop protection! During CurTime() the trampoline was ran '..tostring(count) ..'>'..tostring(EPOE.MAX_IN_TICK)..' times! (Locking the trampoline for the rest of the tick + killing queue)')
+					ErrorNoHalt('EPOE: Deadloop protection! During CurTime() the trampoline was ran '..tostring(count) ..'>'..tostring(EPOE.MAX_IN_TICK)..' times! (Locking the trampoline for the rest of the tick + killing queue)')
 					return
 				end
 		else
@@ -119,18 +119,19 @@ end
 
 function EPOE.QueuePop() // last in last out
 	local var=queue[1]
-	if var == nil then return false end
 	table.remove( queue, 1 )
+	if var == nil then return false end
 	--(DEBUG)_D("Queue-")
 	--hook.Add('Tick',EPOE.Tag,EPOE.Tick)
 	return var
 end
 
 function EPOE.KillQueue()
-	queue = {}
+	while #queue>0 do
+		EPOE.QueuePop()
+	end
 	--(DEBUG)_D("Queue----")
 end
-
 
 function EPOE.Tick()
 	local _Hooked=Hooked Hooked=false
@@ -143,13 +144,12 @@ function EPOE.Tick()
 	
 	if #queue>EPOE.MAX_QUEUE then
 		EPOE.KillQueue()
-		--(DEBUG)_D("Killing queue!!!!")
 		Hooked=_Hooked
+		ErrorNoHalt"Tick queue kill"
 		return
 	end
 	
 	EPOE.Limbo(EPOE.QueuePop())
-	
 	
 	Hooked=_Hooked
 end
