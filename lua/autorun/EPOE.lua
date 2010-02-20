@@ -158,8 +158,8 @@ local fadetime = CreateClientConVar("EPOE_UI_fadetime", 0.15, true, false)
 
 local transparent = 255
 
-EPOE.FONT="EPOE"
-EPOE.FONT_BOLD="EPOEB"
+EPOE.FONT = EPOE.FONT or "EPOE"
+EPOE.FONT_BOLD = EPOE.FONT_BOLD or "EPOEB"
 
 surface.CreateFont("Courier New", 16, 400, false, false, EPOE.FONT)
 surface.CreateFont("Courier New", 16, 700, false, false, EPOE.FONT_BOLD)
@@ -1929,8 +1929,8 @@ hook.Add('EPOE','EPOEMsg',function(Text)
 	Msg(Text)
 end)
 
-local MaxHistoryLines=500
-local TextHistory="Enhanced Perception Of Errors (EPOE) Loaded!"
+local MaxHistoryLines=502
+local TextHistory="Enhanced Perception Of Errors (EPOE) Loaded!\n"
 
 
 function EPOE.AddText(newText)
@@ -1940,7 +1940,6 @@ function EPOE.AddText(newText)
 	local trim=string.Explode("\n",TextHistory)
 	while (#trim >= MaxHistoryLines) do
 		table.remove( trim, 1 ) -- oh wow that was simple , lol. new REV: I take that back :(
-		MsgN	"EPOE DEBUG: Removed history"
 	end
 	TextHistory=string.Implode("\n",trim or {"POPE Failed :("})
 	

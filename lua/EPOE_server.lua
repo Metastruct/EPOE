@@ -28,7 +28,7 @@ local Hooked = false
 
 
 // Safeguards
-EPOE.MAX_IN_TICK=250 -- Maximum number of calls during a tick before the queue is discarded
+EPOE.MAX_IN_TICK=350 -- Maximum number of calls during a tick before the queue is discarded
 EPOE.MAX_QUEUE=500 -- Maximum number of entries in the queue. Low for many lua coders?
 
 /* Deadloop protection */
@@ -218,7 +218,7 @@ function EPOE.Send(rp,str)
 	Hooked=_Hooked
 end
 
-function EPOE.Subscribe(ply,_,args)
+function EPOE.Subscribe_cmd(ply,_,args)
 	local mode=args[1]
 	if ply and ply:IsValid() and ply:IsPlayer() and args[1] then
 		if  ply:IsSuperAdmin() and (mode == "1" || mode == "subscribe" || mode == "sub") then
@@ -238,7 +238,7 @@ function EPOE.Subscribe(ply,_,args)
 		--(DEBUG)_D("Err cmd 2",cmd,ply,mode)
 	end
 end
-concommand.Add( EPOE.TagHuman, EPOE.Subscribe )
+concommand.Add( EPOE.TagHuman, EPOE.Subscribe_cmd )
 
 function EPOE.Subscribe(ply,unsubscribe)
 	if ply and ply:IsValid() and ply:IsPlayer() then
