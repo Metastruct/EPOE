@@ -12,6 +12,13 @@ _Msg=_Msg     or Msg
 _MsgN=_MsgN   or MsgN
 _print=_print or print
 
+-- Let us receive errors from EPOE
+local _ErrorNoHalt=ErrorNoHalt
+local ErrorNoHalt=function(...)
+	timer.Simple(0.1,function()
+		_ErrorNoHalt(...)
+	end
+end
 
 local _Msg=_Msg
 local _MsgN=_MsgN
@@ -44,23 +51,23 @@ EPOE.TRAMPOLINE_LOCK = false
 
 EPOE.MAX_IN_TICK=EPOE.MAX_IN_TICK-1
 
+-- This function should not fatal error in any scenario!!!
 local humans=player.GetHumans
 local function trampoline(ttype,...) 
 		
-		if !EPOE then return end
-		
-		if EPOE.TRAMPOLINE_LOCK then return end
-		
-		if not EPOE then --(DEBUG)_D("EPOE vanished")
-			return end
-		if not Hooked then --(DEBUG)_D("Nothooked")
-			return end
-		if #humans() == 0 or !EPOE.HasSubscribers() then --(DEBUG)_D("NoSubs")
-			return end
-			
+		if !EPOE
+		or !Hooked
+		--RELOCATED or (EPOE.TRAMPOLINE_LOCK and lasttime==CurTime())
+		or #humans() == 0
+		or !EPOE.HasSubscribers()
+		then return end
+
 		
 		
 		if lasttime==CurTime() then
+				
+				if EPOE.TRAMPOLINE_LOCK then return end
+				
 				count=count+1
 				if count > EPOE.MAX_IN_TICK then
 					EPOE.KillQueue()
@@ -68,6 +75,7 @@ local function trampoline(ttype,...)
 					ErrorNoHalt('EPOE: Deadloop protection! During CurTime() the trampoline was ran '..tostring(count) ..'>'..tostring(EPOE.MAX_IN_TICK)..' times! (Locking the trampoline for the rest of the tick + killing queue)')
 					return
 				end
+				
 		else
 			count=0
 			lasttime=CurTime()
@@ -101,9 +109,10 @@ local function trampoline(ttype,...)
 				MsgTable[k]=tostring(v) -- TODO
 			end
 		end
-		
+		if !pcall(function()
+			EPOE.QueuePush(glon.encode(	{ttype,			MsgTable		}	))
+		end) then ErrorNoHalt"TODO:FIXME:ERROR: GLON ENCODE FAILURE")
 		-- 							{newline_type,	message_table	}
-		EPOE.QueuePush(glon.encode(	{ttype,			MsgTable		}	))
 		
 		
 		--Hooked=true
