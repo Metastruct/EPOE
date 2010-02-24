@@ -109,7 +109,7 @@ local function trampoline(ttype,...)
 		end
 		if !pcall(function()
 			EPOE.QueuePush(glon.encode(	{ttype,			MsgTable		}	))
-		end) then ErrorNoHalt"TODO:FIXME:ERROR: GLON ENCODE FAILURE")
+		end) then ErrorNoHalt"TODO:FIXME:ERROR: GLON ENCODE FAILURE" end
 		-- 							{newline_type,	message_table	}
 		
 		
