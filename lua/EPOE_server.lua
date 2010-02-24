@@ -14,10 +14,8 @@ _print=_print or print
 
 -- Let us receive errors from EPOE
 local _ErrorNoHalt=ErrorNoHalt
-local ErrorNoHalt=function(...)
-	timer.Simple(0.1,function()
-		_ErrorNoHalt(...)
-	end
+local function ErrorNoHalt(...)
+	timer.Simple(0.01,_ErrorNoHalt,...)
 end
 
 local _Msg=_Msg
