@@ -13,7 +13,7 @@ Msg("Loading EPOE ("..(SERVER and "server" or "client")..").. ")
 if !glon then require"glon" end
 if !glon then error"Glon not found??" end
 
---if EPOE then ErrorNoHalt("Warning! MUST NOT Reload!") return end
+--if EPOE then ErrorNoHalt("Warning! MUST NOT Reload!") return end 
 if EPOE then 
 	ErrorNoHalt"Warning: Reloading EPOE!"
 	EPOE.RELOADED=true
@@ -47,25 +47,6 @@ end*/
 
 ]]
 
-
-if CLIENT then
-
-	-- The client "CORE"
-	-- TODO: datastream?
-	function EPOE.RecvMsg(msg)
-		
-		local msg=msg:ReadString()
-		msg=glon.decode(msg)
-		local str=/*"E ("..tostring(msg[1]).."):"..*/EPOE.ToString(msg[2])
-		str=str..((msg[1]==EPOE.T_HasEnd) and '\n' or '')
-		
-		hook.Call('EPOE',nil,str or nil,msg[2] or nil,msg[1] or nil)
-		
-	end
-	usermessage.Hook(EPOE.Tag,EPOE.RecvMsg)
-	
-end
-
 function EPOE.Subscribe(unsubscribe)
 	if !unsubscribe then
 		RunConsoleCommand(EPOE.TagHuman,'1')
@@ -74,7 +55,8 @@ function EPOE.Subscribe(unsubscribe)
 	end
 end
 
--- Decode the message to a nice format
+-- Decode the message to a nice format. Taken from table-module, modded by CapsAdmin, adapted by Python1320.
+-- TODO: FIXME: We need to revert back to old format or create own datastream and/or glon for encoding nonencodable objects.
 function EPOE.ToString(t)
 		local 		nl,tab  = "",  ""
 
@@ -134,23 +116,34 @@ function EPOE.ToString(t)
 	end	
 
 	
-if SERVER then
-	include 'EPOE_server.lua'
-	if EPOE.InitHooks then EPOE.InitHooks() else error"FAILED LOADING EPOE!" end
-	AddCSLuaFile'EPOE.lua'
+if SERVER then include	'EPOE_server.lua'
+	if EPOE.InitHooks then EPOE.InitHooks() else
+		error			"FAILED LOADING EPOE!"
+	end	AddCSLuaFile	'EPOE.lua'
+end MsgN				"EPOE Loaded."
+
+
+if SERVER then return end -------------- CLIENT -----------
+
+
+
+-- The client "CORE"
+-- TODO: datastream?
+function EPOE.RecvMsg(msg)
+	
+	local msg=msg:ReadString()
+	msg=glon.decode(msg)
+	local str=/*"E ("..tostring(msg[1]).."):"..*/EPOE.ToString(msg[2])
+	str=str..((msg[1]==EPOE.T_HasEnd) and '\n' or '')
+	
+	hook.Call('EPOE',nil,str or nil,msg[2] or nil,msg[1] or nil)
+	
 end
+usermessage.Hook(EPOE.Tag,EPOE.RecvMsg)
 
-
-MsgN("EPOE Loaded.")
-
-
-if SERVER then return end ------------------------------ CLIENT ------------------------------------------------------
-
-
-
-
-
--- Taken from Wiremod/E2, sorry guys :s
+-- Taken from Wiremod/E2/TextEditor, sorry guys :s
+-- Huge thanks towards the developer of this.
+-- TODO: Ask permission before releasing EPOE.
 
 local EDITOR = {}
 
@@ -330,8 +323,27 @@ function EDITOR:OnMousePressed(code)
 		
 		menu:AddOption("Find text", function()
 			self:FindWindow()
-		end)		
+		end)
+		
+		menu:AddOption("Clear all", function()
+			if EPOE then
+				EPOE.Clear()
+			end
+		end)
+		
+		menu:AddSpacer()
+		
+		menu:AddOption("Close EPOE", function()
+			RunConsoleCommand"EPOE_UI" -- :DD
+		end)
+		
+		menu:AddOption("Close+UnSub", function()
+			RunConsoleCommand"EPOE_UI" -- :DD
+			if EPOE then
+				EPOE.Subscribe(true)
+			end
 			
+		end)		
 		
 		menu:Open()
 	end
@@ -1324,7 +1336,7 @@ function EDITOR:ContextHelp()
 	end
 end
 
-function EDITOR:_OnKeyCodeTyped(code)
+function EDITOR:_OnKeyCodeTyped(code)/*
 	--self.Blink = RealTime()
 	
 	local alt = input.IsKeyDown(KEY_LALT) or input.IsKeyDown(KEY_RALT)
@@ -1599,7 +1611,7 @@ function EDITOR:_OnKeyCodeTyped(code)
 	
 	if control then
 		self:OnShortcut(code)
-	end
+	end*/
 end
 
 // Auto-completion
@@ -1943,7 +1955,7 @@ function EPOE.AddText(newText)
 	end
 	TextHistory=string.Implode("\n",trim or {"POPE Failed :("})
 	
-	if EPOE.TextBox and EPOE.TextBox:IsValid() then
+	if EPOE.TextBox and EPOE.TextBox:IsValid() and (!EPOE.TextBox:HasSelection() or transparent < 10) then
 		EPOE.TextBox:SetText(TextHistory) -- This now accepts strings and string tables :) But it's no use
 		EPOE.TextBox:ScrollDown()
 		transparent = 255
@@ -1957,8 +1969,10 @@ hook.Add('EPOE','EPOEMsgBox',function(newText)
 	EPOE.AddText(newText)
 end)
 	
-concommand.Add('EPOE_CLEAR',function()
+function EPOE.Clear()
 	TextHistory={""}
 	EPOE.TextBox:SetText("")
 	EPOE.TextBox:ScrollDown()
-end)
+end
+
+concommand.Add('EPOE_CLEAR', EPOE.Clear)

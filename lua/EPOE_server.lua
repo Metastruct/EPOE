@@ -70,7 +70,7 @@ local function trampoline(ttype,...)
 				if count > EPOE.MAX_IN_TICK then
 					EPOE.KillQueue()
 					EPOE.TRAMPOLINE_LOCK=true
-					ErrorNoHalt('EPOE: Deadloop protection! During CurTime() the trampoline was ran '..tostring(count) ..'>'..tostring(EPOE.MAX_IN_TICK)..' times! (Locking the trampoline for the rest of the tick + killing queue)')
+					ErrorNoHalt('EPOE_DEADLOOP: Trampoline Ran over '..tostring(EPOE.MAX_IN_TICK)..' times during the tick '..tostring(CurTime())..', Locking + Killing Queue\n')
 					return
 				end
 				
@@ -109,7 +109,7 @@ local function trampoline(ttype,...)
 		end
 		if !pcall(function()
 			EPOE.QueuePush(glon.encode(	{ttype,			MsgTable		}	))
-		end) then ErrorNoHalt"TODO:FIXME:ERROR: GLON ENCODE FAILURE" end
+		end) then ErrorNoHalt"TODO:FIXME:ERROR: GLON ENCODE FAILURE\n" end
 		-- 							{newline_type,	message_table	}
 		
 		
@@ -151,8 +151,8 @@ function EPOE.Tick()
 	
 	if #queue>EPOE.MAX_QUEUE then
 		EPOE.KillQueue()
+		ErrorNoHalt"EPOE_TICK: Queue Killed!\n"
 		Hooked=_Hooked
-		ErrorNoHalt"Tick queue kill"
 		return
 	end
 	
@@ -214,7 +214,7 @@ function EPOE.Send(rp,str)
 	
 	--(DEBUG)_D("Sending msg")
 	if string.len(str) > 250 then --TODO
-		ErrorNoHalt"EPOE: Too long message, not sending"
+		ErrorNoHalt"EPOE_MSG: Message too long!\n"
 	end
 	
 	umsg.Start(EPOE.Tag,rp)
