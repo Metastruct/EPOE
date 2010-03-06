@@ -1970,7 +1970,7 @@ hook.Add('EPOE','EPOEMsgBox',function(newText)
 end)
 	
 function EPOE.Clear()
-	TextHistory={""}
+	TextHistory="Enhanced Perception Of Errors (EPOE) Loaded!\n"
 	EPOE.TextBox:SetText("")
 	EPOE.TextBox:ScrollDown()
 end
