@@ -1,6 +1,6 @@
 /* 
 
-	Enhanced Perception Of Errors
+	Extended Perception Of Errors
 	Idea taken from ENE(Z)
 	
 	Copyright (C) 2010        Python1320, CapsAdmin
@@ -10,8 +10,12 @@
 
 Msg("Loading EPOE ("..(SERVER and "server" or "client")..").. ")
 
-if !glon then require"glon" end
-if !glon then error"Glon not found??" end
+if !llon then include'EPOE_LLON.lua' end
+if !llon then
+	ErrorNoHalt"llon not found? Falling back to glon."
+	if !glon then require"glon" end
+	if !glon then error"glon not found??" end
+end
 
 --if EPOE then ErrorNoHalt("Warning! MUST NOT Reload!") return end 
 if EPOE then 
@@ -56,7 +60,7 @@ function EPOE.Subscribe(unsubscribe)
 end
 
 -- Decode the message to a nice format. Taken from table-module, modded by CapsAdmin, adapted by Python1320.
--- TODO: FIXME: We need to revert back to old format or create own datastream and/or glon for encoding nonencodable objects.
+-- TODO: FIXME: We need to revert back to old format or create own datastream and/or llon for encoding nonencodable objects.
 function EPOE.ToString(t)
 		local 		nl,tab  = "",  ""
 
@@ -120,10 +124,9 @@ if SERVER then include	'EPOE_server.lua'
 	if EPOE.InitHooks then EPOE.InitHooks() else
 		error			"FAILED LOADING EPOE!"
 	end	AddCSLuaFile	'EPOE.lua'
+		AddCSLuaFile	'EPOE_LLON.lua'
+	return
 end MsgN				"EPOE Loaded."
-
-
-if SERVER then return end -------------- CLIENT -----------
 
 
 
@@ -132,7 +135,7 @@ if SERVER then return end -------------- CLIENT -----------
 function EPOE.RecvMsg(msg)
 	
 	local msg=msg:ReadString()
-	msg=glon.decode(msg)
+	msg=llon.decode(msg)
 	local str=/*"E ("..tostring(msg[1]).."):"..*/EPOE.ToString(msg[2])
 	str=str..((msg[1]==EPOE.T_HasEnd) and '\n' or '')
 	
@@ -1942,7 +1945,7 @@ hook.Add('EPOE','EPOEMsg',function(Text)
 end)
 
 local MaxHistoryLines=502
-local TextHistory="Enhanced Perception Of Errors (EPOE) Loaded!\n"
+local TextHistory="Extended Perception Of Errors (EPOE) Loaded!\n"
 
 
 function EPOE.AddText(newText)
@@ -1970,9 +1973,11 @@ hook.Add('EPOE','EPOEMsgBox',function(newText)
 end)
 	
 function EPOE.Clear()
-	TextHistory="Enhanced Perception Of Errors (EPOE) Loaded!\n"
+	TextHistory="Extended Perception Of Errors (EPOE) Loaded!\n"
 	EPOE.TextBox:SetText("")
 	EPOE.TextBox:ScrollDown()
 end
 
 concommand.Add('EPOE_CLEAR', EPOE.Clear)
+
+MsgN"Done."

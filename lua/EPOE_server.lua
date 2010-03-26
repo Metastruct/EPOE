@@ -33,8 +33,8 @@ local Hooked = false
 
 
 // Safeguards
-EPOE.MAX_IN_TICK=350 -- Maximum number of calls during a tick before the queue is discarded
-EPOE.MAX_QUEUE=500 -- Maximum number of entries in the queue. Low for many lua coders?
+EPOE.MAX_IN_TICK=500 -- Maximum number of calls during a tick before the queue is discarded
+EPOE.MAX_QUEUE=1000 -- Maximum number of entries in the queue. Low for many lua coders?
 
 /* Deadloop protection */
 	local lasttime=CurTime()
@@ -108,8 +108,8 @@ local function trampoline(ttype,...)
 			end
 		end
 		if !pcall(function()
-			EPOE.QueuePush(glon.encode(	{ttype,			MsgTable		}	))
-		end) then ErrorNoHalt"TODO:FIXME:ERROR: GLON ENCODE FAILURE\n" end
+			EPOE.QueuePush(llon.encode(	{ttype,			MsgTable		}	))
+		end) then ErrorNoHalt"TODO:FIXME:ERROR: llon ENCODE FAILURE\n" end
 		-- 							{newline_type,	message_table	}
 		
 		
