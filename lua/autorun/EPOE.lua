@@ -123,10 +123,13 @@ function EPOE.ToString(t)
 if SERVER then include	'EPOE_server.lua'
 	if EPOE.InitHooks then EPOE.InitHooks() else
 		error			"FAILED LOADING EPOE!"
-	end	AddCSLuaFile	'EPOE.lua'
+	end	
+		AddCSLuaFile	'EPOE.lua'
 		AddCSLuaFile	'EPOE_LLON.lua'
-	return
-end MsgN				"EPOE Loaded."
+		MsgN"Loaded."
+		return
+
+end 
 
 
 
@@ -1979,5 +1982,4 @@ function EPOE.Clear()
 end
 
 concommand.Add('EPOE_CLEAR', EPOE.Clear)
-
-MsgN"Done."
+MsgN				"EPOE Loaded."
