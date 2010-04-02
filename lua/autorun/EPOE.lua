@@ -51,11 +51,20 @@ end*/
 
 ]]
 
+EPOE.Subscribed=false
 function EPOE.Subscribe(unsubscribe)
 	if !unsubscribe then
 		RunConsoleCommand(EPOE.TagHuman,'1')
+		if !EPOE.Subscribed and EPOE.AddText then
+			EPOE.AddText("[EPOE client] Subscribing...\n")			
+		end
+		EPOE.Subscribed=true
 	else
 		RunConsoleCommand(EPOE.TagHuman,'0')
+		if EPOE.Subscribed and EPOE.AddText then
+			EPOE.AddText("[EPOE client] UnSubscribing...\n")	
+		end
+		EPOE.Subscribed=false
 	end
 end
 
@@ -230,6 +239,10 @@ function EDITOR:CursorToCaret()
 end
 
 function EDITOR:OnMousePressed(code)
+	if input.IsKeyDown(KEY_LALT) then
+		self:GetParent():OnMousePressed(code)
+	end
+	
 	if code == MOUSE_LEFT then
 		if((CurTime() - self.LastClick) < 1 and self.tmp and self:CursorToCaret()[1] == self.Caret[1] and self:CursorToCaret()[2] == self.Caret[2]) then
 			self.Start = self:getWordStart(self.Caret)
@@ -349,6 +362,17 @@ function EDITOR:OnMousePressed(code)
 				EPOE.Subscribe(true)
 			end
 			
+		end)
+
+
+		menu:AddSpacer()
+		
+		menu:AddOption("Subscribe", function()
+			EPOE.Subscribe()
+		end)
+		
+		menu:AddOption("UnSubscribe", function()
+			EPOE.Subscribe(true)
 		end)		
 		
 		menu:Open()
@@ -357,6 +381,8 @@ end
 
 function EDITOR:OnMouseReleased(code)
 	if !self.MouseDown then return end
+	
+	self:GetParent():OnMouseReleased()
 	
 	if code == MOUSE_LEFT then
 		self.MouseDown = nil
@@ -374,6 +400,13 @@ function EDITOR:SetText(text)
 		ErrorNoHalt"EPOE TEXTBOX: INVALID INPUT"
 		return
 	end
+	
+	for k,v in pairs(self.Rows) do
+		if true then
+			self.Rows[k]=string.gsub(v,"\t","     ")
+		end
+	end
+	
 	if self.Rows[#self.Rows] != "" then
 		self.Rows[#self.Rows + 1] = ""
 	end
@@ -390,6 +423,9 @@ end
 
 function EDITOR:GetValue()
 	return string.Replace(table.concat(self.Rows, "\n"), "\r", "")
+end
+function EDITOR:OnCursorMoved()
+	transparent = 255
 end
 
 function EDITOR:PaintLine(row)
@@ -472,7 +508,7 @@ function EDITOR:PerformLayout()
 end
 
 function EDITOR:PaintTextOverlay()
-	transparent = math.Clamp(transparent - fadetime:GetFloat(), 0, 255)
+	
 	if self.TextEntry:HasFocus() and self.Caret[2] - self.Scroll[2] >= 0 then
 		local width, height = self.FontWidth, self.FontHeight
 		
@@ -1031,7 +1067,7 @@ function EDITOR:FindWindow()
 		self:GetParent().ForceDrawCursor = false
 		self:OldClose(self)
 	end
-	FW.Reversed = false
+	FW.Reversed = true
 	FW:SetSize(250,100)
 	FW:ShowCloseButton(true)
 	FW:SetTitle("Search")
@@ -1052,7 +1088,7 @@ function EDITOR:FindWindow()
 	// Forward Checkbox
 	FW.Forw = vgui.Create("DCheckBox",FW)
 	FW.Forw:SetPos(115,55)
-	FW.Forw:SetValue(true)
+	FW.Forw:SetValue(false)
 	FW.Forw.OnMousePressed = function(self)
 		if !self:GetChecked() then
 			self:GetParent().Back:SetValue(self:GetChecked())
@@ -1064,7 +1100,7 @@ function EDITOR:FindWindow()
 	// Backward Checkbox
 	FW.Back = vgui.Create("DCheckBox",FW)
 	FW.Back:SetPos(115,75)
-	FW.Back:SetValue(false)
+	FW.Back:SetValue(true)
 	FW.Back.OnMousePressed = function(self)
 		if !self:GetChecked() then
 			self:GetParent().Forw:SetValue(self:GetChecked())
@@ -1728,36 +1764,34 @@ do -- E2 Syntax highlighting
 		["elseif"]   = { [true] = true, [false] = true },
 		["while"]    = { [true] = true, [false] = true },
 		["for"]      = { [true] = true, [false] = true },
-		["foreach"]  = { [true] = true, [false] = true },
+		["error"]  = { [true] = true, [false] = true },
+		["ErrorNoHalt"]  = { [true] = true, [false] = true },
+		["Error"]  = { [true] = true, [false] = true },
+		["quit"]  = { [true] = true, [false] = true },
+		["do"]  	 = { [true] = true, [false] = true },
 		
 		-- keywords that cannot be followed by a "(":
 		["else"]     = { [true] = true },
 		["break"]    = { [true] = true },
+		["return"]    = { [true] = true },
+		["returned"]    = { [true] = true },
+		["end"]    = { [true] = true },
 		["continue"] = { [true] = true },
 	}
 	
 	-- fallback for nonexistant entries:
 	setmetatable(keywords, { __index=function(tbl,index) return {} end })
 	
-	local directives = {
-		["@name"] = 0, -- all yellow
-		["@model"] = 0,
-		["@inputs"] = 1, -- directive yellow, types orange, rest normal
-		["@outputs"] = 1,
-		["@persist"] = 1,
-		["@trigger"] = 2, -- like 1, except that all/none are yellow
-	}
-	
 	local colors = {
 		["directive"] = { Color(240, 240, 160), false},
-		["number"]    = { Color(240, 160, 160), false},
+		["number"]    = { Color(250, 200, 200), false},
 		["function"]  = { Color(160, 160, 240), false},
-		["notfound"]  = { Color(240,  96,  96), false},
+		["notfound"]  = { Color(250, 150, 150), false},
 		["variable"]  = { Color(160, 240, 160), false},
-		["string"]    = { Color(128, 128, 128), false},
-		["keyword"]   = { Color(160, 240, 240), false},
+		["string"]    = { Color(255, 255, 255), false},
+		["keyword"]   = { Color(160, 160, 255), false},
 		["operator"]  = { Color(224, 224, 224), false},
-		["comment"]   = { Color(128, 128, 128), false},
+		["comment"]   = { Color(230, 230, 230), false},
 		["ppcommand"] = { Color(240,  96, 240), false},
 		["typename"]  = { Color(240, 160,  96), false},
 	}
@@ -1769,25 +1803,7 @@ do -- E2 Syntax highlighting
 		self:ResetTokenizer(row)
 		self:NextCharacter()
 		
-		-- 0=name 1=port 2=trigger 3=foreach
-		local highlightmode = nil
-		if self:NextPattern("^@[^ ]*") then
-			highlightmode = directives[self.tokendata]
-			
-			-- check for unknown directives
-			if not highlightmode then
-				return {
-					{ "@", colors.directive },
-					{ self.line:sub(2), colors.notfound }
-				}
-			end
-			
-			-- check for plain text directives
-			if highlightmode == 0 then return {{ self.line, colors.directive }} end
-			
-			-- parse the rest like regular code
-			cols = {{ self.tokendata, colors.directive }}
-		end
+
 		while self.character do
 			local tokenname = ""
 			self.tokendata = ""
@@ -1802,38 +1818,35 @@ do -- E2 Syntax highlighting
 				
 			elseif self:NextPattern("^[a-z][a-zA-Z0-9_]*") then
 				local sstr = string.Trim(self.tokendata)
-				if highlightmode then
-					if highlightmode == 1 and istype(sstr) then
-						tokenname = "typename"
-					elseif highlightmode == 2 and (sstr == "all" or sstr == "none") then
-						tokenname = "directive"
-					elseif highlightmode == 3 and istype(sstr) then
-						tokenname = "typename"
-						highlightmode = nil
-					else
-						tokenname = "notfound"
-					end
+				
+				local char = self.character or ""
+				local keyword = char != "("
+				
+				self:NextPattern(" *")
+				
+				if self.character == "]" then
+					-- X[Y,typename]
+					tokenname = istype(sstr) and "typename" or "notfound"
+				elseif keywords[sstr][keyword] then
+					tokenname = "keyword"
 				else
-					-- is this a keyword or a function?
-					local char = self.character or ""
-					local keyword = char != "("
-					
-					self:NextPattern(" *")
-					
-					if self.character == "]" then
-						-- X[Y,typename]
-						tokenname = istype(sstr) and "typename" or "notfound"
-					elseif keywords[sstr][keyword] then
-						tokenname = "keyword"
-						if sstr == "foreach" then highlightmode = 3 end
-					else
-						tokenname = "notfound"
-					end
+					tokenname = "notfound"
 				end
+			
 				
 			elseif self:NextPattern("^[A-Z][a-zA-Z0-9_]*") then
 				tokenname = "variable"
 				
+			elseif self.character == "'" then
+				self:NextCharacter()
+				while self.character and self.character != "'" do
+					if self.character == "\\" then self:NextCharacter() end
+					self:NextCharacter()
+				end
+				self:NextCharacter()
+				
+				tokenname = "string"
+
 			elseif self.character == '"' then
 				self:NextCharacter()
 				while self.character and self.character != '"' do
@@ -1844,15 +1857,12 @@ do -- E2 Syntax highlighting
 				
 				tokenname = "string"
 				
-			elseif self:NextPattern("#[^ ]*") then
-				--if PreProcessor["PP_"..self.tokendata:sub(2)] then
-					-- there is a preprocessor command by that name => mark as such
-				--	tokenname = "ppcommand"
-				--else
-					-- eat the rest and mark as a comment
+			elseif self:NextPattern("%-%-[^ ]*") then
 					self:NextPattern(".*")
 					tokenname = "comment"
-				--end
+			elseif self:NextPattern("//[^ ]*") then
+					self:NextPattern(".*")
+					tokenname = "comment"
 			else
 				self:NextCharacter()
 				
@@ -1885,38 +1895,120 @@ function EPOE_UI()
 		EPOE.Frame:Remove()
 		return
 	end
-	EPOE.Frame=vgui.Create('DFrame')
-	EPOE.Frame:SetSizable(true)
-	EPOE.Frame:SetDraggable(true)
-	EPOE.Frame:SetTitle('')
-	EPOE.Frame:ShowCloseButton(false)
+	EPOE.Frame=vgui.Create('EditablePanel')
+	
+	EPOE.Frame:SetPaintBackgroundEnabled( false )
+	EPOE.Frame:SetPaintBorderEnabled( false )
+	
+
 	EPOE.Frame:SetPos(0,200)
 	EPOE.Frame:SetSize(ScrW()/1.75,ScrH()/4)
 	
 	function EPOE.Frame:Paint()
-		surface.SetDrawColor(32, 32, 32, 0)
-		surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
+		--surface.SetDrawColor(32, 32, 32, 0)
+		--surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
+		if transparent>180 then
+			surface.SetDrawColor(0, 0, 0, transparent	)
+			surface.DrawOutlinedRect(1, 1, self:GetWide()-1, self:GetTall()-1)
+		end
+		
+		transparent = math.Clamp(transparent - fadetime:GetFloat(), 0, 255)
+		
+	end
+	
+	
+	function EPOE.Frame:Think()
+
+		if (self.Dragging) then
+		
+			local x = gui.MouseX() - self.Dragging[1]
+			local y = gui.MouseY() - self.Dragging[2]
+
+			x = math.Clamp( x, 0, ScrW() - self:GetWide() )
+			y = math.Clamp( y, 0, ScrH() - self:GetTall() )
+			
+			
+			self:SetPos( x, y )
+		
+		end
+		
+		
+		
+		if ( self.Sizing ) then
+		
+			local x = gui.MouseX() - self.Sizing[1]
+			local y = gui.MouseY() - self.Sizing[2]	
+
+			x = math.Max( x, 200 )
+			y = math.Max( y, 40 )
+			
+			self:SetSize( x, y )
+			self:SetCursor( "sizenwse" )
+			return
+		
+		end
+		
+		if ( input.IsKeyDown(KEY_LALT) && (self.Hovered || self.TextBox.Hovered) &&
+			 gui.MouseX() > (self.x + self:GetWide() - 20) &&
+			 gui.MouseY() > (self.y + self:GetTall() - 20) ) then	
+
+			self:SetCursor( "sizenwse" )
+			return
+			
+		end
+		
+		if ( input.IsKeyDown(KEY_LALT) && (self.Hovered || self.TextBox.Hovered) ) then
+			self:SetCursor( "sizeall" )
+		end
+		
 	end
 	
 	EPOE.TextBox=vgui.Create('EPOE',EPOE.Frame)
+	EPOE.Frame.TextBox=EPOE.TextBox
+	--self:SetCookie( "LeftWidth", self.m_iLeftWidth )
+	--self:SetLeftWidth( self:GetCookieNumber( "LeftWidth", self:GetLeftWidth() ) )
 
-	EPOE.Frame.OldPL=EPOE.Frame.PerformLayout
-	EPOE.Frame.PerformLayout = function(self)
-		EPOE.TextBox:SetSize(EPOE.Frame:GetWide()-10,EPOE.Frame:GetTall()-40)
-		EPOE.TextBox:SetPos(5,30)
-		EPOE.Frame:OldPL()
+	function EPOE.Frame:PerformLayout()
+		self.TextBox:StretchToParent(1,1,1,1)
 	end
 	
-	EPOE.Frame.OnCursorEntered = function() transparent = 255 end
+	function EPOE.Frame:OnMousePressed()
+		if ( gui.MouseX() > (self.x + self:GetWide() - 20) &&
+			gui.MouseY() > (self.y + self:GetTall() - 20) ) then			
+
+			self.Sizing = { gui.MouseX() - self:GetWide(), gui.MouseY() - self:GetTall() }
+			self:MouseCapture( true )
+			return
+		end
+			
+		
+		self.Dragging = { gui.MouseX() - self.x, gui.MouseY() - self.y }
+		self:MouseCapture( true )
+		return
+
+	end
+	function EPOE.Frame:OnMouseReleased()
+		
+		
+		
+		self.Dragging = nil
+		self.Sizing = nil
+		self:MouseCapture( false )
+
+	end
+
+	EPOE.Frame.OnCursorMoved = function() transparent = 255 end
 	
 	EPOE.Frame:SetMouseInputEnabled(true)
-	EPOE.Frame:SetKeyboardInputEnabled(true)
+	--EPOE.Frame:SetKeyboardInputEnabled(true)
 	EPOE.TextBox:SetMouseInputEnabled(true)
-	EPOE.TextBox:SetKeyboardInputEnabled(true)
+	--EPOE.TextBox:SetKeyboardInputEnabled(true)
 
 	RunConsoleCommand("EPOE_UI_enable", "1")
+	
 	EPOE.Subscribe()
 	
+	EPOE.Clear()
 end
 concommand.Add('EPOE_UI',EPOE_UI)
 concommand.Add('+epoe',function()
@@ -1927,7 +2019,7 @@ concommand.Add('+epoe',function()
 	end
 
 end)
-concommand.Add('+epoe',function()
+concommand.Add('-epoe',function()
 	if !EPOE.Frame or !EPOE.Frame:IsValid() then 
 		return
 	else
@@ -1948,7 +2040,9 @@ hook.Add('EPOE','EPOEMsg',function(Text)
 end)
 
 local MaxHistoryLines=502
-local TextHistory="Extended Perception Of Errors (EPOE) Loaded!\n"
+local TextHistory=""
+
+
 
 
 function EPOE.AddText(newText)
@@ -1959,7 +2053,7 @@ function EPOE.AddText(newText)
 	while (#trim >= MaxHistoryLines) do
 		table.remove( trim, 1 ) -- oh wow that was simple , lol. new REV: I take that back :(
 	end
-	TextHistory=string.Implode("\n",trim or {"POPE Failed :("})
+	TextHistory=string.Implode("\n",trim or {"EPOE Failed :("})
 	
 	if EPOE.TextBox and EPOE.TextBox:IsValid() and (!EPOE.TextBox:HasSelection() or transparent < 10) then
 		EPOE.TextBox:SetText(TextHistory) -- This now accepts strings and string tables :) But it's no use
@@ -1976,10 +2070,12 @@ hook.Add('EPOE','EPOEMsgBox',function(newText)
 end)
 	
 function EPOE.Clear()
-	TextHistory="Extended Perception Of Errors (EPOE) Loaded!\n"
+	TextHistory=""
 	EPOE.TextBox:SetText("")
+	EPOE.AddText("Extended Perception Of Errors (EPOE) Loaded!\n")
 	EPOE.TextBox:ScrollDown()
 end
 
+
 concommand.Add('EPOE_CLEAR', EPOE.Clear)
-MsgN				"EPOE Loaded."
+MsgN				"Loaded."

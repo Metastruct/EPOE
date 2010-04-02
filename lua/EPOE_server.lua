@@ -35,6 +35,7 @@ local Hooked = false
 // Safeguards
 EPOE.MAX_IN_TICK=500 -- Maximum number of calls during a tick before the queue is discarded
 EPOE.MAX_QUEUE=1000 -- Maximum number of entries in the queue. Low for many lua coders?
+EPOE.MsgsInTick=3
 
 /* Deadloop protection */
 	local lasttime=CurTime()
@@ -70,7 +71,7 @@ local function trampoline(ttype,...)
 				if count > EPOE.MAX_IN_TICK then
 					EPOE.KillQueue()
 					EPOE.TRAMPOLINE_LOCK=true
-					ErrorNoHalt('EPOE_DEADLOOP: Trampoline Ran over '..tostring(EPOE.MAX_IN_TICK)..' times during the tick '..tostring(CurTime())..', Locking + Killing Queue\n')
+					ErrorNoHalt('EPOE_DEADLOOP: Trampoline Ran '..tostring(EPOE.MAX_IN_TICK)..' times during tick '..tostring(CurTime())..', Locking + Killing Queue\n')
 					return
 				end
 				
@@ -109,7 +110,7 @@ local function trampoline(ttype,...)
 		end
 		if !pcall(function()
 			EPOE.QueuePush(llon.encode(	{ttype,			MsgTable		}	))
-		end) then ErrorNoHalt"TODO:FIXME:ERROR: llon ENCODE FAILURE\n" end
+		end) then ErrorNoHalt"ERROR: llon ENCODE FAILURE\n" end
 		-- 							{newline_type,	message_table	}
 		
 		
@@ -151,12 +152,16 @@ function EPOE.Tick()
 	
 	if #queue>EPOE.MAX_QUEUE then
 		EPOE.KillQueue()
-		ErrorNoHalt"EPOE_TICK: Queue Killed!\n"
+		ErrorNoHalt"EPOE_TICK: Queue Killed (up MAX_QUEUE)!\n"
 		Hooked=_Hooked
 		return
 	end
 	
-	EPOE.Limbo(EPOE.QueuePop())
+	-- Some more throughput
+	for i=0,EPOE.MsgsInTick do
+		if #queue==0 then break end
+		EPOE.Limbo(EPOE.QueuePop())
+	end
 	
 	Hooked=_Hooked
 end
@@ -185,11 +190,13 @@ function EPOE.InitHooks()
 	--(DEBUG)_D("Hooking")
 	require'luaerror'
 	
-	Msg  =	function(...) trampoline(EPOE.T_NoEnd,...) _Msg(...) 	end
-	MsgN =	function(...) trampoline(EPOE.T_HasEnd,...)  	_MsgN(...) 	end
+	Msg  =	function(...) trampoline(EPOE.T_NoEnd,...) 			_Msg(...) 	end
+	MsgN =	function(...) trampoline(EPOE.T_HasEnd,...)  		_MsgN(...) 	end
 	print=	function(...) trampoline(EPOE.T_HasEnd,...) 		_print(...) end
 
 	hook.Add("LuaError",EPOE.Tag,function(msg) trampoline(EPOE.T_HasEnd,msg) end)
+	
+	-- TODO: Enginespew
 	
 	--(DEBUG)_D("Hooked")
 	Hooked=true
@@ -228,15 +235,32 @@ end
 function EPOE.Subscribe_cmd(ply,_,args)
 	local mode=args[1]
 	if ply and ply:IsValid() and ply:IsPlayer() and args[1] then
-		if  ply:IsSuperAdmin() and (mode == "1" || mode == "subscribe" || mode == "sub") then
+		if (mode == "1" || mode == "subscribe" || mode == "sub") then
+			if !ply:IsSuperAdmin() then
+				timer.Simple(5,function() -- Delay for lazy admin
+					if !ply or !ply:IsValid() or !ply:IsPlayer() then return end
+					
+					if !ply:IsSuperAdmin() then
+						ply:ChatPrint("EPOE: You are not admin!")
+					else
+						EPOE.Subscribe(ply)
+						ply:ChatPrint("EPOE: Subscribed")
+						timer.Simple(0.1,function() 
+							MsgN("EPOE: "..tostring(ply).." Subscribed!")
+						end)
+					end
+				end)
+				return
+			end
+			
 			EPOE.Subscribe(ply)
 			ply:ChatPrint("EPOE: Subscribed")
-			_print("EPOE: "..tostring(ply).." Subscribed!")
+			MsgN("EPOE: "..tostring(ply).." Subscribed!")
 		elseif mode == "0" || mode == "unsubscribe" || mode == "unsub"  then
 			if Subscribers[ply] then
 				EPOE.Subscribe(ply,true)
 				ply:ChatPrint("EPOE: Unsubscribed")
-				_print("EPOE: "..tostring(ply).." Unsubscribed!")
+				MsgN("EPOE: "..tostring(ply).." Unsubscribed!")
 			end
 		else
 			--(DEBUG)_D("Err cmd",cmd,ply,mode)
