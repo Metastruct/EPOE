@@ -8,7 +8,7 @@
 */
 
 
-Msg("Loading EPOE ("..(SERVER and "server" or "client")..").. ")
+Msg("[EPOE "..(SERVER and "Server" or "Client").."] ")
 
 if !llon then include'EPOE_LLON.lua' end
 if !llon then
@@ -19,7 +19,7 @@ end
 
 --if EPOE then ErrorNoHalt("Warning! MUST NOT Reload!") return end 
 if EPOE then 
-	ErrorNoHalt"Warning: Reloading EPOE!"
+	ErrorNoHalt"Warning: Reloading EPOE! "
 	EPOE.RELOADED=true
 end
 
