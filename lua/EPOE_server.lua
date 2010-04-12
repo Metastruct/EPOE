@@ -1,6 +1,7 @@
+local Description=
 /* 
 
-	Enhanced Perception Of Errors
+	*/ "Extended Perception Of Errors" /*
 	Idea taken from ENE(Z)
 	
 	Copyright (C) 2010        Python1320, CapsAdmin

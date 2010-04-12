@@ -1,6 +1,7 @@
+local Description=
 /* 
 
-	Extended Perception Of Errors
+	*/ "Extended Perception Of Errors" /*
 	Idea taken from ENE(Z)
 	
 	Copyright (C) 2010        Python1320, CapsAdmin
@@ -50,23 +51,6 @@ end*/
 	hook.Add('EPOE',-,function(STRING_MESSAGE,RAW_MESSAGE) end)
 
 ]]
-
-EPOE.Subscribed=false
-function EPOE.Subscribe(unsubscribe)
-	if !unsubscribe then
-		RunConsoleCommand(EPOE.TagHuman,'1')
-		if !EPOE.Subscribed and EPOE.AddText then
-			EPOE.AddText("[EPOE client] Subscribing...\n")			
-		end
-		EPOE.Subscribed=true
-	else
-		RunConsoleCommand(EPOE.TagHuman,'0')
-		if EPOE.Subscribed and EPOE.AddText then
-			EPOE.AddText("[EPOE client] UnSubscribing...\n")	
-		end
-		EPOE.Subscribed=false
-	end
-end
 
 -- Decode the message to a nice format. Taken from table-module, modded by CapsAdmin, adapted by Python1320.
 -- TODO: FIXME: We need to revert back to old format or create own datastream and/or llon for encoding nonencodable objects.
@@ -140,6 +124,24 @@ if SERVER then include	'EPOE_server.lua'
 
 end 
 
+
+
+EPOE.Subscribed=false
+function EPOE.Subscribe(unsubscribe)
+	if !unsubscribe then
+		RunConsoleCommand(EPOE.TagHuman,'1')
+		if !EPOE.Subscribed and EPOE.AddText then
+			EPOE.AddText("[EPOE client] Subscribing...\n")			
+		end
+		EPOE.Subscribed=true
+	else
+		RunConsoleCommand(EPOE.TagHuman,'0')
+		if EPOE.Subscribed and EPOE.AddText then
+			EPOE.AddText("[EPOE client] UnSubscribing...\n")	
+		end
+		EPOE.Subscribed=false
+	end
+end
 
 
 -- The client "CORE"
@@ -1902,7 +1904,18 @@ function EPOE_UI()
 	
 
 	EPOE.Frame:SetPos(0,200)
+	EPOE.Frame:SetZPos(-5) -- Lowerrr. Let's hope no "window" covers us though
 	EPOE.Frame:SetSize(ScrW()/1.75,ScrH()/4)
+	
+	local restore=file.Read"EPOE_Cookie.txt"
+	
+	if restore and restore!="" then
+		local tbl=llon.decode(restore)
+		if tbl then
+			EPOE.Frame:SetPos(tbl.x or 0,tbl.y or 0)
+			EPOE.Frame:SetSize(tbl.w or 480,tbl.h or 320)
+		end
+	end
 	
 	function EPOE.Frame:Paint()
 		--surface.SetDrawColor(32, 32, 32, 0)
@@ -1978,23 +1991,25 @@ function EPOE_UI()
 
 			self.Sizing = { gui.MouseX() - self:GetWide(), gui.MouseY() - self:GetTall() }
 			self:MouseCapture( true )
+			self.TextBox:MouseCapture( true )
 			return
 		end
 			
 		
 		self.Dragging = { gui.MouseX() - self.x, gui.MouseY() - self.y }
 		self:MouseCapture( true )
+		self.TextBox:MouseCapture( true )
 		return
 
 	end
 	function EPOE.Frame:OnMouseReleased()
 		
-		
-		
 		self.Dragging = nil
 		self.Sizing = nil
 		self:MouseCapture( false )
-
+		self.TextBox:MouseCapture( false )
+		local x,y=self:GetPos()
+		file.Write("EPOE_Cookie.txt", llon.encode( {w=self:GetWide(),h=self:GetTall(),x=x,y=y} ) )
 	end
 
 	EPOE.Frame.OnCursorMoved = function() transparent = 255 end
@@ -2072,7 +2087,7 @@ end)
 function EPOE.Clear()
 	TextHistory=""
 	EPOE.TextBox:SetText("")
-	EPOE.AddText("Extended Perception Of Errors (EPOE) Loaded!\n")
+	EPOE.AddText(Description.." Loaded!\n")
 	EPOE.TextBox:ScrollDown()
 end
 
