@@ -171,8 +171,8 @@ local transparent = 255
 EPOE.FONT = EPOE.FONT or "EPOE"
 EPOE.FONT_BOLD = EPOE.FONT_BOLD or "EPOEB"
 
-surface.CreateFont("Courier New", 16, 400, false, false, EPOE.FONT)
-surface.CreateFont("Courier New", 16, 700, false, false, EPOE.FONT_BOLD)
+surface.CreateFont("Courier New", 13, 400, true, false, EPOE.FONT)
+surface.CreateFont("Courier New", 13, 700, true, false, EPOE.FONT_BOLD)
 
 function EDITOR:Init()
 	self:SetCursor("beam")
