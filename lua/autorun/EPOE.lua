@@ -118,7 +118,10 @@ if SERVER then include	'EPOE_server.lua'
 		error			"FAILED LOADING EPOE!"
 	end	
 		AddCSLuaFile	'EPOE.lua'
+		
 		AddCSLuaFile	'EPOE_LLON.lua'
+		resource.AddSingleFile'resource/fonts/DejaVuSansMono.ttf'
+		
 		MsgN"Loaded."
 		return
 
@@ -168,11 +171,19 @@ local fadetime = CreateClientConVar("EPOE_UI_fadetime", 0.15, true, false)
 
 local transparent = 255
 
-EPOE.FONT = EPOE.FONT or "EPOE"
-EPOE.FONT_BOLD = EPOE.FONT_BOLD or "EPOEB"
+EPOE.FONT = EPOE.FONT or "EPOE_FONT"
+EPOE.FONT_BOLD = EPOE.FONT_BOLD or "EPOEB_FONT"
+-- hacks..
+if not file.Exists		'resource/fonts/DejaVuSansMono.ttf' then
+	surface.CreateFont	("DejaVu Sans Mono", 12, 400, true,	false, EPOE.FONT)
+	surface.CreateFont	("DejaVu Sans Mono", 12, 700, true,	false, EPOE.FONT_BOLD)
+else
+	ErrorNoHalt"EPOE: CAN NOT FIND FONT: resource/fonts/DejaVuSansMono.ttf"
+	ErrorNoHalt"EPOE: FALLING BACK TO Courier New"
+	surface.CreateFont("Courier New", 13, 400, true, false, EPOE.FONT)
+	surface.CreateFont("Courier New", 13, 700, true, false, EPOE.FONT_BOLD)	
+end
 
-surface.CreateFont("Courier New", 13, 400, true, false, EPOE.FONT)
-surface.CreateFont("Courier New", 13, 700, true, false, EPOE.FONT_BOLD)
 
 function EDITOR:Init()
 	self:SetCursor("beam")
