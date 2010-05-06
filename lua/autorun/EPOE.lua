@@ -148,7 +148,7 @@ end
 
 
 -- The client "CORE"
--- TODO: datastream?
+-- TODO: datastream mod with ordered mode?
 function EPOE.RecvMsg(msg)
 	
 	local msg=msg:ReadString()
@@ -173,17 +173,8 @@ local transparent = 255
 
 EPOE.FONT = EPOE.FONT or "EPOE_FONT"
 EPOE.FONT_BOLD = EPOE.FONT_BOLD or "EPOEB_FONT"
--- hacks..
-if not file.Exists		'resource/fonts/DejaVuSansMono.ttf' then
-	surface.CreateFont	("DejaVu Sans Mono", 12, 400, true,	false, EPOE.FONT)
-	surface.CreateFont	("DejaVu Sans Mono", 12, 700, true,	false, EPOE.FONT_BOLD)
-else
-	ErrorNoHalt"EPOE: CAN NOT FIND FONT: resource/fonts/DejaVuSansMono.ttf"
-	ErrorNoHalt"EPOE: FALLING BACK TO Courier New"
-	surface.CreateFont("Courier New", 13, 400, true, false, EPOE.FONT)
-	surface.CreateFont("Courier New", 13, 700, true, false, EPOE.FONT_BOLD)	
-end
-
+surface.CreateFont	("DejaVu Sans Mono", 12, 400, true,	false, EPOE.FONT)
+surface.CreateFont	("DejaVu Sans Mono", 12, 700, true,	false, EPOE.FONT_BOLD)
 
 function EDITOR:Init()
 	self:SetCursor("beam")
