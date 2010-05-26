@@ -1929,6 +1929,8 @@ function EPOE_UI()
 		
 		transparent = math.Clamp(transparent - fadetime:GetFloat(), 0, 255)
 		
+		EPOE.TextBox.ScrollBar:SetAlpha(transparent)
+		
 	end
 	
 	
