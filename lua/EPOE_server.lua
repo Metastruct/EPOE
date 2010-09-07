@@ -186,18 +186,26 @@ function EPOE.Limbo(var)
 	
 end
 
+
+local SPEW_WARNING=2
 function EPOE.InitHooks()
 	Hooked=false
 	--(DEBUG)_D("Hooking")
-	require'luaerror'
+	require'enginespew'
 	
-	Msg  =	function(...) trampoline(EPOE.T_NoEnd,...) 			_Msg(...) 	end
-	MsgN =	function(...) trampoline(EPOE.T_HasEnd,...)  		_MsgN(...) 	end
-	print=	function(...) trampoline(EPOE.T_HasEnd,...) 		_print(...) end
+	Msg   =	function(...) trampoline(EPOE.T_NoEnd,...) 			_Msg(...) 	end
+	MsgN  =	function(...) trampoline(EPOE.T_HasEnd,...)  		_MsgN(...) 	end
+	print =	function(...) trampoline(EPOE.T_HasEnd,...) 		_print(...) end
 
-	hook.Add("LuaError",EPOE.Tag,function(msg) trampoline(EPOE.T_HasEnd,msg) end)
 	
-	-- TODO: Enginespew
+	local inhook=false
+	hook.Add("EngineSpew", EPOE.Tag, function(spewType, msg, group, level) 
+		if inhook or spewType!=SPEW_WARNING then return end -- Triple sure we don't fuck up...
+		inhook=true 
+		trampoline(EPOE.T_HasEnd,msg) -- Error once, disable forever...
+		inhook=false
+	end )
+
 	
 	--(DEBUG)_D("Hooked")
 	Hooked=true
