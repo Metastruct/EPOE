@@ -187,7 +187,7 @@ function EPOE.Limbo(var)
 end
 
 
-local SPEW_WARNING=2
+local SPEW_WARNING=1
 function EPOE.InitHooks()
 	Hooked=false
 	--(DEBUG)_D("Hooking")
