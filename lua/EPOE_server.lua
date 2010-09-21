@@ -245,7 +245,7 @@ function EPOE.Subscribe_cmd(ply,_,args)
 	local mode=args[1]
 	if ply and ply:IsValid() and ply:IsPlayer() and args[1] then
 		if (mode == "1" || mode == "subscribe" || mode == "sub") then
-			if !ply:IsSuperAdmin() then
+			if !ply:IsAdmin() then
 				timer.Simple(5,function() -- Delay for lazy admin
 					if !ply or !ply:IsValid() or !ply:IsPlayer() then return end
 					
