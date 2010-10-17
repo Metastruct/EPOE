@@ -161,9 +161,7 @@ function EPOE.RecvMsg(msg)
 end
 usermessage.Hook(EPOE.Tag,EPOE.RecvMsg)
 
--- Taken from Wiremod/E2/TextEditor, sorry guys :s
--- Huge thanks towards the developer of this.
--- TODO: Ask permission before releasing EPOE.
+
 
 local EDITOR = {}
 
