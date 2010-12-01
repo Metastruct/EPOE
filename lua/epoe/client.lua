@@ -20,6 +20,7 @@ local usermessage=usermessage
 local Msg=Msg
 local MsgN=MsgN
 local print=print
+local timer=timer
 local ErrorNoHalt=ErrorNoHalt
 local RunConsoleCommand=RunConsoleCommand
 local cookie=cookie
