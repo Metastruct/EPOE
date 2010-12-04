@@ -161,7 +161,19 @@ end
 ---------------------
 -- Text manipulation
 ---------------------
+-- We don't want a newline appended right away so we hack it up..
+local appendNL=false
 function PANEL:AppendText(txt)
+	if appendNL then
+		txt='\n'..txt
+	end
+	if txt:sub(-1)=="\n" then
+		appendNL=true
+		txt = txt:sub(1,txt:len()-1)
+	else
+		appendNL=false
+	end
+	
 	self.RichText:AppendText(txt)
 end
 
@@ -182,12 +194,12 @@ function PANEL:PerformLayout()
 end
 
 function PANEL:Paint() 
-	surface.SetDrawColor(40 ,40 ,40,150)
-	surface.SetTexture(gradient)
-	surface.DrawTexturedRect(0,self:GetTall()-40,self:GetWide(),40)
+	--surface.SetDrawColor(40 ,40 ,40,150)
+	--surface.SetTexture(gradient)
+	--surface.DrawTexturedRect(0,self:GetTall()-40,self:GetWide(),40)
 	surface.SetDrawColor(40 ,40 ,40,196)
 	surface.DrawRect(0,0,self:GetWide(),self:GetTall())
-	return true 
+	return true
 end
 
 ---------------------
