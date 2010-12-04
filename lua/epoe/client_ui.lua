@@ -459,9 +459,16 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags)
 			end
 			notimestamp = not ( newText:Right(1)=="\n" ) -- negation hard
 		end
-		
 		-- HUGE TODO: Colors :X
-		e.GUI:SetColor(255,255,255)
+		if e.HasFlag(flags,e.IS_ERROR) then
+			e.GUI:SetColor(255,80,80)
+		elseif e.HasFlag(flags,e.IS_MSGN) or e.HasFlag(flags,e.IS_MSG) then
+			e.GUI:SetColor( 255,181,80)
+		else
+			e.GUI:SetColor(255,255,255)
+		end
+		
+		
 		e.GUI:AppendText(newText)
 	end
 end)
