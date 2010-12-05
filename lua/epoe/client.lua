@@ -154,7 +154,7 @@ function Print(...)
 		error"???"
 	end
 end
-_G.print=Print
+G.print=Print
 
 function internalPrint(...)
 	local noerr,str=pcall(ToString,{...}) -- just to be sure
