@@ -139,9 +139,9 @@ function PANEL:Init()
 		self.RichText:SetWrap(false) -- Does not work
 		self.RichText:SetFont("TitleFont") -- Does not work
 	function self.RichText:PerformLayout() -- Fucking cheats. But it looks better, it should? Who needs a scrollbar anyways...
-		self:SetPos(-6,-6)
-		self:SetWide(self:GetParent():GetWide()+12+11)
-		self:SetTall(self:GetParent():GetTall()+7) -- scrollbar?
+		self:SetPos(-7,-4) 
+		self:SetWide(self:GetParent():GetWide()+9+(e.GUI.being_hovered and 0 or 15)) -- HACKHACK :x
+		self:SetTall(self:GetParent():GetTall()+2) -- scrollbar?
 	end
 		--[[ WHY DONT THESE WORK??
 		function self.RichText:OnMousePressed()
