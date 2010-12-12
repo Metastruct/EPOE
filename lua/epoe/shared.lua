@@ -118,59 +118,59 @@ UMSGS_IN_TICK = 3 -- Quite safe. Doesn't overflow admins D:
 	
 -- ToString
 function ToString(t)
-		local 		nl,tab  = "",  ""
+	local 		nl,tab  = "",  ""
 
-		local function MakeTable ( t, nice, indent, done)
-			local str = ""
-			local done = done or {}
-			local indent = indent or 0
-			local idt = ""
-			if nice then idt = string.rep ("\t", indent) end
+	local function MakeTable ( t, nice, indent, done)
+		local str = ""
+		local done = done or {}
+		local indent = indent or 0
+		local idt = ""
+		if nice then idt = string.rep ("\t", indent) end
 
-			local sequential = table.IsSequential(t)
+		local sequential = table.IsSequential(t)
 
-			for key, value in pairs (t) do
+		for key, value in pairs (t) do
 
-				str = str .. idt .. tab .. tab
+			str = str .. idt .. tab .. tab
 
-				if not sequential then
-					if type(key) == "number" or type(key) == "boolean" then 
-						key ='['..tostring(key)..']' ..tab..'='
-					else
-						key = tostring(key) ..tab..'='
-					end
+			if not sequential then
+				if type(key) == "number" or type(key) == "boolean" then 
+					key ='['..tostring(key)..']' ..tab..'='
 				else
-					key = ""
+					key = tostring(key) ..tab..'='
 				end
+			else
+				key = ""
+			end
 
-				if type (value) == "table" and not done [value] then
+			if type (value) == "table" and not done [value] then
 
-					done [value] = true
-					str = str .. key .. tab .. nl
-					.. MakeTable (value, nice, indent + 1, done)
-					str = str .. idt .. tab .. tab ..tab .. tab .. nl
+				done [value] = true
+				str = str .. key .. tab .. nl
+				.. MakeTable (value, nice, indent + 1, done)
+				str = str .. idt .. tab .. tab ..tab .. tab .. nl
 
+			else
+				
+				if 	type(value) == "string" then 
+					value = tostring(value)
+				elseif  type(value) == "Vector" then
+					value = 'Vector('..value.x..','..value.y..','..value.z..')'
+				elseif  type(value) == "Angle" then
+					value = 'Angle('..value.pitch..','..value.yaw..','..value.roll..')'
 				else
-					
-					if 	type(value) == "string" then 
-						value = tostring(value)
-					elseif  type(value) == "Vector" then
-						value = 'Vector('..value.x..','..value.y..','..value.z..')'
-					elseif  type(value) == "Angle" then
-						value = 'Angle('..value.pitch..','..value.yaw..','..value.roll..')'
-					else
-						value = tostring(value)
-					end
-					
-					str = str .. key .. tab .. value .. " ".. nl
-
+					value = tostring(value)
 				end
+				
+				str = str .. key .. tab .. value .. " ".. nl
 
 			end
-			return str
+
 		end
-		local str = ""
-		--if n then str = n.. tab .."=" .. tab end
-		str = str .. nl .. MakeTable ( t, nice)
 		return str
-	end	
+	end
+	local str = ""
+	--if n then str = n.. tab .."=" .. tab end
+	str = str .. nl .. MakeTable ( t, nice)
+	return str
+end	

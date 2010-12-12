@@ -146,7 +146,7 @@ end
 -- Printing to EPOE from client.
 ------------------------------------
 
-function Print(...)
+function Msg(...)
 	local noerr,str=pcall(ToString,{...}) -- just to be sure
 	if str then
 		hook.Call(TagHuman,nil,str,!noerr and IS_EPOE or 0)
@@ -154,6 +154,17 @@ function Print(...)
 		error"???"
 	end
 end
+
+function Print(...)
+	local noerr,str=pcall(ToString,{...}) -- just to be sure
+	if str then
+		hook.Call(TagHuman,nil,str.."\n",!noerr and IS_EPOE or 0)
+	else
+		error"???"
+	end
+end
+
+print = Print
 
 -- What was I thinking
 
