@@ -345,10 +345,14 @@ function Initialize()
 		G.MsgN  =	OnMsgN
 		G.print =	OnPrint
 
-		
+		local inhook=false -- This may error for whatever reason and when it does let's not crash the server.
 		hook.Add("EngineSpew", TagHuman, function(spewType, msg, group, level) 
+			if inhook then return end inhook = true
+			
 			if spewType != SPEW_WARNING then return end -- So that we don't fuck up...
 			OnLuaError( msg ) -- Error once, disable forever...
+			
+			inhook = false
 		end )
 		
 	
