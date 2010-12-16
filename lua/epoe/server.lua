@@ -1,6 +1,6 @@
 
 
-local G=_G._G._G._G._G._G._G._G._G._G._G  -- I'll just leave this here
+local G=_G
 
 
 local umsg=umsg
@@ -259,14 +259,14 @@ function PushPayload(flags,s)
 	
 	local str=""
 	local remaining=s
-	while true do -- Let's just crunch it and hope it goes through at some point.
+	for i=0,512 do -- while true sounds too dangerous and let's break if stuff like this happens
 		str,remaining=DivideStr(remaining,190) -- Max 200 bytes. Hmm...
 		if len(remaining)==0 then -- RealMsgN("PushPayload loop (normal op)")
 			Messages:push {
 				flag=flags, -- Byte
 				msg=str -- arbitrary
 			}			
-			break
+			return
 		else -- RealMsgN("PushPayload loop longmsg")
 			Messages:push {
 				flag=flags|IS_SEQ,
@@ -275,7 +275,16 @@ function PushPayload(flags,s)
 			}		
 		end
 		
-	end	
+	end
+	
+	-- In case this happened.
+	
+	EnableTick()
+	Messages:clear()
+	InEPOE=false			
+	Messages:push{flag=IS_EPOE,msg="Warning! PushPayload tried to iterated over 512 times, cancelling queue."}
+	
+	
 	
 end
 
@@ -347,10 +356,11 @@ function Initialize()
 
 		local inhook=false -- This may error for whatever reason and when it does let's not crash the server.
 		hook.Add("EngineSpew", TagHuman, function(spewType, msg, group, level) 
-			if inhook then return end inhook = true
+			if inhook then return end -- Error once, disable forever...
+			inhook = true
 			
-			if spewType != SPEW_WARNING then return end -- So that we don't fuck up...
-			OnLuaError( msg ) -- Error once, disable forever...
+			if spewType != SPEW_WARNING then return end -- Add dynamic filter?
+			OnLuaError( msg ) 
 			
 			inhook = false
 		end )
