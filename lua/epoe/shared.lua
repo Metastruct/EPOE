@@ -17,7 +17,7 @@ local tostring=tostring
 local type=type
 local string=string
 
-Msg('-- EPOE 2.0 -- Loading '..(SERVER and "server -- " or "client --\n" ))
+Msg('-- EPOE 2.0b -- Loading '..(SERVER and "server -- " or "client --\n" ))
 
 
 module( "epoe" )
