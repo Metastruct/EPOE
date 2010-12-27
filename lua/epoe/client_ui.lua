@@ -374,7 +374,7 @@ function e.CreateGUI()
 	if !ValidPanel(e.GUI) then 
 		--local x,y=cookie.GetNumber()
 		e.GUI=vgui.Create('EPOEUI')
-		e.GUI:SetCookieName("EPOE_GUI")
+		e.GUI:SetCookieName("epoe2_gui")
 		local w = tonumber( e.GUI:GetCookie("w") ) or ScrW()*0.5
 		local h = tonumber( e.GUI:GetCookie("h") ) or ScrH()*0.25
 		local x = tonumber( e.GUI:GetCookie("x") ) or ScrW()*0.5 - w*0.5
