@@ -377,8 +377,8 @@ function e.CreateGUI()
 		e.GUI:SetCookieName("EPOE_GUI")
 		local w = tonumber( e.GUI:GetCookie("w") ) or ScrW()*0.5
 		local h = tonumber( e.GUI:GetCookie("h") ) or ScrH()*0.25
-		local x = tonumber( e.GUI:GetCookie("x") ) or ScrW()*0.5 - e.GUI:GetWide()*0.5
-		local y = tonumber( e.GUI:GetCookie("y") ) or ScrH() - e.GUI:GetTall()
+		local x = tonumber( e.GUI:GetCookie("x") ) or ScrW()*0.5 - w*0.5
+		local y = tonumber( e.GUI:GetCookie("y") ) or ScrH() - h
 		e.GUI:SetSize(w,h)
 		e.GUI:SetPos(x,y)
 	end
