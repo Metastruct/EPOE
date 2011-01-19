@@ -1,4 +1,4 @@
 "AddonInfo"
 {
-	"name"				"Stub info"
+	"name"				"epoe"
 }
