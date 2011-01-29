@@ -166,6 +166,18 @@ end
 
 print = Print
 
+function AddText(...)
+	for k, v in pairs({...}) do
+		if type(v) == "string" then
+			hook.Call(TagHuman, nil, v .. "\n", 0)
+		elseif type(v) == "table" and v.r and v.g and v.b then
+			hook.Call(TagHuman, nil, "", 0, v)
+		end
+		
+		hook.Call(TagHuman, nil, "\n", 0)
+	end
+end
+
 -- What was I thinking
 
 function internalPrint(...)
