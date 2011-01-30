@@ -168,14 +168,13 @@ print = Print
 
 function AddText(...)
 	for k, v in pairs({...}) do
-		if type(v) == "string" then
-			hook.Call(TagHuman, nil, v .. "\n", 0)
-		elseif type(v) == "table" and v.r and v.g and v.b then
-			hook.Call(TagHuman, nil, "", 0, v)
-		end
-		
-		hook.Call(TagHuman, nil, "\n", 0)
+		if type(v) == "table" and type(v.r) == "number" and type(v.g) == "number" and type(v.b) == "number" then
+			hook.Call(TagHuman, nil, nil, nil, v)
+		else
+			hook.Call(TagHuman, nil, tostring(v), nil, true)
+		end		
 	end
+	--hook.Call(TagHuman, nil, "\n", 0)
 end
 
 -- What was I thinking

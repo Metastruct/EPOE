@@ -444,7 +444,7 @@ local c_timestamps = CreateClientConVar("epoe_timestamps", 			"1", true, false)
 local c_onactivity = CreateClientConVar("epoe_show_on_activity", 	"1", true, false)
 local notimestamp  = false
 
-hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,color_override)
+hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 	flags = flags or 0
 	if ValidPanel( e.GUI ) then
 		
@@ -453,9 +453,13 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,color_override)
 			e.GUI:Activity()
 		end
 		
-		if color_override then
-			e.GUI:SetColor(color_override)
-			e.GUI:AppendText(newText)
+		if c then
+			if type(c) == "table" and type(c.r) == "number" and type(c.g) == "number" and type(c.b) == "number" then
+				e.GUI:SetColor(c.r, c.g, c.b)
+			end
+			if newText then 
+				e.GUI.RichText:AppendText(tostring(newText)) 
+			end
 			return
 		end
 		
