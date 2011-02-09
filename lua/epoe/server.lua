@@ -359,8 +359,12 @@ function Initialize()
 			if inhook then return end -- Error once, disable forever...
 			inhook = true
 			
-			if spewType == 1 --[[SPEW_WARNING]] then -- Add dynamic filter?
-				OnLuaError( msg ) 
+			if spewType == 1 --[[SPEW_WARNING]] then -- Add dynamic filter?	
+				if hook.Call("PreEpoe", GAMEMODE, msg) ~= false then
+					OnLuaError( msg ) 
+				else
+					return false
+				end
 			end
 			inhook = false
 		end )
