@@ -81,7 +81,7 @@ end
 
 	-- Override for admin mods :o
 	function CanSubscribe(pl)
-		return pl:CheckUserGroupLevel("moderators")
+		return pl:IsAdmin()
 	end
 
 	function OnSubCmd(pl,_,argz)
