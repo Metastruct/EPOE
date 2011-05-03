@@ -19,7 +19,8 @@ local len=string.len
 local util=util
 module( "epoe" )
 
-
+-- Constants 
+local recover_time = 1 -- 0.1 = agressive. 2 = safer. 
 
 -- Store global old print functions. Original ones.
 G._Msg=G._Msg or G.Msg
@@ -57,7 +58,7 @@ end
 	end
 
 	function DelSub(pl)
-		Sub[pl]=false
+		Sub[pl]=nil
 		CalculateSubs()
 		umsg.Start(Tag,pl)	umsg.Char(IS_EPOE)	umsg.String("_US") --[[_US=Unsubscribe]]	umsg.End()
 	end
@@ -116,7 +117,6 @@ function Refresh()
 		if ValidEntity(pl) then
 			RF:AddPlayer(pl)
 		end
-		
 	end
 end
 
@@ -133,30 +133,28 @@ InEPOE=true
 Messages=FIFO() -- shared.lua
 
 
--- Protection
+-- Flood Protection
 function Recover()
-	--RealMsgN(InEPOE and "IN EPOE","Recover")
 	EnableTick()
-	Messages:clear()
+	Messages:clear() -- We were in flood protection mode. Don't continue doing it...
+	
 	InEPOE=false
-	local payload={
-		flag=IS_EPOE,
-		msg="Warning! Exceeded max queue ("..tostring(MaxQueue or "unknown").."). Aborting messages."
-	}
-					
+	
+	local payload={ flag=IS_EPOE,
+	msg="Warning! Exceeded max queue ("..tostring(MaxQueue or "unknown").."). Aborting messages." }
 	Messages:push(payload)
+	
 end
 
 function HitMaxQueue()
 
 	if Messages:len() > MaxQueue then
-	
-		--RealMsgN(InEPOE and "IN EPOE","HitMaxQueue")
 		
 		DisableTick()
 		Messages:clear()
+		
 		InEPOE=true
-		timer.Simple(0.1,Recover)
+		timer.Simple(recover_time,Recover)
 		
 		return true
 	
@@ -246,28 +244,24 @@ end
 	
 
 local function DivideStr(str,pos)
-
 	local cur,remaining = str:sub(1,pos),str:sub(pos,#str-pos)
-	--RealMsgN("DivideStr: o:".."'"..str.."' c:'"..cur.."' r:'"..remaining.."'")
 	return cur,remaining
 end
 
 -- Make sure our message is less than 200 bytes to make it sendable.
 -- If it isn't divide it to parts
 function PushPayload(flags,s)
-	
-	
 	local str=""
 	local remaining=s
-	for i=0,512 do -- while true sounds too dangerous and let's break if stuff like this happens
+	for i=0,512 do -- Should be long enough for a short poem... And better than while (true)...
 		str,remaining=DivideStr(remaining,190) -- Max 200 bytes. Hmm...
-		if len(remaining)==0 then -- RealMsgN("PushPayload loop (normal op)")
+		if len(remaining)==0 then
 			Messages:push {
 				flag=flags, -- Byte
 				msg=str -- arbitrary
 			}			
 			return
-		else -- RealMsgN("PushPayload loop longmsg")
+		else
 			Messages:push {
 				flag=flags|IS_SEQ,
 				msg=str
@@ -277,89 +271,85 @@ function PushPayload(flags,s)
 		
 	end
 	
-	-- In case this happened.
+	-- safeguard --
 	
 	EnableTick()
 	Messages:clear()
 	InEPOE=false			
 	Messages:push{flag=IS_EPOE,msg="Warning! PushPayload tried to iterated over 512 times, cancelling queue."}
 	
-	
-	
 end
 
 ------------------
 -- Transmit one from the queue
+-- Return: true if queue is empty
 ------------------
 function OnBeingTransmit()
-	--RealMsgN(InEPOE and "IN EPOE","OnBeingTransmit")
+
 	local payload=Messages:pop()
-	if payload==nil then return true end -- Nothing in queue
+	if payload==nil then return true end
 
 	umsg.Start(Tag,RF)
 		umsg.Char(payload.flag or 0)
 		umsg.String(payload.msg or "EPOE ERROR")
 	umsg.End()
 	
-	
 end
 
 
 ------------------
--- Ticking (sending messages)
+-- What makes you tick!
 ------------------
-	function OnTick()
-		if InEPOE then return end
-		--RealMsgN(InEPOE and "IN EPOE","OnTick")
-		InEPOE = true
-			
-			Refresh()
-			if HasNoSubs then 
-				Messages:clear() 
-			elseif !HitMaxQueue() and Messages:len()>0 then 
-			
-				for i=1,UMSGS_IN_TICK do 
-					
-					if OnBeingTransmit() then -- No more in queue
-						DisableTick()
-						break
-					end
-					
+function OnTick()
+	if InEPOE then return end
+	--RealMsgN(InEPOE and "IN EPOE","OnTick")
+	InEPOE = true
+		
+		Refresh()
+		if HasNoSubs then 
+			Messages:clear() 
+		elseif !HitMaxQueue() and Messages:len()>0 then 
+		
+			for i=1,UMSGS_IN_TICK do 
+				
+				if OnBeingTransmit() then -- No more in queue
+					DisableTick()
+					break
 				end
-			
+				
 			end
 		
-		InEPOE=false
-	end
+		end
+	
+	InEPOE=false
+end
 
-	function EnableTick()
-		--RealMsgN(InEPOE and "IN EPOE","EnableTick")
-		hook.Add('Tick',TagHuman,OnTick)
-	end
+function EnableTick()
+	hook.Add('Tick',TagHuman,OnTick)
+end
 
-	function DisableTick()
-		--RealMsgN(InEPOE and "IN EPOE","DisableTick")
-		hook.Remove('Tick',TagHuman,OnTick)
-	end
+function DisableTick()
+	hook.Remove('Tick',TagHuman,OnTick)
+end
 
 
 -- Initialize EPOE
 function Initialize()
 	InEPOE=true
 	
-		G.print	"Hooking --"
+		G.print	"Hooking -"
 		G.require	"enginespew"
 		
 		G.Msg   =	OnMsg
 		G.MsgN  =	OnMsgN
 		G.print =	OnPrint
 
-		local inhook = false -- This may error for whatever reason and when it does let's not crash the server.
+		local inhook = false -- Prevent deadloop. Should not happen type.
 		hook.Add("EngineSpew", TagHuman, function(spewType, msg, group, level) 
-			if inhook then return end -- Error once, disable forever...
+			if inhook then return end
 			inhook = true
 			
-			if spewType == 1 --[[SPEW_WARNING]] then -- Add dynamic filter?
+			if spewType == 1 --[[ = SPEW_WARNING]] then -- TODO: Add possibility for full console output.
 				OnLuaError( msg ) 
 			end
 			inhook = false
@@ -369,4 +359,5 @@ function Initialize()
 	InEPOE=false
 end
 
-Initialize() -- InitPostEntity? No. | Need to hook as early as possible. Maybe even earlier than currently to grab all prints from modules? Screw the modules..
+-- TODO: Initialize earlier to hook even module prints
+Initialize()

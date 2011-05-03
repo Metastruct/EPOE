@@ -2,7 +2,6 @@ local insert=table.insert
 local remove=table.remove
 local Empty=table.Empty
 local setmetatable=setmetatable
-
 local umsg=umsg
 local humans=player.GetHumans()
 local ValidEntity=ValidEntity
@@ -27,6 +26,7 @@ local cookie=cookie
 local util=util
 local G=_G
 local CreateClientConVar=CreateClientConVar
+
 module( "epoe" )
 
 ------------------------------------
@@ -34,22 +34,18 @@ module( "epoe" )
 ------------------------------------
 
 
-
 local data={ -- flags for receiving..
-IS_EPOE=1,
-IS_ERROR=2,
-IS_PRINT=4,
-IS_MSG=8,
-IS_MSGN=16,
-IS_SEQ=32
+	IS_EPOE=1,
+	IS_ERROR=2,
+	IS_PRINT=4,
+	IS_MSG=8,
+	IS_MSGN=16,
+	IS_SEQ=32
 }
 
--- Hold long messages for us...
+-- Messages can come in multiple parts
+-- TODO: If message gets aborted serverside this will fuck up, royally.
 local Buffer=""
-
-
-
---      say !lua epoe.AddSub(me) local a="QWERTYUIOP" print(string.rep(a,100))
 
 -- Handle incoming messages
 function OnUsermessage(umsg)
@@ -59,23 +55,13 @@ function OnUsermessage(umsg)
 	if HasFlag(flags,IS_SEQ) then -- Store long messages
 		Buffer=Buffer..str
 		return
-	elseif #Buffer>0 then -- If we have stuff in buffer then this is the last message
+	elseif #Buffer>0 then -- Data in buffer and no SEQ flag. We have something to print! TODO: See above todo.
 		str=Buffer..str
 		Buffer=''
 	end
 	
-	local nl=NewLine(flags) -- newline flag? Add newline :o
-	--[[
-	local infostr=""
-	for k,v in pairs(data) do
-		if HasFlag(flags,v) then
-			infostr=infostr..tostring(k)..' '
-		end
-	end
-	infostr='( '..(nl=="" and "_L" or "NL") ..' '..infostr..')\t'
-	]]
+	local nl=NewLine(flags) -- message type specific newline handling
 
-	--Msg(str..nl)
 	if HasFlag(flags,IS_EPOE) then
 		
 		if str=="_S" then
@@ -174,16 +160,12 @@ function AddText(...)
 			hook.Call(TagHuman, nil, tostring(v), nil, true)
 		end		
 	end
-	--hook.Call(TagHuman, nil, "\n", 0)
 end
-
--- What was I thinking
 
 function internalPrint(...)
 	local noerr,str=pcall(ToString,{...}) -- just to be sure
-	if str then
-		hook.Call(TagHuman,nil,str,IS_EPOE)
-	else
-		error"???"
+	if !str then
+		return
 	end
+	hook.Call(TagHuman,nil,str,IS_EPOE)
 end

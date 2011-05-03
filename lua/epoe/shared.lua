@@ -17,7 +17,7 @@ local tostring=tostring
 local type=type
 local string=string
 
-Msg('-- EPOE 2.0b -- Loading '..(SERVER and "server -- " or "client --\n" ))
+Msg('[EPOE 2.0] Loading '..(SERVER and "server - " or "client -\n" ))
 
 
 module( "epoe" )
@@ -38,47 +38,37 @@ function HasFlag(byte,flag)
 	return a==flag
 end
 
--- If the flag type includes newline add it here.
+-- Certain messages need a newline.
 function NewLine(flags)
-
-
-	-- Seq= don't add anything  and  Msg has no newline :)
 	if HasFlag(flags,IS_SEQ) or HasFlag(flags,IS_MSG) or HasFlag(flags,IS_EPOE) or HasFlag(flags,IS_ERROR) then 
 		return ""
 	end
-	
-	-- print , MsgN , error
 	return "\n"
 	
 end
 
--- enginespew
+-- enginespew const
 SPEW_WARNING=1
 
--- Maximum amount of messages in queue. Prevents deadloops.
-MaxQueue=2048
+-- Safeguard. Increase if it becomes a problem with big tables.
+MaxQueue = 2048
 
--- How many umsgs can we send in a tick
-UMSGS_IN_TICK = 3 -- Quite safe. Doesn't overflow admins D:
+-- How many usermessages can we send in a tick
+-- 3 seems to be a good value. I haven't really experimented with this.
+UMSGS_IN_TICK = 3
 
 
 ------------
--- Stack
+-- Small stack implementation
 ------------
 	local class = {}
 	local mt = {__index = class}
 
-
-
-	function FIFO()
-
-		
+	function FIFO()		
 		return setmetatable( {} , mt )
 	end
 
 	function LILO()
-
-		
 		return setmetatable( {lilo=true} , mt )
 	end
 
@@ -116,7 +106,10 @@ UMSGS_IN_TICK = 3 -- Quite safe. Doesn't overflow admins D:
 		return Empty( self )
 	end
 	
--- ToString
+---------------------------------------
+-- A bit customization for tostringing values. Looks nicer and is more useful (most often)
+-- Infinite TODO: Make even more useful.
+---------------------------------------
 function ToString(t)
 	local 		nl,tab  = "",  ""
 

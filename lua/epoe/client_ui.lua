@@ -1,40 +1,28 @@
----------------
--- Clientside UI
----------------
-local e=epoe
+--------------------------------------------------------------------------------------
+--[[	Feature requests for control RichText to make epoe 2 gui even better
+--------------------------------------------------------------------------------------
+			RichText:SetTextPadding() -- THe text lines have a huge gap between them
+			RichText:SetFont("TitleFont") -- Does not do anything
+			RichText:SetWrap(false) -- Does not do anything
+			RichText:OnMousePressed() -- Does not get called. 
+
+			RichText:SetVerticalScrollbarEnabled(true) -- How to make it so 
+			that shows only when required? We also can't scroll the RichText 
+			unlike the chatbox apparently.
+			RichText:AddClickableText(text,callback)
+			RichText:GetSelectedText()
+
+			Override for RightClick context menu
+			RichText:SelectText() or :Search() and :SearchNext() ?
+			RichText:Scroll() 
+			RichText:SetTextFading() -- Like in chatbox
+------------------------------------------------------------------------------------]]
+
+local e=epoe -- Why not just module("epoe") like elsewhere?
 local TagHuman=e.TagHuman
 
----------------
--- Graphical UI
----------------
-
-
---[[
-
----------------------------
--- Feature requests for control RichText
----------------------------
-
-
-      RichText:SetTextPadding() -- THe text lines have a huge gap between them
-      RichText:SetFont("TitleFont") -- Does not do anything
-      RichText:SetWrap(false) -- Does not do anything
-      RichText:OnMousePressed() -- Does not get called. 
-      
-      RichText:SetVerticalScrollbarEnabled(true) -- How to make it so that shows only when required?
-      -- We also can't scroll the RichText unlike the chatbox apparently.
-	  RichText:AddClickableText(text,callback)
-      RichText:GetSelectedText()
-	  
-      Override for RightClick context menu
-      RichText:SelectText() or :Search() and :SearchNext() ?
-	  RichText:Scroll() 
-	  RichText:SetTextFading() -- Like in chatbox
-	  
--- ]]
 
 local gradient = surface.GetTextureID( "VGUI/gradient_up" )
-
 
 local PANEL={}
 function PANEL:Init()
@@ -138,23 +126,11 @@ function PANEL:Init()
 		self.RichText:SetVerticalScrollbarEnabled(true) -- How to make it so that shows only when required?
 		self.RichText:SetWrap(false) -- Does not work
 		self.RichText:SetFont("TitleFont") -- Does not work
-	function self.RichText:PerformLayout() -- Fucking cheats. But it looks better, it should? Who needs a scrollbar anyways...
-		self:SetPos(-7,-4) 
+	function self.RichText:PerformLayout()
+		self:SetPos(-7,-4) -- HACKHACK
 		self:SetWide(self:GetParent():GetWide()+9+(e.GUI.being_hovered and 0 or 15)) -- HACKHACK :x
 		self:SetTall(self:GetParent():GetTall()+2) -- scrollbar?
 	end
-		--[[ WHY DONT THESE WORK??
-		function self.RichText:OnMousePressed()
-			print"DERP"
-		end
-		function self.RichText:DoClick()
-			print"DERP"
-		end
-		function self.RichText:OnMouseReleased()
-			print"DERP"
-		end --]]
-		
-	--self.RichText:AppendText("EPOE UI Loaded!")
 	
 end
 
@@ -193,10 +169,7 @@ function PANEL:PerformLayout()
 	self.RichText:InvalidateLayout()
 end
 
-function PANEL:Paint() 
-	--surface.SetDrawColor(40 ,40 ,40,150)
-	--surface.SetTexture(gradient)
-	--surface.DrawTexturedRect(0,self:GetTall()-40,self:GetWide(),40)
+function PANEL:Paint()
 	surface.SetDrawColor(40 ,40 ,40,196)
 	surface.DrawRect(0,0,self:GetWide(),self:GetTall())
 	return true
@@ -220,7 +193,7 @@ function PANEL:ButtonHolding(isHolding)
 end
 
 local stayup=CreateClientConVar("epoe_ui_holdtime","5",true,false)--seconds
-local fadespeed=3--seconds
+local fadespeed = 3--seconds
 function PANEL:Think()
 	
 	-- Hiding for gmod camera..
@@ -296,21 +269,13 @@ end
 
 
 function PANEL:OnMousePressed( mc )
-
-	--if ( self.m_bSizable ) then
-	
-		--if ( gui.MouseX() > (self.x + self:GetWide() - 20) &&
-		--	gui.MouseY() > (self.y + self:GetTall() - 20) ) then			
+		
 	if mc == MOUSE_RIGHT or ( gui.MouseX() > (self.x + self:GetWide() - 20) &&
 			gui.MouseY() > (self.y + self:GetTall() - 20) ) then	
 		self.Sizing = { gui.MouseX() - self:GetWide(), gui.MouseY() - self:GetTall() }
 		self:MouseCapture( true )
 		return
 	else
-		
-	--end
-	
-	--if ( gui.MouseY() < (self.y + 20) ) then
 		self.Dragging = { gui.MouseX() - self.x, gui.MouseY() - self.y }
 		self:MouseCapture( true )
 		return
@@ -346,8 +311,8 @@ function PANEL:ToggleActive(set)
 	else	
 		self.keepactive=set
 	end
+	e.internalPrint(self.keepactive and "Fading disabled" or "Fading enabled")
 	
-	--print("epoe.GUI.keepactive = ",self.keepactive)
 	
 end
 
@@ -359,26 +324,26 @@ end
 
 -- Bring up if something happened.
 function PANEL:Activity()
-	--print("Activity")
+
 	self:SetAlpha(255)
 	self.LastActivity=RealTime()
 end
 PANEL.OnCursorMoved=PANEL.Activity
 
-derma.DefineControl( "EPOEUI", "EPOE's User Interface", PANEL, "EditablePanel" )
---------------------------
--- End of control. TODO: Make multipurpose? D:
---------------------------
+
+derma.DefineControl( "EPOEUI", "EPOE2 GUI", PANEL, "EditablePanel" )
+
+
 
 function e.CreateGUI()
-	if !ValidPanel(e.GUI) then 
-		--local x,y=cookie.GetNumber()
+	if !ValidPanel(e.GUI) then
 		e.GUI=vgui.Create('EPOEUI')
 		e.GUI:SetCookieName("epoe2_gui")
 		local w = tonumber( e.GUI:GetCookie("w") ) or ScrW()*0.5
 		local h = tonumber( e.GUI:GetCookie("h") ) or ScrH()*0.25
 		local x = tonumber( e.GUI:GetCookie("x") ) or ScrW()*0.5 - w*0.5
 		local y = tonumber( e.GUI:GetCookie("y") ) or ScrH() - h
+		
 		e.GUI:SetSize(w,h)
 		e.GUI:SetPos(x,y)
 	end
@@ -402,9 +367,9 @@ concommand.Add('epoe_ui_remove',function()
 	if ValidPanel(e.GUI) then e.GUI:Remove() end
 end)
 
-local threshold=0.2
-local lastclick=0
-local keepactive=false
+local threshold  = 0.35 -- I'm sorry if you can't click this fast!
+local lastclick  = 0
+local keepactive = false
 local function epoe_toggle(_,cmd,args)
 	if cmd=="+epoe" then
 		
@@ -419,15 +384,9 @@ local function epoe_toggle(_,cmd,args)
 		end
 		
 		e.GUI:ButtonHolding(true)
-		
-		
-	else --if cmd=="-epoe" then
+	
+	else
 		gui.EnableScreenClicker(false)
-		-- Do we really even need this? Naw..
-		--if keepactive then
-		--	return
-		--end
-		--e.ShowGUI(false)
 		e.GUI:ButtonHolding(false)
 	end
 end
