@@ -196,13 +196,29 @@ local stayup=CreateClientConVar("epoe_ui_holdtime","5",true,false)--seconds
 local fadespeed = 3--seconds
 function PANEL:Think()
 	
+	local mx = gui.MouseX()
+	local my = gui.MouseY()
+	local px, py = self:GetPos()
+	
+	if 
+		mx > px and 
+		mx < px + self:GetWide() and
+		my > py and 
+		my < py + self:GetTall()
+	then
+		self.being_hovered = true
+	else
+		self.being_hovered = false
+	end
+		
+	
 	-- Hiding for gmod camera..
 	if hook.Call('HUDShouldDraw',GAMEMODE,"CHud"..TagHuman)==false then self:SetAlpha(0) return end
 	
 	if (self.Dragging) then
 	
-		local x = gui.MouseX() - self.Dragging[1]
-		local y = gui.MouseY() - self.Dragging[2]
+		local x = mx - self.Dragging[1]
+		local y = my - self.Dragging[2]
 
 		--if ( self:GetScreenLock() ) then
 		
@@ -218,8 +234,8 @@ function PANEL:Think()
 	
 	if ( self.Sizing ) then
 	
-		local x = gui.MouseX() - self.Sizing[1]
-		local y = gui.MouseY() - self.Sizing[2]	
+		local x = mx - self.Sizing[1]
+		local y = my - self.Sizing[2]	
 		
 		if ( x < 170 ) then x = 170 end
 		if ( y < 30 ) then y = 30 end
@@ -232,15 +248,15 @@ function PANEL:Think()
 	
 	if ( self.Hovered &&
          --self.m_bSizable &&
-	     gui.MouseX() > (self.x + self:GetWide() - 20) &&
-	     gui.MouseY() > (self.y + self:GetTall() - 20) ) then	
+	     mx > (self.x + self:GetWide() - 20) &&
+	     my > (self.y + self:GetTall() - 20) ) then	
 
 		self:SetCursor( "sizenwse" )
 		return
 		
 	end
 	
-	if ( self.Hovered && gui.MouseY() < (self.y + 20) ) then
+	if ( self.Hovered && my < (self.y + 20) ) then
 		self:SetCursor( "sizeall" )
 		return
 	end
@@ -260,10 +276,7 @@ function PANEL:Think()
 		self:SetAlpha(255)
 	end
 	
-
 	self:SetAlpha(alpha)
-	
-
 end
 
 
@@ -297,6 +310,9 @@ function PANEL:OnMouseReleased()
 
 end
 
+-- this won't work!!
+-- it's behind the real panels, so do it in Think or something instead
+--[[ 
 function PANEL:OnCursorEntered( )
 	self.being_hovered = true
 end
@@ -304,7 +320,9 @@ end
 function PANEL:OnCursorExited( )
 	self.being_hovered = false
 end
-
+ ]]
+ 
+ 
 function PANEL:ToggleActive(set)
 	if set==nil then
 		self.keepactive=!self.keepactive
