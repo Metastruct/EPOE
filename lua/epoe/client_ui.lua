@@ -4,6 +4,9 @@ local TagHuman=e.TagHuman
 
 local gradient = surface.GetTextureID( "VGUI/gradient_up" )
 
+local epoe_font = CreateClientConVar("epoe_font", 			"ConsoleFont", true, false)
+local epoe_draw_background = CreateClientConVar("epoe_draw_background", 			"1", true, false)
+
 local PANEL={}
 function PANEL:Init()
 
@@ -17,12 +20,12 @@ function PANEL:Init()
 	self:SetPaintBackgroundEnabled( false )
 	self:SetPaintBorderEnabled( false )	
 
-	self:DockPadding( 3, 3, 3, 3 )
+	self:DockPadding( 3, 4, 3, 3 )
 	local List=vgui.Create( "DPanelList", self )
 		
-		List:SetSpacing( 5 ) 
-		List:SetPadding( 2 ) 
-		List:SetTall( 24 )
+		List:SetSpacing( 4 ) 
+		List:SetPadding( 0 ) 
+		List:SetTall( 20 )
 		
 		List:EnableHorizontal( true ) 
 		
@@ -50,47 +53,73 @@ function PANEL:Init()
 			function Button:DoClick()
 				epoe.AddSub()
 			end
-			Button:SizeToContents() Button:SetDrawBorder(false)  Button:SetTall( 18 ) Button:SetWide( Button:GetWide(  ) + 6 ) -- gah
+			Button:SizeToContents() Button:SetDrawBorder(false)  Button:SetTall( 16 ) Button:SetWide( Button:GetWide(  ) + 6 ) -- gah
 		List:AddItem( Button )
 		local Button = vgui.Create( "DButton" )
 			Button:SetText( "Logout" )
 			function Button:DoClick()
 				epoe.DelSub()
 			end
-			Button:SizeToContents() Button:SetDrawBorder(false)  Button:SetTall( 18 ) Button:SetWide( Button:GetWide(  ) + 6 ) -- gah
+			Button:SizeToContents() Button:SetDrawBorder(false)  Button:SetTall( 16 ) Button:SetWide( Button:GetWide(  ) + 6 ) -- gah
 		List:AddItem( Button )
 
 		local checkbox = vgui.Create( "DCheckBoxLabel" )
 			checkbox:SetText( "Autologin" )
 			checkbox:SetConVar( "epoe_autologin" )
 			--checkbox:SetValue( 1 )
-			checkbox:SizeToContents() checkbox:SetTall( 20 )
+			checkbox:SizeToContents() checkbox:SetTall( 16 )
 		List:AddItem( checkbox ) 
 		local checkbox = vgui.Create( "DCheckBoxLabel" )
 			checkbox:SetText( "Timestamp" )
 			checkbox:SetConVar( "epoe_timestamps" )
 			--checkbox:SetValue( 1 )
-			checkbox:SizeToContents() checkbox:SetTall( 20 )
+			checkbox:SizeToContents() checkbox:SetTall( 16 )
 		List:AddItem( checkbox ) 
 		local checkbox = vgui.Create( "DCheckBoxLabel" )
 			checkbox:SetText( "printconsole" )
 			checkbox:SetConVar( "epoe_toconsole" )
 			--checkbox:SetValue( 1 )
-			checkbox:SizeToContents() checkbox:SetTall( 20 )
+			checkbox:SizeToContents() checkbox:SetTall( 16 )
 		List:AddItem( checkbox ) 
 		local checkbox = vgui.Create( "DCheckBoxLabel" )
 			checkbox:SetText( "Show On Activity" )
 			checkbox:SetConVar( "epoe_show_on_activity" )
 			--checkbox:SetValue( 1 )
-			checkbox:SizeToContents() checkbox:SetTall( 20 )
+			checkbox:SizeToContents() checkbox:SetTall( 16 )
+		List:AddItem( checkbox )
+		local checkbox = vgui.Create( "DCheckBoxLabel" )
+			checkbox:SetText( "No Autoscroll" )
+			checkbox:SetConVar( "epoe_disable_autoscroll" )
+			--checkbox:SetValue( 1 )
+			checkbox:SizeToContents() checkbox:SetTall( 16 )
 		List:AddItem( checkbox )
 		local Button = vgui.Create( "DButton" )
 			Button:SetText( "Clear" )
 			function Button:DoClick()
 				e.ClearLog()
 			end
-			Button:SizeToContents() Button:SetDrawBorder(false)  Button:SetTall( 18 ) Button:SetWide( Button:GetWide(  ) + 6 ) -- gah
+			Button:SizeToContents() Button:SetDrawBorder(false)  Button:SetTall( 16 ) Button:SetWide( Button:GetWide(  ) + 6 ) -- gah
 		List:AddItem( Button )
+		local checkbox = vgui.Create( "DCheckBoxLabel" )
+			checkbox:SetText( "BG" )
+			checkbox:SetConVar( "epoe_draw_background" )
+			checkbox:SizeToContents() checkbox:SetTall( 16 )
+		List:AddItem( checkbox )	
+		local FontChooser = vgui.Create("DMultiChoice", Frame )
+		FontChooser:SetConVar("epoe_font")
+		FontChooser:AddChoice("Default","Default")
+		FontChooser:AddChoice("DebugFixed","DebugFixed")
+		FontChooser:AddChoice("HudHintTextSmall","HudHintTextSmall")
+		FontChooser:AddChoice("BudgetLabel","BudgetLabel")
+		FontChooser:AddChoice("ConsoleText","ConsoleText")
+		function FontChooser:OnSelect(_,_,font)
+			e.GUI.RichText:SetFont(font)
+		end
+		FontChooser:SizeToContents()
+		FontChooser:SetTall(16)
+		FontChooser:SetWide(FontChooser:GetWide()+32)
+		List:AddItem( FontChooser )	
+ 
 	self.uppermenu=List
 
 		
@@ -111,6 +140,9 @@ function PANEL:Init()
 		self:SetWide(self:GetParent():GetWide()+9+(e.GUI.being_hovered and 0 or 15)) -- HACKHACK :x
 		self:SetTall(self:GetParent():GetTall()+2) -- scrollbar?
 	end
+	timer.Simple(0.1,function() 
+		e.GUI.RichText:SetFont(epoe_font:GetString())
+	end)
 	
 end
 
@@ -121,7 +153,8 @@ end
 local appendNL=false
 function PANEL:AppendText(txt)
 	if appendNL then
-		txt='\n'..txt
+--		txt='\n'..txt
+		self.RichText:AppendText"\n"
 	end
 	if txt:sub(-1)=="\n" then
 		appendNL=true
@@ -134,7 +167,8 @@ function PANEL:AppendText(txt)
 end
 
 function PANEL:Clear()
-	self.RichText:SetText "" -- whee
+	self.RichText:SetText ""
+	self.RichText:GotoTextEnd()	
 end
 
 
@@ -150,6 +184,7 @@ function PANEL:PerformLayout()
 end
 
 function PANEL:Paint()
+	if not epoe_draw_background:GetBool() and not self.being_hovered then return end
 	surface.SetDrawColor(40 ,40 ,40,196)
 	surface.DrawRect(0,0,self:GetWide(),self:GetTall())
 	return true
@@ -161,11 +196,13 @@ end
 function PANEL:ButtonHolding(isHolding)
 	if isHolding then
 		self.being_hovered = true
+		self.RichText:PerformLayout()
 		self.uppermenu:Dock(TOP)
 		self.uppermenu:SetVisible(true)
 		self:InvalidateLayout()
 	else
 		self.being_hovered = false
+		self.RichText:PerformLayout()
 		self.uppermenu:Dock(NODOCK)
 		self.uppermenu:SetVisible(false)
 		self:InvalidateLayout()
@@ -187,7 +224,9 @@ function PANEL:Think()
 		my < py + self:GetTall()
 	then
 		self.being_hovered = true
+		self.RichText:PerformLayout()
 	else
+		self.RichText:PerformLayout()
 		self.being_hovered = false
 	end
 		
@@ -386,6 +425,7 @@ concommand.Add('-epoe',epoe_toggle)
 
 local epoe_timestamps = CreateClientConVar("epoe_timestamps", 			"1", true, false)
 local epoe_show_on_activity = CreateClientConVar("epoe_show_on_activity", 	"1", true, false)
+local epoe_disable_autoscroll = CreateClientConVar("epoe_disable_autoscroll", 	"0", true, false)
 local notimestamp  = false
 
 hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
@@ -435,6 +475,10 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 		end
 		
 		e.GUI:AppendText(newText)
+		if not epoe_disable_autoscroll:GetBool() and not e.GUI.being_hovered then
+			e.GUI.RichText:GotoTextEnd()
+		end
+		
 	end
 end)
 
