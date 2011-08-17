@@ -34,13 +34,14 @@ module( "epoe" )
 ------------------------------------
 
 
-local data={ -- flags for receiving..
+local data={ -- flags for receiving.. Also added on shared.lua!
 	IS_EPOE=1,
 	IS_ERROR=2,
 	IS_PRINT=4,
 	IS_MSG=8,
 	IS_MSGN=16,
-	IS_SEQ=32
+	IS_SEQ=32,
+	IS_CUSTOM=64,
 }
 
 -- Messages can come in multiple parts

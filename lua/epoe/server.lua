@@ -337,12 +337,13 @@ end
 function Initialize()
 	InEPOE=true
 	
-		G.print	"Hooking -"
 		G.require	"enginespew"
 		
+		G.print	"EPOE hooks added"
 		G.Msg   =	OnMsg
 		G.MsgN  =	OnMsgN
 		G.print =	OnPrint
+		
 
 		local inhook = false -- Prevent deadloop. Should not happen type.
 		hook.Add("EngineSpew", TagHuman, function(spewType, msg, group, level) 

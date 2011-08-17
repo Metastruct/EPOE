@@ -1,23 +1,3 @@
---------------------------------------------------------------------------------------
---[[	Feature requests for control RichText to make epoe 2 gui even better
---------------------------------------------------------------------------------------
-			RichText:SetTextPadding() -- THe text lines have a huge gap between them
-			RichText:SetFont("TitleFont") -- Does not do anything
-			RichText:SetWrap(false) -- Does not do anything
-			RichText:OnMousePressed() -- Does not get called. 
-
-			RichText:SetVerticalScrollbarEnabled(true) -- How to make it so 
-			that shows only when required? We also can't scroll the RichText 
-			unlike the chatbox apparently.
-			RichText:AddClickableText(text,callback)
-			RichText:GetSelectedText()
-
-			Override for RightClick context menu
-			RichText:SelectText() or :Search() and :SearchNext() ?
-			RichText:Scroll() 
-			RichText:SetTextFading() -- Like in chatbox
-------------------------------------------------------------------------------------]]
-
 local e=epoe -- Why not just module("epoe") like elsewhere?
 local TagHuman=e.TagHuman
 
@@ -38,8 +18,7 @@ function PANEL:Init()
 	self:SetPaintBorderEnabled( false )	
 
 	self:DockPadding( 3, 3, 3, 3 )
-	self.uppermenu=vgui.Create( "DPanelList", self )
-	local List=self.uppermenu
+	local List=vgui.Create( "DPanelList", self )
 		
 		List:SetSpacing( 5 ) 
 		List:SetPadding( 2 ) 
@@ -112,6 +91,7 @@ function PANEL:Init()
 			end
 			Button:SizeToContents() Button:SetDrawBorder(false)  Button:SetTall( 18 ) Button:SetWide( Button:GetWide(  ) + 6 ) -- gah
 		List:AddItem( Button )
+	self.uppermenu=List
 
 		
 	self.canvas=vgui.Create('EditablePanel',self)
@@ -309,19 +289,6 @@ function PANEL:OnMouseReleased()
 	self:MouseCapture( false )
 
 end
-
--- this won't work!!
--- it's behind the real panels, so do it in Think or something instead
---[[ 
-function PANEL:OnCursorEntered( )
-	self.being_hovered = true
-end
-
-function PANEL:OnCursorExited( )
-	self.being_hovered = false
-end
- ]]
- 
  
 function PANEL:ToggleActive(set)
 	if set==nil then
@@ -417,15 +384,15 @@ concommand.Add('-epoe',epoe_toggle)
 -- Hooking, timestamps, activity showing
 ----------------------------
 
-local c_timestamps = CreateClientConVar("epoe_timestamps", 			"1", true, false)
-local c_onactivity = CreateClientConVar("epoe_show_on_activity", 	"1", true, false)
+local epoe_timestamps = CreateClientConVar("epoe_timestamps", 			"1", true, false)
+local epoe_show_on_activity = CreateClientConVar("epoe_show_on_activity", 	"1", true, false)
 local notimestamp  = false
 
 hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 	flags = flags or 0
 	if ValidPanel( e.GUI ) then
 		
-		if c_onactivity:GetBool() then
+		if epoe_show_on_activity:GetBool() then
 			e.ShowGUI()
 			e.GUI:Activity()
 		end
@@ -448,7 +415,7 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 			return
 		end
 		
-		if c_timestamps:GetBool() then
+		if epoe_timestamps:GetBool() then
 			if !notimestamp then
 				e.GUI:SetColor(100,100,100)	e.GUI:AppendText(			"[")
 				e.GUI:SetColor(255,255,255)	e.GUI:AppendText(os.date(	"%H"))
@@ -475,7 +442,7 @@ end)
 ---------------
 -- Clientside Console UI
 ---------------
-local c_printconsole=CreateClientConVar("epoe_toconsole", "1", true, false)
+local epoe_toconsole=CreateClientConVar("epoe_toconsole", "1", true, false)
 
 hook.Add(TagHuman,TagHuman..'_CLI',function(Text,flags)
 	flags=flags or 0
@@ -486,7 +453,7 @@ hook.Add(TagHuman,TagHuman..'_CLI',function(Text,flags)
 		return
 	end
 	
-	if c_printconsole:GetBool() then
+	if epoe_toconsole:GetBool() then
 		Msg(Text)
 	end
 end)

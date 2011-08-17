@@ -17,9 +17,6 @@ local tostring=tostring
 local type=type
 local string=string
 
-Msg('[EPOE 2.0] Loading '..(SERVER and "server - " or "client -\n" ))
-
-
 module( "epoe" )
 
 -- Consts
@@ -32,13 +29,14 @@ IS_PRINT=4
 IS_MSG=8
 IS_MSGN=16
 IS_SEQ=32
+IS_CUSTOM=64
 
 function HasFlag(byte,flag)
 	local a = (byte or 0)&flag
 	return a==flag
 end
 
--- Certain messages need a newline.
+-- Certain messages don't need a newline.
 function NewLine(flags)
 	if HasFlag(flags,IS_SEQ) or HasFlag(flags,IS_MSG) or HasFlag(flags,IS_EPOE) or HasFlag(flags,IS_ERROR) then 
 		return ""
@@ -50,7 +48,7 @@ end
 -- enginespew const
 SPEW_WARNING=1
 
--- Safeguard. Increase if it becomes a problem with big tables.
+-- Safeguard for super big tables and queue filling faster than emptying. Increase if it becomes a problem with big tables.
 MaxQueue = 2048
 
 -- How many usermessages can we send in a tick
@@ -163,7 +161,6 @@ function ToString(t)
 		return str
 	end
 	local str = ""
-	--if n then str = n.. tab .."=" .. tab end
 	str = str .. nl .. MakeTable ( t, nice)
 	return str
 end	
