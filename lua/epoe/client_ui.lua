@@ -25,7 +25,7 @@ function PANEL:Init()
 		
 		List:SetSpacing( 4 ) 
 		List:SetPadding( 0 ) 
-		List:SetTall( 20 )
+		List:SetTall( 18 )
 		
 		List:EnableHorizontal( true ) 
 		
