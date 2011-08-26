@@ -67,11 +67,11 @@ function OnUsermessage(umsg)
 		
 		if str=="_S" then
 			subscribed=true
-				internalPrint("Subscribed to EPOE!")
+				internalPrint("Subscribed")
 			return
 		elseif str=="_US" then
 			subscribed=false
-			internalPrint("Unsubscribed from EPOE!")
+			internalPrint("Unsubscribed")
 			return
 		elseif str=="_NA" then
 			if AutologinRetry() then return end -- Some servers got delayed admins?
@@ -120,13 +120,8 @@ function AutologinRetry()
 	tries=tries+1
 	if tries > 2 then return true end
 	timer.Simple(3,RunConsoleCommand,"cmd",Tag,"1")
-	internalPrint("Retrying autologin.")
+	internalPrint("Retrying autologin...")
 end
-
-
-------------------------------------
--- Logging ?
-------------------------------------
 
 
 ------------------------------------
@@ -134,7 +129,7 @@ end
 ------------------------------------
 
 function Msg(...)
-	local noerr,str=pcall(ToString,{...}) -- just to be sure
+	local noerr,str=pcall(ToString,{...}) 
 	if str then
 		hook.Call(TagHuman,nil,str,!noerr and IS_EPOE or 0)
 	else

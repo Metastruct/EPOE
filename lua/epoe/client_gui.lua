@@ -7,6 +7,65 @@ local gradient = surface.GetTextureID( "VGUI/gradient_up" )
 local epoe_font = CreateClientConVar("epoe_font", 			"ConsoleFont", true, false)
 local epoe_draw_background = CreateClientConVar("epoe_draw_background", 			"1", true, false)
 
+
+--- HELPER ---
+local function CheckFor(tbl,a,b)
+    local a_len=#a
+    local res,endpos=true,1
+    while res and endpos < a_len do
+        res,endpos=a:find(b,endpos)
+        if res then
+            tbl[#tbl+1]={res,endpos}
+        end
+    end
+    return tbl
+end
+local function AppendTextLink(a,callback)
+
+	local result={}
+	CheckFor(result,a,"https?://[^%s%\"]+")
+	CheckFor(result,a,"ftp://[^%s%\"]+")
+	CheckFor(result,a,"steam://[^%s%\"]+")
+	if #result == 0 then return false end
+	
+	table.sort(result,function(a,b) return a[1]<b[1] end)
+
+	-- Fix overlaps
+	local _l,_r
+	for k,tbl in pairs(result) do
+		
+		local l,r=tbl[1],tbl[2]
+
+		if not _l then 
+			_l,_r=tbl[1],tbl[2]
+			continue
+		end
+		
+		if l<_r then table.remove(result,k) end
+		
+		_l,_r=tbl[1],tbl[2]
+	end
+
+	local function TEX(str) callback(false,str) end
+	local function LNK(str) callback(true,str) end
+
+	local offset=1
+	local right
+	for _,tbl in pairs(result) do
+		local l,r=tbl[1],tbl[2]
+		local link=a:sub(l,r)
+		local left=a:sub(offset,l-1)
+		right=a:sub(r+1,-1)
+		offset=r+1
+		TEX(left)
+		LNK(link)
+	end
+	TEX(right)
+	return true
+end
+--------------
+
+
 local PANEL={}
 function PANEL:Init()
 
@@ -150,21 +209,42 @@ end
 -- Text manipulation
 ---------------------
 -- We don't want a newline appended right away so we hack it up..
-local appendNL=false
+PANEL.__appendNL=false
 function PANEL:AppendText(txt)
-	if appendNL then
+	if !txt then debug.Trace() return end
+	if self.__appendNL then
 --		txt='\n'..txt
-		self.RichText:AppendText"\n"
+		self.RichText:AppendText "\n"
 	end
 	if txt:sub(-1)=="\n" then
-		appendNL=true
+		self.__appendNL=true
 		txt = txt:sub(1,txt:len()-1)
 	else
-		appendNL=false
+		self.__appendNL=false
 	end
 	
 	self.RichText:AppendText(txt)
 end
+
+function PANEL:AppendTextX(txt)
+	local function func(link,txt)
+		if txt:len()==0 then return end
+		if link then
+			self.RichText:InsertClickableTextStart(txt)
+			self:SetColor(255,255,255,255)
+		end
+		self:AppendText(txt)
+		if link then
+			self.RichText:InsertClickableTextEnd()
+		end
+	end
+	
+	local res = AppendTextLink(txt,func)
+	if not res then
+		self:AppendText(txt)
+	end
+end
+
 
 function PANEL:Clear()
 	self.RichText:SetText ""
@@ -442,7 +522,7 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 				e.GUI:SetColor(c.r, c.g, c.b)
 			end
 			if newText then 
-				e.GUI.RichText:AppendText(tostring(newText)) 
+				e.GUI:AppendTextX(tostring(newText)) 
 			end
 			return
 		end
@@ -451,7 +531,7 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 			e.GUI:SetColor(255,100,100)
 			e.GUI:AppendText("[EPOE] ")
 			e.GUI:SetColor(255,250,250)
-			e.GUI:AppendText(newText.."\n")
+			e.GUI:AppendTextX(newText.."\n")
 			return
 		end
 		
@@ -474,7 +554,7 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 			e.GUI:SetColor(255,255,255)
 		end
 		
-		e.GUI:AppendText(newText)
+		e.GUI:AppendTextX(newText)
 		if not epoe_disable_autoscroll:GetBool() and not e.GUI.being_hovered then
 			e.GUI.RichText:GotoTextEnd()
 		end
@@ -482,22 +562,3 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 	end
 end)
 
-
----------------
--- Clientside Console UI
----------------
-local epoe_toconsole=CreateClientConVar("epoe_toconsole", "1", true, false)
-
-hook.Add(TagHuman,TagHuman..'_CLI',function(Text,flags)
-	flags=flags or 0
-	if e.HasFlag(flags,e.IS_EPOE) then
-		e.ShowGUI() -- Force :3
-		e.GUI:Activity()
-		Msg("[EPOE] ")print(Text)		
-		return
-	end
-	
-	if epoe_toconsole:GetBool() then
-		Msg(Text)
-	end
-end)

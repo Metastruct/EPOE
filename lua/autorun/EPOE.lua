@@ -1,4 +1,4 @@
-if epoe then
+if epoe then -- reloading
 	-- Prevent hooks from calling
 
 	
@@ -10,6 +10,8 @@ if epoe then
 		include('epoe/server.lua')
 	else -- TODO
 		include('epoe/client.lua')
+		include('epoe/client_ui.lua')
+		include('epoe/client_gui.lua')
 	end
 	
 	return
@@ -18,19 +20,25 @@ end
 	
 include('epoe/shared.lua')
 
+
 if SERVER then
 
 	AddCSLuaFile("autorun/epoe.lua")
 	
 	AddCSLuaFile("epoe/client.lua")
 	AddCSLuaFile("epoe/client_ui.lua")
+	AddCSLuaFile("epoe/client_gui.lua")
 	AddCSLuaFile("epoe/shared.lua")
 	
 	include('epoe/server.lua')
 	
-else
-
-	include('epoe/client.lua')
-	include('epoe/client_ui.lua')
-
+	return
+	
 end
+
+
+-- client --
+include('epoe/client.lua')
+include('epoe/client_ui.lua')
+include('epoe/client_gui.lua')
+
