@@ -1,0 +1,19 @@
+
+---------------
+-- Clientside Console UI
+---------------
+local epoe_toconsole=CreateClientConVar("epoe_toconsole", "1", true, false)
+
+hook.Add(TagHuman,TagHuman..'_CLI',function(Text,flags)
+	flags=flags or 0
+	if e.HasFlag(flags,e.IS_EPOE) then
+		e.ShowGUI() -- Force :3
+		e.GUI:Activity()
+		Msg("[EPOE] ")print(Text)		
+		return
+	end
+	
+	if epoe_toconsole:GetBool() then
+		Msg(Text)
+	end
+end)
