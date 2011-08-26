@@ -1,3 +1,5 @@
+local e=epoe -- Why not just module("epoe") like elsewhere?
+local TagHuman=e.TagHuman
 
 ---------------
 -- Clientside Console UI

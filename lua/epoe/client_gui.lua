@@ -18,7 +18,6 @@ local function CheckFor(tbl,a,b)
             tbl[#tbl+1]={res,endpos}
         end
     end
-    return tbl
 end
 local function AppendTextLink(a,callback)
 
@@ -26,6 +25,11 @@ local function AppendTextLink(a,callback)
 	CheckFor(result,a,"https?://[^%s%\"]+")
 	CheckFor(result,a,"ftp://[^%s%\"]+")
 	CheckFor(result,a,"steam://[^%s%\"]+")
+	
+	--todo
+	--CheckFor(result,a,"^www%.[^%s%\"]+")
+	--CheckFor(result,a,"[^%s%\"]www%.[^%s%\"]+")
+	
 	if #result == 0 then return false end
 	
 	table.sort(result,function(a,b) return a[1]<b[1] end)
@@ -211,9 +215,7 @@ end
 -- We don't want a newline appended right away so we hack it up..
 PANEL.__appendNL=false
 function PANEL:AppendText(txt)
-	if !txt then debug.Trace() return end
 	if self.__appendNL then
---		txt='\n'..txt
 		self.RichText:AppendText "\n"
 	end
 	if txt:sub(-1)=="\n" then
@@ -231,7 +233,7 @@ function PANEL:AppendTextX(txt)
 		if txt:len()==0 then return end
 		if link then
 			self.RichText:InsertClickableTextStart(txt)
-			self:SetColor(255,255,255,255)
+			self:ResetLastColor(r,g,b)
 		end
 		self:AppendText(txt)
 		if link then
@@ -254,8 +256,17 @@ end
 
 function PANEL:SetColor(r,g,b)
 	self.RichText:InsertColorChange(r,g,b,255)
+	self.RichText.lr = r
+	self.RichText.lg = g
+	self.RichText.lb = b
 end
 
+function PANEL:ResetLastColor(r,g,b)
+	local r = self.RichText.lr or r or 255
+	local g = self.RichText.lg or g or 255
+	local b = self.RichText.lb or b or 255
+	self.RichText:InsertColorChange(r,g,b,255)
+end
 ---------------------
 -- Visuals
 ---------------------
