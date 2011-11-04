@@ -2,7 +2,7 @@
 
 local G=_G
 
-
+require"hook"
 local umsg=umsg
 --local humans=player.GetHumans
 local ValidEntity=ValidEntity
@@ -16,19 +16,22 @@ local concommand=concommand
 local tostring=tostring
 local timer=timer
 local len=string.len
+local setmetatable=setmetatable
 local util=util
 module( "epoe" )
 
 -- Constants 
-local recover_time = 1 -- 0.1 = agressive. 2 = safer. 
+local recover_time = 2 -- 0.1 = agressive. 2 = safer. 
 
 -- Store global old print functions. Original ones.
 G._Msg=G._Msg or G.Msg
+G._MsgC=G._MsgC or G.MsgC or G.Msg
 G._MsgN=G._MsgN or G.MsgN
 G._print=G._print or G.print
 
 -- Store local real messages, real ones
 RealMsg=G.Msg
+RealMsgC=G.MsgC or G.Msg
 RealMsgN=G.MsgN
 RealPrint=G.print
 
@@ -44,13 +47,15 @@ end
 
 	-- Subscribed people
 	Sub = {
-	 -- Player={stream1,stream2}
+		-- player = true
 	}
-
+	-- Garbage collect whenever you want...
+	setmetatable(Sub,{__mode="k"})
+	
 	HasNoSubs=true
 
 	function AddSub(pl)
-		if ValidEntity(pl) and pl:IsPlayer() then
+		if (pl and pl.IsValid and pl:IsValid()) and pl:IsPlayer() then
 			HasNoSubs=false
 			Sub[pl]=true
 			umsg.Start(Tag,pl)	umsg.Char(IS_EPOE)	umsg.String("_S") --[[_S=Subscribe]]	umsg.End()
@@ -64,16 +69,19 @@ end
 	end
 
 	function CalculateSubs()
-		if table.Count(Sub)==0 then 
-			HasNoSubs=true
-			DisableTick()
-		else
-			HasNoSubs=false 
+		for k,v in pairs(Sub) do
+			HasNoSubs=false
+			return
 		end
+		
+		HasNoSubs=true
+		
+		DisableTick()
 	end
 
+	-- Could probably remove this.
 	function OnEntityRemoved(pl)
-		if !ValidEntity(pl) then return end
+		if !(pl and pl.IsValid and pl:IsValid()) then return end
 		if 	pl:IsPlayer() then
 			DelSub(pl)
 		end
@@ -81,12 +89,13 @@ end
 	hook.Add('EntityRemoved',TagHuman,OnEntityRemoved)
 
 	-- Override for admin mods :o
-	function CanSubscribe(pl)
-		return pl:IsAdmin()
+	function CanSubscribe(pl,unsubscribe)
+		--RealPrint( tostring(pl)..(unsubscribe and "unsubscribed from" or "subscribed to").." EPOE" )
+		return pl:IsAdmin("epoe")
 	end
 
 	function OnSubCmd(pl,_,argz)
-		if not ValidEntity(pl) then return end -- Consoles can't subscribe. Sorry :(
+		if not (pl and pl.IsValid and pl:IsValid()) then return end -- Consoles can't subscribe. Sorry :(
 		
 		local wantsub=util.tobool(argz[1] or "0")
 		
@@ -99,28 +108,38 @@ end
 			end
 		else
 			DelSub(pl)
+			CanSubscribe(pl,true)
 		end
 		
 	end
 	concommand.Add(Tag,OnSubCmd)
 
-
+	function GetSubscribers()
+		return Sub
+	end
 	
--- Refresh pretty much everything for us :\ TODO: Clarify
+
 RF=RecipientFilter()
+local RF=RF
+
+-- Refresh pretty much everything for us
 function Refresh()
 	--RealMsgN(InEPOE and "IN EPOE","Refresh")
 	RF:RemoveAllPlayers()
 	CalculateSubs()
 	if HasNoSubs then return end
 	for pl,_ in pairs(Sub) do
-		if ValidEntity(pl) then
+		if (pl and pl.IsValid and pl:IsValid()) and CheckSub(pl) then
 			RF:AddPlayer(pl)
 		end
 	end
 end
 
-
+-- Override and return false to prevent player from receiving more updates.
+-- Added for dynamic demote from EPOE. Can get spammed so should be lightweight to call.
+function CheckSub()
+	return true
+end
 
 -------------------------------------------------
 
@@ -131,7 +150,7 @@ InEPOE=true
 	
 -- Holds the messages that are to be sent to clients
 Messages=FIFO() -- shared.lua
-
+local Messages=Messages
 
 -- Flood Protection
 function Recover()
@@ -141,10 +160,27 @@ function Recover()
 	InEPOE=false
 	
 	local payload={ flag=IS_EPOE,
-	msg="Warning! Exceeded max queue ("..tostring(MaxQueue or "unknown").."). Aborting messages." }
+	msg="Queue reset! (Over "..tostring(MaxQueue or "unknown").." messages pushed triggering safeguards)" }
 	Messages:push(payload)
 	
 end
+
+
+local TickEnabled=false
+function EnableTick()
+	if TickEnabled then return end
+	TickEnabled = true
+	hook.Add('Tick',TagHuman,OnTick)
+end
+local EnableTick=EnableTick
+
+function DisableTick()
+	--RealMsgN(InEPOE and "IN EPOE",TickEnabled,"DisableTick")
+	if not TickEnabled then return end
+	TickEnabled = false
+	hook.Remove('Tick',TagHuman)
+end
+local DisableTick=DisableTick
 
 function HitMaxQueue()
 
@@ -185,6 +221,28 @@ end
 			InEPOE=false
 		end
 	end
+
+	-- TODO: Add Colors..
+	function OnMsgC(color,...)	
+		if InEPOE or HasNoSubs then RealMsgC(color,...) else
+			InEPOE = true	
+				
+				if HitMaxQueue() then return end
+				
+				EnableTick()
+				
+				local data={...}
+				local err,str=pcall(ToString,data) -- just to be sure
+				
+				if str then
+					PushPayload( IS_MSGC , str )
+				end
+				
+				RealMsgC(...)
+			
+			InEPOE=false
+		end
+	end	
 
 	function OnMsgN(...)
 		if InEPOE or HasNoSubs then RealMsgN(...) else
@@ -276,7 +334,7 @@ function PushPayload(flags,s)
 	EnableTick()
 	Messages:clear()
 	InEPOE=false			
-	Messages:push{flag=IS_EPOE,msg="Warning! PushPayload tried to iterated over 512 times, cancelling queue."}
+	Messages:push{flag=IS_EPOE,msg="Cancelling messages, too many iterations."}
 	
 end
 
@@ -288,7 +346,7 @@ function OnBeingTransmit()
 
 	local payload=Messages:pop()
 	if payload==nil then return true end
-
+	RealMsg"."
 	umsg.Start(Tag,RF)
 		umsg.Char(payload.flag or 0)
 		umsg.String(payload.msg or "EPOE ERROR")
@@ -324,15 +382,6 @@ function OnTick()
 	InEPOE=false
 end
 
-function EnableTick()
-	hook.Add('Tick',TagHuman,OnTick)
-end
-
-function DisableTick()
-	hook.Remove('Tick',TagHuman,OnTick)
-end
-
-
 -- Initialize EPOE
 function Initialize()
 	InEPOE=true
@@ -341,6 +390,7 @@ function Initialize()
 		
 		G.print	"EPOE hooks added"
 		G.Msg   =	OnMsg
+		G.MsgC   =	OnMsgC
 		G.MsgN  =	OnMsgN
 		G.print =	OnPrint
 		

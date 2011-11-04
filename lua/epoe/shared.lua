@@ -29,7 +29,7 @@ IS_PRINT=4
 IS_MSG=8
 IS_MSGN=16
 IS_SEQ=32
-IS_CUSTOM=64
+IS_MSGC=64
 
 function HasFlag(byte,flag)
 	local a = (byte or 0)&flag
@@ -38,7 +38,7 @@ end
 
 -- Certain messages don't need a newline.
 function NewLine(flags)
-	if HasFlag(flags,IS_SEQ) or HasFlag(flags,IS_MSG) or HasFlag(flags,IS_EPOE) or HasFlag(flags,IS_ERROR) then 
+	if HasFlag(flags,IS_SEQ) or HasFlag(flags,IS_MSG) or HasFlag(flags,IS_MSGC) or HasFlag(flags,IS_EPOE) or HasFlag(flags,IS_ERROR) then 
 		return ""
 	end
 	return "\n"

@@ -41,7 +41,7 @@ local data={ -- flags for receiving.. Also added on shared.lua!
 	IS_MSG=8,
 	IS_MSGN=16,
 	IS_SEQ=32,
-	IS_CUSTOM=64,
+	IS_MSGC=64,
 }
 
 -- Messages can come in multiple parts

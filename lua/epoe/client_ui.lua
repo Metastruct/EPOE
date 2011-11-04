@@ -15,6 +15,7 @@ hook.Add(TagHuman,TagHuman..'_CLI',function(Text,flags)
 		return
 	end
 	
+	-- TODO: Colors
 	if epoe_toconsole:GetBool() then
 		Msg(Text)
 	end
