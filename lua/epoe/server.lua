@@ -346,7 +346,6 @@ function OnBeingTransmit()
 
 	local payload=Messages:pop()
 	if payload==nil then return true end
-	RealMsg"."
 	umsg.Start(Tag,RF)
 		umsg.Char(payload.flag or 0)
 		umsg.String(payload.msg or "EPOE ERROR")
