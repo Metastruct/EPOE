@@ -1,10 +1,9 @@
+-- EPOE Server Code
 
+require ( "hook" )
 
 local G=_G
-
-require"hook"
 local umsg=umsg
---local humans=player.GetHumans
 local ValidEntity=ValidEntity
 local RecipientFilter=RecipientFilter
 local error=error
@@ -18,6 +17,10 @@ local timer=timer
 local len=string.len
 local setmetatable=setmetatable
 local util=util
+
+-- inform the client of the version
+CreateConVar( "epoe_version", "2.1", FCVAR_NOTIFY )
+
 module( "epoe" )
 
 -- Constants 

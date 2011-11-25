@@ -1,17 +1,34 @@
-if epoe then -- reloading
+local function DoClient()
+	include('epoe/client.lua')
+	include('epoe/client_ui.lua')
+	include('epoe/client_gui.lua')
+end
+local function DoServer()
+	include('epoe/server.lua')
+end
+if epoe then -- Implements reloading it all
 	-- Prevent hooks from calling
 
 	
 	if SERVER then	
-		epoe.InEPOE=true -- just leave it be there...
-		epoe.DisableTick()
+		pcall(function() --  in case it's something very weird
+			epoe.InEPOE=true -- Disables EPOE functionality
+			epoe.DisableTick()
+		end)
 		epoe=nil
 		package.loaded.epoe=nil
-		include('epoe/server.lua')
+		
+		DoServer()
+		
 	else -- TODO
-		include('epoe/client.lua')
-		include('epoe/client_ui.lua')
-		include('epoe/client_gui.lua')
+		
+		pcall(function()
+			epoe.InEPOE=true
+			e.GUI:Remove()
+		end)		
+		
+		DoClient()
+		
 	end
 	
 	return
@@ -30,15 +47,8 @@ if SERVER then
 	AddCSLuaFile("epoe/client_gui.lua")
 	AddCSLuaFile("epoe/shared.lua")
 	
-	include('epoe/server.lua')
+	DoServer()
 	
-	return
-	
+else
+	DoClient()
 end
-
-
--- client --
-include('epoe/client.lua')
-include('epoe/client_ui.lua')
-include('epoe/client_gui.lua')
-
