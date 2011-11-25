@@ -157,7 +157,7 @@ function Recover()
 	EnableTick()
 	Messages:clear() -- We were in flood protection mode. Don't continue doing it...
 	
-	InEPOE=false
+	InEPOE = false
 	
 	local payload={ flag=IS_EPOE,
 	msg="Queue reset! (Over "..tostring(MaxQueue or "unknown").." messages pushed triggering safeguards)" }

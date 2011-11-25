@@ -168,8 +168,8 @@ function PANEL:Init()
 			checkbox:SetConVar( "epoe_draw_background" )
 			checkbox:SizeToContents() checkbox:SetTall( 16 )
 		List:AddItem( checkbox )	
-		local FontChooser = vgui.Create("DMultiChoice", Frame )
-		FontChooser:SetConVar("epoe_font")
+		
+		local FontChooser = vgui.Create(VERSION>=130 and "DComboBox" or "DMultiChoice", Frame )
 		FontChooser:AddChoice("Default","Default")
 		FontChooser:AddChoice("DebugFixed","DebugFixed")
 		FontChooser:AddChoice("HudHintTextSmall","HudHintTextSmall")
@@ -178,11 +178,12 @@ function PANEL:Init()
 		function FontChooser:OnSelect(_,_,font)
 			e.GUI.RichText:SetFont(font)
 		end
+		FontChooser:SetConVar("epoe_font")
 		FontChooser:SizeToContents()
 		FontChooser:SetTall(16)
 		FontChooser:SetWide(FontChooser:GetWide()+32)
 		List:AddItem( FontChooser )	
- 
+	
 	self.uppermenu=List
 
 		
@@ -389,7 +390,15 @@ function PANEL:Think()
 	self:SetAlpha(alpha)
 end
 
-
+-- woo clever..
+local _Think=PANEL.Think
+local errorz=false
+PANEL.Think=function (a)
+	if errorz then return end
+	errorz=true
+		_Think(a)
+	errorz=false
+end
 
 function PANEL:OnMousePressed( mc )
 		
