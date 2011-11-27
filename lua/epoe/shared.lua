@@ -89,7 +89,7 @@ UMSGS_IN_TICK = 3
 	end
 	
 	function class:peek()
-		return self[self.lilo and #self or 1]
+		return self[self.lilo and 1 or #self]
 	end
 	
 	function class.push(a,b)
