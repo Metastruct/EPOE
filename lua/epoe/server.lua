@@ -313,9 +313,9 @@ local function DivideStr(str,pos)
 	return cur,remaining
 end
 
-local function DoPush(payload)
+function DoPush(payload)
 	local last = Messages:peek()
-	if payload.flag==last.flag and payload.msg==last.msg then
+	if last and payload.flag==last.flag and payload.msg==last.msg then
 		if payload.flag!=IS_SEQ then
 			payload={
 				flag=IS_REPEAT,
