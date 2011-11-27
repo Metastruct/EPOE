@@ -57,7 +57,7 @@ function ProcessMessage(flags,str)
 
 	-- repeat compression
 	if HasFlag(flags,IS_REPEAT) then
-		internalPrint("[DBG Test] last message repeated\n")
+		--internalPrint("[DBG Test] last message repeated\n")
 		str=lastmsg
 	else
 		lastmsg=str
@@ -228,7 +228,7 @@ function MODULE.AddText(...)
 			col=Color(v.r,v.g,v.b,255)
 		else
 			local ok,str=pcall(ToString,{v})
-			ProcessMessage(IS_MSGC,ok and str or tostring(v),col)
+			ProcessMessage(IS_MSGC,ColorToStr(col)..(ok and str or tostring(v)))
 		end
 	end
 end

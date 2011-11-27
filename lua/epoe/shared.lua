@@ -186,5 +186,6 @@ function ToString(t)
 	end
 	local str = ""
 	str = str .. nl .. MakeTable ( t, nice)
-	return str
+	
+	return str:sub(1,-2) -- remove last redundant space
 end	
