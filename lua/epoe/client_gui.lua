@@ -6,7 +6,7 @@ local gradient = surface.GetTextureID( "VGUI/gradient_up" )
 
 local epoe_font = CreateClientConVar("epoe_font", 			"ConsoleFont", true, false)
 local epoe_draw_background = CreateClientConVar("epoe_draw_background", 			"1", true, false)
-
+local epoe_show_in_screenshots = CreateClientConVar("epoe_show_in_screenshots", "0", true, false)
 
 --- HELPER ---
 local function CheckFor(tbl,a,b)
@@ -83,22 +83,16 @@ function PANEL:Init()
 	self:SetPaintBackgroundEnabled( false )
 	self:SetPaintBorderEnabled( false )	
 
-	self:DockPadding( 3, 4, 3, 3 )
-	local List=vgui.Create( "DPanelList", self )
+	self:DockPadding( 3, 6, 3, 3 )
+	
+	local Cfg=vgui.Create( "DHorizontalScroller", self )
 		
-		List:SetSpacing( 4 ) 
-		List:SetPadding( 0 ) 
-		List:SetTall( 18 )
+		Cfg:DockMargin(-8,0,-8,4)
+		Cfg:SetOverlap( -4 )
+		Cfg:SetTall(16)
+		Cfg:Dock( TOP )
 		
-		List:EnableHorizontal( true ) 
-		
-		List:Dock( TOP )
-		List:SetPaintBackgroundEnabled( false )
-		List:SetPaintBorderEnabled( false )		
-		List:SetVerticalScrollbarEnabled( false ) -- ??
-		List:EnableVerticalScrollbar( ) -- I would rather take the scrolling only but oh well.. 
-		
-		function List:Paint() 
+		function Cfg:Paint() 
 			surface.SetDrawColor(40 ,40 ,40,196)
 			surface.SetTexture( gradient )
 			surface.DrawTexturedRect(0,0,self:GetWide(),self:GetTall())
@@ -108,8 +102,8 @@ function PANEL:Init()
 			return true 
 		end
 		
-		List.OnMousePressed=function(_,...) self.OnMousePressed(self,...) end
-		List.OnMouseReleased=function(_,...) self.OnMouseReleased(self,...) end
+		Cfg.OnMousePressed=function(_,...) self.OnMousePressed(self,...) end
+		Cfg.OnMouseReleased=function(_,...) self.OnMouseReleased(self,...) end
 		
 		local Button = vgui.Create( "DButton" )
 			Button:SetText( "Login" )
@@ -117,59 +111,66 @@ function PANEL:Init()
 				epoe.AddSub()
 			end
 			Button:SizeToContents() Button:SetDrawBorder(false)  Button:SetTall( 16 ) Button:SetWide( Button:GetWide(  ) + 6 ) -- gah
-		List:AddItem( Button )
+		Cfg:AddPanel( Button )
 		local Button = vgui.Create( "DButton" )
 			Button:SetText( "Logout" )
 			function Button:DoClick()
 				epoe.DelSub()
 			end
 			Button:SizeToContents() Button:SetDrawBorder(false)  Button:SetTall( 16 ) Button:SetWide( Button:GetWide(  ) + 6 ) -- gah
-		List:AddItem( Button )
-
-		local checkbox = vgui.Create( "DCheckBoxLabel" )
-			checkbox:SetText( "Autologin" )
-			checkbox:SetConVar( "epoe_autologin" )
-			--checkbox:SetValue( 1 )
-			checkbox:SizeToContents() checkbox:SetTall( 16 )
-		List:AddItem( checkbox ) 
-		local checkbox = vgui.Create( "DCheckBoxLabel" )
-			checkbox:SetText( "Timestamp" )
-			checkbox:SetConVar( "epoe_timestamps" )
-			--checkbox:SetValue( 1 )
-			checkbox:SizeToContents() checkbox:SetTall( 16 )
-		List:AddItem( checkbox ) 
-		local checkbox = vgui.Create( "DCheckBoxLabel" )
-			checkbox:SetText( "printconsole" )
-			checkbox:SetConVar( "epoe_toconsole" )
-			--checkbox:SetValue( 1 )
-			checkbox:SizeToContents() checkbox:SetTall( 16 )
-		List:AddItem( checkbox ) 
-		local checkbox = vgui.Create( "DCheckBoxLabel" )
-			checkbox:SetText( "Show On Activity" )
-			checkbox:SetConVar( "epoe_show_on_activity" )
-			--checkbox:SetValue( 1 )
-			checkbox:SizeToContents() checkbox:SetTall( 16 )
-		List:AddItem( checkbox )
-		local checkbox = vgui.Create( "DCheckBoxLabel" )
-			checkbox:SetText( "No Autoscroll" )
-			checkbox:SetConVar( "epoe_disable_autoscroll" )
-			--checkbox:SetValue( 1 )
-			checkbox:SizeToContents() checkbox:SetTall( 16 )
-		List:AddItem( checkbox )
+		Cfg:AddPanel( Button )
 		local Button = vgui.Create( "DButton" )
 			Button:SetText( "Clear" )
 			function Button:DoClick()
 				e.ClearLog()
 			end
 			Button:SizeToContents() Button:SetDrawBorder(false)  Button:SetTall( 16 ) Button:SetWide( Button:GetWide(  ) + 6 ) -- gah
-		List:AddItem( Button )
+		Cfg:AddPanel( Button )
+		
+		local checkbox = vgui.Create( "DCheckBoxLabel" )
+			checkbox:SetText( "Autologin" )
+			checkbox:SetConVar( "epoe_autologin" )
+			--checkbox:SetValue( 1 )
+			checkbox:SizeToContents() checkbox:SetTall( 16 )
+		Cfg:AddPanel( checkbox ) 
+		local checkbox = vgui.Create( "DCheckBoxLabel" )
+			checkbox:SetText( "Timestamp" )
+			checkbox:SetConVar( "epoe_timestamps" )
+			--checkbox:SetValue( 1 )
+			checkbox:SizeToContents() checkbox:SetTall( 16 )
+		Cfg:AddPanel( checkbox ) 
+		local checkbox = vgui.Create( "DCheckBoxLabel" )
+			checkbox:SetText( "printconsole" )
+			checkbox:SetConVar( "epoe_toconsole" )
+			--checkbox:SetValue( 1 )
+			checkbox:SizeToContents() checkbox:SetTall( 16 )
+		Cfg:AddPanel( checkbox ) 
+		local checkbox = vgui.Create( "DCheckBoxLabel" )
+			checkbox:SetText( "Show On Activity" )
+			checkbox:SetConVar( "epoe_show_on_activity" )
+			--checkbox:SetValue( 1 )
+			checkbox:SizeToContents() checkbox:SetTall( 16 )
+		Cfg:AddPanel( checkbox )
+		local checkbox = vgui.Create( "DCheckBoxLabel" )
+			checkbox:SetText( "No Autoscroll" )
+			checkbox:SetConVar( "epoe_disable_autoscroll" )
+			--checkbox:SetValue( 1 )
+			checkbox:SizeToContents() checkbox:SetTall( 16 )
+		Cfg:AddPanel( checkbox )
 		local checkbox = vgui.Create( "DCheckBoxLabel" )
 			checkbox:SetText( "BG" )
 			checkbox:SetConVar( "epoe_draw_background" )
 			checkbox:SizeToContents() checkbox:SetTall( 16 )
-		List:AddItem( checkbox )	
+		Cfg:AddPanel( checkbox )	
+		local checkbox = vgui.Create( "DCheckBoxLabel" )
+			checkbox:SetText( "Show in screenshots" )
+			checkbox:SetConVar( "epoe_show_in_screenshots" )
+			checkbox:SizeToContents() checkbox:SetTall( 16 )
+		Cfg:AddPanel( checkbox )	
+		
 		
 		local FontChooser = vgui.Create(VERSION>=130 and "DComboBox" or "DMultiChoice", Frame )
+		function FontChooser:ApplySchemeSettings()end
 		FontChooser:AddChoice("Default","Default")
 		FontChooser:AddChoice("DebugFixed","DebugFixed")
 		FontChooser:AddChoice("HudHintTextSmall","HudHintTextSmall")
@@ -182,9 +183,9 @@ function PANEL:Init()
 		FontChooser:SizeToContents()
 		FontChooser:SetTall(16)
 		FontChooser:SetWide(FontChooser:GetWide()+32)
-		List:AddItem( FontChooser )	
+		Cfg:AddPanel( FontChooser )	
 	
-	self.uppermenu=List
+	self.uppermenu=Cfg
 
 		
 	self.canvas=vgui.Create('EditablePanel',self)
@@ -204,6 +205,8 @@ function PANEL:Init()
 		self:SetWide(self:GetParent():GetWide()+9+(e.GUI.being_hovered and 0 or 15)) -- HACKHACK :x
 		self:SetTall(self:GetParent():GetTall()+2) -- scrollbar?
 	end
+	
+	-- HACKHACK
 	timer.Simple(0.1,function() 
 		e.GUI.RichText:SetFont(epoe_font:GetString())
 	end)
@@ -276,9 +279,33 @@ function PANEL:PerformLayout()
 end
 
 function PANEL:Paint()
+	-- cvar callback ffs
+	self:SetRenderInScreenshots(epoe_show_in_screenshots:GetBool())
+
 	if not epoe_draw_background:GetBool() and not self.being_hovered then return end
-	surface.SetDrawColor(40 ,40 ,40,196)
-	surface.DrawRect(0,0,self:GetWide(),self:GetTall())
+	
+	if self.__holding then
+		surface.SetDrawColor(40 ,40 ,40,196)
+		local q=16+4
+		surface.DrawRect(0,q,self:GetWide(),self:GetTall()-q)
+	
+		-- header
+		
+		surface.SetDrawColor(90,90,90,255)
+		surface.DrawRect(0,0,self:GetWide(),16)
+		surface.SetDrawColor(30 ,30 ,30,255)
+		surface.DrawRect(1,1,self:GetWide()-2,16-2)
+		
+		local txt="EPOE - Enhanced Perception Of Errors"
+		surface.SetFont"DebugFixed"
+		local w,h=surface.GetTextSize(txt)
+		surface.SetTextPos(3,8-h*0.5)
+		surface.SetTextColor(150,150,150,255)
+		surface.DrawText(txt)
+	else
+		surface.SetDrawColor(40 ,40 ,40,196)
+		surface.DrawRect(0,0,self:GetWide(),self:GetTall())		
+	end
 	return true
 end
 
@@ -286,16 +313,21 @@ end
 -- Functionality
 ---------------------
 function PANEL:ButtonHolding(isHolding)
+	self.__holding=isHolding
 	if isHolding then
+		self:DockPadding( 8, 16+4, 8, 8 )
 		self.being_hovered = true
 		self.RichText:PerformLayout()
 		self.uppermenu:Dock(TOP)
 		self.uppermenu:SetVisible(true)
+		self:FixPosition()
 		self:InvalidateLayout()
 	else
 		self.being_hovered = false
 		self.RichText:PerformLayout()
 		self.uppermenu:Dock(NODOCK)
+		
+		self:DockPadding( 0,0,0,0 )
 		self.uppermenu:SetVisible(false)
 		self:InvalidateLayout()
 	end
@@ -307,6 +339,7 @@ function PANEL:Think()
 	
 	local mx = gui.MouseX()
 	local my = gui.MouseY()
+	
 	local px, py = self:GetPos()
 	
 	if 
@@ -325,8 +358,9 @@ function PANEL:Think()
 	
 	-- Hiding for gmod camera..
 	if hook.Call('HUDShouldDraw',GAMEMODE,"CHud"..TagHuman)==false then self:SetAlpha(0) return end
-	
 	if (self.Dragging) then
+	
+		
 	
 		local x = mx - self.Dragging[1]
 		local y = my - self.Dragging[2]
@@ -414,11 +448,49 @@ function PANEL:OnMousePressed( mc )
 	end
 	
 end
+function PANEL:FixPosition()
+	local x,y=self:GetPos()
+	local w,h=self:GetSize()
+	local sw,sh=ScrW(),ScrH()
+	local failed=false
+	if w > sw then 
+		failed=true
+		w=sw
+	end
+	if h > sh then
+		failed=true
+		h=sh
+	end
+	if x > sw then 
+		failed=true
+		x=0
+	end
+	if y > sh then
+		failed=true
+		y=0
+	end
+	if x+w > sw then 
+		failed=true
+		x=sw-w
+	end
+	if y+h > sh then
+		failed=true
+		y=sh-h
+	end	
+
+	if failed then
+		self:SetPos(x,y)
+		self:SetSize(w,h)
+		self.RichText:AppendText"GUI: Recovered position after invalid values\n"
+	end
+end
 
 function PANEL:OnMouseReleased()
 
 	self.Dragging = nil
 	self.Sizing = nil
+
+	self:FixPosition()
 	local x,y=self:GetPos()
 	e.GUI:SetCookie("w",self:GetWide())
 	e.GUI:SetCookie("h",self:GetTall())
