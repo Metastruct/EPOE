@@ -15,9 +15,10 @@ local concommand=concommand
 local tostring=tostring
 local timer=timer
 local len=string.len
+local string=string
 local setmetatable=setmetatable
 local util=util
-
+local GMOD_VERSION=VERSION
 -- inform the client of the version
 CreateConVar( "epoe_version", "2.1", FCVAR_NOTIFY )
 
@@ -34,7 +35,7 @@ G._print=G._print or G.print
 
 -- Store local real messages, real ones
 RealMsg=G.Msg
-RealMsgC=VERSION > 129 and G.MsgC or function(col,...) 
+RealMsgC=GMOD_VERSION > 129 and G.MsgC or function(col,...) 
 	RealMsg(...)
 end
 RealMsgN=G.MsgN
