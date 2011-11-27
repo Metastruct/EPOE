@@ -30,6 +30,7 @@ IS_MSG=8
 IS_MSGN=16
 IS_SEQ=32
 IS_MSGC=64
+IS_REPEAT=128
 
 function HasFlag(byte,flag)
 	local a = (byte or 0)&flag
@@ -86,7 +87,11 @@ UMSGS_IN_TICK = 3
 	function class:pop()
 		return remove( self , self.lilo and #self or 1 )
 	end
-
+	
+	function class:peek()
+		return self[self.lilo and #self or 1]
+	end
+	
 	function class.push(a,b)
 		insert( a , b )
 		return a
@@ -103,6 +108,25 @@ UMSGS_IN_TICK = 3
 	function class:clear()
 		return Empty( self )
 	end
+	
+	
+---------------------------------------
+-- for MsgC
+-- TODO: Client version without loss
+---------------------------------------
+function ColorToStr(color)
+	local r,g,b=color.r,color.g,color.b
+		r,g,b=r+1,g+1,b+1
+		
+		r,g,b=r>=255 and 255 or r<=0 and 1 or r,
+			  g>=255 and 255 or g<=0 and 1 or g,
+			  b>=255 and 255 or b<=0 and 1 or b
+	return string.char(r)..string.char(g)..string.char(b)
+end
+function StrToColor(str)
+	-- stub. - CBA
+end
+		
 	
 ---------------------------------------
 -- A bit customization for tostringing values. Looks nicer and is more useful (most often)

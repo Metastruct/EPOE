@@ -34,7 +34,9 @@ G._print=G._print or G.print
 
 -- Store local real messages, real ones
 RealMsg=G.Msg
-RealMsgC=G.MsgC or G.Msg
+RealMsgC=VERSION > 129 and G.MsgC or function(col,...) 
+	RealMsg(...)
+end
 RealMsgN=G.MsgN
 RealPrint=G.print
 
@@ -238,10 +240,11 @@ end
 				local err,str=pcall(ToString,data) -- just to be sure
 				
 				if str then
-					PushPayload( IS_MSGC , str )
+					local colbytes = ColorToStr(color)
+					PushPayload( IS_MSGC , colbytes..str )
 				end
 				
-				RealMsgC(...)
+				RealMsgC(color,...)
 			
 			InEPOE=false
 		end
@@ -309,24 +312,36 @@ local function DivideStr(str,pos)
 	return cur,remaining
 end
 
+local function DoPush(payload)
+	local last = Messages:peek()
+	if payload.flag==last.flag and payload.msg==last.msg then
+		if payload.flag!=IS_SEQ then
+			payload={
+				flag=IS_REPEAT,
+				msg=""
+				}
+		end
+	end
+	Messages:push(payload)
+end
+
 -- Make sure our message is less than 200 bytes to make it sendable.
 -- If it isn't divide it to parts
 function PushPayload(flags,s)
 	local str=""
 	local remaining=s
-	for i=0,512 do -- Should be long enough for a short poem... And better than while (true)...
+	for i=0,512 do -- Should be long enough for anything. We get hit by other limitations if more..
 		str,remaining=DivideStr(remaining,190) -- Max 200 bytes. Hmm...
 		if len(remaining)==0 then
-			Messages:push {
+			DoPush{
 				flag=flags, -- Byte
 				msg=str -- arbitrary
 			}			
 			return
 		else
-			Messages:push {
+			DoPush{
 				flag=flags|IS_SEQ,
 				msg=str
-
 			}		
 		end
 		

@@ -25,6 +25,8 @@ local RunConsoleCommand=RunConsoleCommand
 local cookie=cookie
 local util=util
 local G=_G
+local MsgC=MsgC
+local Color=Color
 local CreateClientConVar=CreateClientConVar
 
 module( "epoe" )
@@ -42,17 +44,26 @@ local data={ -- flags for receiving.. Also added on shared.lua!
 	IS_MSGN=16,
 	IS_SEQ=32,
 	IS_MSGC=64,
+	IS_REPEAT=128,
 }
-
 -- Messages can come in multiple parts
 -- TODO: If message gets aborted serverside this will fuck up, royally.
 local Buffer=""
 
+local lastmsg="<EPOE UNDEFINED>"
+
 -- Handle incoming messages
-function OnUsermessage(umsg)
-	local flags=umsg:ReadChar()
-	local str=umsg:ReadString()
+function ProcessMessage(flags,str)	
+
+	-- repeat compression
+	if HasFlag(flags,IS_REPEAT) then
+		internalPrint("[DBG Test] last message repeated\n")
+		str=lastmsg
+	else
+		lastmsg=str
+	end
 	
+	-- Process sequences
 	if HasFlag(flags,IS_SEQ) then -- Store long messages
 		Buffer=Buffer..str
 		return
@@ -61,8 +72,8 @@ function OnUsermessage(umsg)
 		Buffer=''
 	end
 	
-	local nl=NewLine(flags) -- message type specific newline handling
-
+	
+	-- process epoe messages
 	if HasFlag(flags,IS_EPOE) then
 		
 		if str=="_S" then
@@ -79,10 +90,46 @@ function OnUsermessage(umsg)
 			return
 		end
 	end
-	hook.Call(TagHuman,nil,str..nl,flags)
+	
+	-- Handle color appending in a hacky way
+	local col
+	if HasFlag(flags,IS_MSGC) then
+		local colbytes,newstr=str:match("^(...)(.*)$")
+		local r,g,b=string.byte(colbytes,1)-1,string.byte(colbytes,2)-1,string.byte(colbytes,3)-1
+		
+		-- your monitor is not going to miss that one bit I hope
+		r,g,b=r==254 and 255 or r,
+			  g==254 and 255 or g,
+			  b==254 and 255 or b
+		
+		col=Color(r,g,b,255)
+		str = newstr
+	end
+	
+	-- We are going to add the newline here instead of letting the handlers take care of it
+	local nl=NewLine(flags)
+	hook.Call(TagHuman,nil,str..nl,flags,col)
+end
+
+function OnUsermessage(umsg)
+	local flags = umsg:ReadChar()
+	local str  = umsg:ReadString()
+	ProcessMessage(flags,str)
 end
 
 usermessage.Hook(Tag,OnUsermessage)
+
+
+------------------------------------
+-- EPOE Messages
+------------------------------------
+function internalPrint(...)
+	local noerr,str=pcall(ToString,{...}) -- just to be sure
+	if !str then
+		return
+	end
+	hook.Call(TagHuman,nil,str,IS_EPOE)
+end
 
 ------------------------------------
 -- Subscribing
@@ -127,41 +174,61 @@ end
 ------------------------------------
 -- Printing to EPOE from client.
 ------------------------------------
-
-function Msg(...)
-	local noerr,str=pcall(ToString,{...}) 
-	if str then
-		hook.Call(TagHuman,nil,str,!noerr and IS_EPOE or 0)
-	else
-		error"???"
-	end
+local MODULE=_M
+function MODULE.Msg(...)
+	local ok,str=pcall(ToString,{...})
+	if not ok then internalPrint(str) return end
+	if not str then return end
+	
+	ProcessMessage(IS_MSG,str)
 end
 
-function Print(...)
-	local noerr,str=pcall(ToString,{...}) -- just to be sure
-	if str then
-		hook.Call(TagHuman,nil,str.."\n",!noerr and IS_EPOE or 0)
-	else
-		error"???"
-	end
+function MODULE.MsgN(...)
+	local ok,str=pcall(ToString,{...})
+	if not ok then internalPrint(str) return end
+	if not str then return end
+	
+	ProcessMessage(IS_MSGN,str)
 end
 
-print = Print
+function MODULE.Print(...)
+	local ok,str=pcall(ToString,{...})
+	if not ok then internalPrint(str) return end
+	if not str then return end
+	
+	ProcessMessage(IS_PRINT,str)
 
-function AddText(...)
+end
+
+MODULE.print = MODULE.Print
+
+function MODULE.Err(...)
+	local ok,str=pcall(ToString,{...})
+	if not ok then internalPrint(str) return end
+	if not str then return end
+	
+	ProcessMessage(IS_ERROR,str)
+end
+
+MODULE.errornohalt = MODULE.Err
+
+function MODULE.MsgC(col,...)
+	if not col or not col.r then return end
+	local ok,str=pcall(ToString,{...})
+	if not ok then internalPrint(str) return end
+	if not str then return end
+	
+	ProcessMessage(IS_MSGC,ColorToStr(col)..str)
+end
+
+function MODULE.AddText(...)
+	local col=Color(255,255,255,255)
 	for k, v in pairs({...}) do
 		if type(v) == "table" and type(v.r) == "number" and type(v.g) == "number" and type(v.b) == "number" then
-			hook.Call(TagHuman, nil, nil, nil, v)
+			col=Color(v.r,v.g,v.b,255)
 		else
-			hook.Call(TagHuman, nil, tostring(v), nil, true)
-		end		
+			local ok,str=pcall(ToString,{v})
+			ProcessMessage(IS_MSGC,ok and str or tostring(v),col)
+		end
 	end
-end
-
-function internalPrint(...)
-	local noerr,str=pcall(ToString,{...}) -- just to be sure
-	if !str then
-		return
-	end
-	hook.Call(TagHuman,nil,str,IS_EPOE)
 end
