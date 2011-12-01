@@ -169,7 +169,7 @@ function PANEL:Init()
 		Cfg:AddPanel( checkbox )	
 		
 		
-		local FontChooser = vgui.Create(VERSION>=130 and "DComboBox" or "DMultiChoice", Frame )
+		local FontChooser = vgui.Create(VERSION>=150 and "DComboBox" or "DMultiChoice", Frame )
 		function FontChooser:ApplySchemeSettings()end
 		FontChooser:AddChoice("Default","Default")
 		FontChooser:AddChoice("DebugFixed","DebugFixed")
