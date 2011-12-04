@@ -1,6 +1,9 @@
+
 local e=epoe -- Why not just module("epoe") like elsewhere?
 local TagHuman=e.TagHuman
 
+-- For reloading
+if ValidPanel(e.GUI) then e.GUI:Remove() end
 
 local gradient = surface.GetTextureID( "VGUI/gradient_up" )
 
@@ -208,9 +211,10 @@ function PANEL:Init()
 	
 	-- HACKHACK
 	timer.Simple(0.1,function() 
-		e.GUI.RichText:SetFont(epoe_font:GetString())
+	    e.GUI.RichText:SetFont(epoe_font:GetString())
+		
 	end)
-	
+	self:ButtonHolding(false)
 end
 
 ---------------------
@@ -282,7 +286,7 @@ function PANEL:Paint()
 	-- cvar callback ffs
 	self:SetRenderInScreenshots(epoe_show_in_screenshots:GetBool())
 
-	if not epoe_draw_background:GetBool() and not self.being_hovered then return end
+	if not self.__holding and not epoe_draw_background:GetBool() and not self.being_hovered then return end
 	
 	if self.__holding then
 		surface.SetDrawColor(40 ,40 ,40,196)
@@ -527,7 +531,7 @@ end
 PANEL.OnCursorMoved=PANEL.Activity
 
 
-derma.DefineControl( "EPOEUI", "EPOE2 GUI", PANEL, "EditablePanel" )
+vgui.Register( "EPOEUI", PANEL, "EditablePanel" )
 
 
 
@@ -571,16 +575,24 @@ local function epoe_toggle(_,cmd,args)
 		
 		gui.EnableScreenClicker(true)
 		e.ShowGUI() -- also creates it
-		if lastclick+threshold>RealTime() then -- Doubleclick
-			lastclick = 0 -- reset
-			keepactive=!keepactive
-			e.GUI:ToggleActive(keepactive)
-		else
-			lastclick=RealTime()
+		local egui=e.GUI
+		if ValidPanel(egui) then
+			
+			local x,y=egui:LocalToScreen( )
+			x,y=x+egui:GetWide()*0.5,y+10
+			gui.SetMousePos(x,y)
+			
+			if lastclick+threshold>RealTime() then -- Doubleclick
+				lastclick = 0 -- reset
+				keepactive=!keepactive
+				e.GUI:ToggleActive(keepactive)
+			else
+				lastclick=RealTime()
+			end
+			
+			e.GUI:ButtonHolding(true)
+			
 		end
-		
-		e.GUI:ButtonHolding(true)
-	
 	else
 		gui.EnableScreenClicker(false)
 		e.GUI:ButtonHolding(false)
@@ -631,7 +643,7 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 			if !notimestamp then
 				e.GUI:SetColor(100,100,100)	e.GUI:AppendText(			"[")
 				e.GUI:SetColor(255,255,255)	e.GUI:AppendText(os.date(	"%H"))
-				e.GUI:SetColor(100,100,100)	e.GUI:AppendText(			":")
+				e.GUI:SetColor(255,255,255)	e.GUI:AppendText(			":")
 				e.GUI:SetColor(255,255,255)	e.GUI:AppendText(os.date(	"%M"))
 				e.GUI:SetColor(100,100,100)	e.GUI:AppendText(			"] ")
 			end
