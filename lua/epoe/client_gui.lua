@@ -28,28 +28,28 @@ local function AppendTextLink(a,callback)
 	CheckFor(result,a,"https?://[^%s%\"]+")
 	CheckFor(result,a,"ftp://[^%s%\"]+")
 	CheckFor(result,a,"steam://[^%s%\"]+")
-	
+
 	--todo
 	--CheckFor(result,a,"^www%.[^%s%\"]+")
 	--CheckFor(result,a,"[^%s%\"]www%.[^%s%\"]+")
-	
+
 	if #result == 0 then return false end
-	
+
 	table.sort(result,function(a,b) return a[1]<b[1] end)
 
 	-- Fix overlaps
 	local _l,_r
 	for k,tbl in pairs(result) do
-		
+
 		local l,r=tbl[1],tbl[2]
 
-		if not _l then 
+		if not _l then
 			_l,_r=tbl[1],tbl[2]
 			continue
 		end
-		
+
 		if l<_r then table.remove(result,k) end
-		
+
 		_l,_r=tbl[1],tbl[2]
 	end
 
@@ -79,35 +79,35 @@ function PANEL:Init()
 	-- Activity fade
 	self.LastActivity = RealTime()
 	self.keepactive = 	false
-	
+
 	self:SetFocusTopLevel( true )
 	self:SetCursor( "sizeall" )
-	
+
 	self:SetPaintBackgroundEnabled( false )
-	self:SetPaintBorderEnabled( false )	
+	self:SetPaintBorderEnabled( false )
 
 	self:DockPadding( 3, 6, 3, 3 )
-	
+
 	local Cfg=vgui.Create( "DHorizontalScroller", self )
-		
+
 		Cfg:DockMargin(-8,0,-8,4)
 		Cfg:SetOverlap( -4 )
 		Cfg:SetTall(16)
 		Cfg:Dock( TOP )
-		
-		function Cfg:Paint() 
+
+		function Cfg:Paint()
 			surface.SetDrawColor(40 ,40 ,40,196)
 			surface.SetTexture( gradient )
 			surface.DrawTexturedRect(0,0,self:GetWide(),self:GetTall())
-			
+
 			surface.SetDrawColor(40 ,40 ,40,196)
-			surface.DrawRect(0,0,self:GetWide(),self:GetTall()) 
-			return true 
+			surface.DrawRect(0,0,self:GetWide(),self:GetTall())
+			return true
 		end
-		
+
 		Cfg.OnMousePressed=function(_,...) self.OnMousePressed(self,...) end
 		Cfg.OnMouseReleased=function(_,...) self.OnMouseReleased(self,...) end
-		
+
 		local Button = vgui.Create( "DButton" )
 			Button:SetText( "Login" )
 			function Button:DoClick()
@@ -129,25 +129,25 @@ function PANEL:Init()
 			end
 			Button:SizeToContents() Button:SetDrawBorder(false)  Button:SetTall( 16 ) Button:SetWide( Button:GetWide(  ) + 6 ) -- gah
 		Cfg:AddPanel( Button )
-		
+
 		local checkbox = vgui.Create( "DCheckBoxLabel" )
 			checkbox:SetText( "Autologin" )
 			checkbox:SetConVar( "epoe_autologin" )
 			--checkbox:SetValue( 1 )
 			checkbox:SizeToContents() checkbox:SetTall( 16 )
-		Cfg:AddPanel( checkbox ) 
+		Cfg:AddPanel( checkbox )
 		local checkbox = vgui.Create( "DCheckBoxLabel" )
 			checkbox:SetText( "Timestamp" )
 			checkbox:SetConVar( "epoe_timestamps" )
 			--checkbox:SetValue( 1 )
 			checkbox:SizeToContents() checkbox:SetTall( 16 )
-		Cfg:AddPanel( checkbox ) 
+		Cfg:AddPanel( checkbox )
 		local checkbox = vgui.Create( "DCheckBoxLabel" )
 			checkbox:SetText( "printconsole" )
 			checkbox:SetConVar( "epoe_toconsole" )
 			--checkbox:SetValue( 1 )
 			checkbox:SizeToContents() checkbox:SetTall( 16 )
-		Cfg:AddPanel( checkbox ) 
+		Cfg:AddPanel( checkbox )
 		local checkbox = vgui.Create( "DCheckBoxLabel" )
 			checkbox:SetText( "Show On Activity" )
 			checkbox:SetConVar( "epoe_show_on_activity" )
@@ -164,14 +164,14 @@ function PANEL:Init()
 			checkbox:SetText( "BG" )
 			checkbox:SetConVar( "epoe_draw_background" )
 			checkbox:SizeToContents() checkbox:SetTall( 16 )
-		Cfg:AddPanel( checkbox )	
+		Cfg:AddPanel( checkbox )
 		local checkbox = vgui.Create( "DCheckBoxLabel" )
 			checkbox:SetText( "Show in screenshots" )
 			checkbox:SetConVar( "epoe_show_in_screenshots" )
 			checkbox:SizeToContents() checkbox:SetTall( 16 )
-		Cfg:AddPanel( checkbox )	
-		
-		
+		Cfg:AddPanel( checkbox )
+
+
 		local FontChooser = vgui.Create(VERSION>=150 and "DComboBox" or "DMultiChoice", Frame )
 		function FontChooser:ApplySchemeSettings()end
 		FontChooser:AddChoice("Default","Default")
@@ -186,15 +186,15 @@ function PANEL:Init()
 		FontChooser:SizeToContents()
 		FontChooser:SetTall(16)
 		FontChooser:SetWide(FontChooser:GetWide()+32)
-		Cfg:AddPanel( FontChooser )	
-	
+		Cfg:AddPanel( FontChooser )
+
 	self.uppermenu=Cfg
 
-		
+
 	self.canvas=vgui.Create('EditablePanel',self)
 	local canvas=self.canvas
 	canvas:Dock(FILL)
-	
+
 	self.RichText=vgui.Create('RichText',canvas)
 		self.RichText:InsertColorChange(255,255,255,255)
 		self.RichText:SetPaintBackgroundEnabled( false )
@@ -205,14 +205,14 @@ function PANEL:Init()
 		self.RichText:SetFont("TitleFont") -- Does not work
 	function self.RichText:PerformLayout()
 		self:SetPos(-7,-4) -- HACKHACK
-		self:SetWide(self:GetParent():GetWide()+9+(e.GUI.being_hovered and 0 or 15)) -- HACKHACK :x
+		self:SetWide(self:GetParent():GetWide()+9+(self.being_hovered and 0 or 15)) -- HACKHACK :x
 		self:SetTall(self:GetParent():GetTall()+2) -- scrollbar?
 	end
-	
+
 	-- HACKHACK
-	timer.Simple(0.1,function() 
+	timer.Simple(0.1,function()
 	    e.GUI.RichText:SetFont(epoe_font:GetString())
-		
+
 	end)
 	self:ButtonHolding(false)
 end
@@ -232,7 +232,7 @@ function PANEL:AppendText(txt)
 	else
 		self.__appendNL=false
 	end
-	
+
 	self.RichText:AppendText(txt)
 end
 
@@ -248,7 +248,7 @@ function PANEL:AppendTextX(txt)
 			self.RichText:InsertClickableTextEnd()
 		end
 	end
-	
+
 	local res = AppendTextLink(txt,func)
 	if not res then
 		self:AppendText(txt)
@@ -258,7 +258,7 @@ end
 
 function PANEL:Clear()
 	self.RichText:SetText ""
-	self.RichText:GotoTextEnd()	
+	self.RichText:GotoTextEnd()
 end
 
 
@@ -287,19 +287,19 @@ function PANEL:Paint()
 	self:SetRenderInScreenshots(epoe_show_in_screenshots:GetBool())
 
 	if not self.__holding and not epoe_draw_background:GetBool() and not self.being_hovered then return end
-	
+
 	if self.__holding then
 		surface.SetDrawColor(40 ,40 ,40,196)
 		local q=16+4
 		surface.DrawRect(0,q,self:GetWide(),self:GetTall()-q)
-	
+
 		-- header
-		
+
 		surface.SetDrawColor(90,90,90,255)
 		surface.DrawRect(0,0,self:GetWide(),16)
 		surface.SetDrawColor(30 ,30 ,30,255)
 		surface.DrawRect(1,1,self:GetWide()-2,16-2)
-		
+
 		local txt="EPOE - Enhanced Perception Of Errors"
 		surface.SetFont"DebugFixed"
 		local w,h=surface.GetTextSize(txt)
@@ -308,7 +308,7 @@ function PANEL:Paint()
 		surface.DrawText(txt)
 	else
 		surface.SetDrawColor(40 ,40 ,40,196)
-		surface.DrawRect(0,0,self:GetWide(),self:GetTall())		
+		surface.DrawRect(0,0,self:GetWide(),self:GetTall())
 	end
 	return true
 end
@@ -330,7 +330,7 @@ function PANEL:ButtonHolding(isHolding)
 		self.being_hovered = false
 		self.RichText:PerformLayout()
 		self.uppermenu:Dock(NODOCK)
-		
+
 		self:DockPadding( 0,0,0,0 )
 		self.uppermenu:SetVisible(false)
 		self:InvalidateLayout()
@@ -340,16 +340,16 @@ end
 local stayup=CreateClientConVar("epoe_ui_holdtime","5",true,false)--seconds
 local fadespeed = 3--seconds
 function PANEL:Think()
-	
+
 	local mx = gui.MouseX()
 	local my = gui.MouseY()
-	
+
 	local px, py = self:GetPos()
-	
-	if 
-		mx > px and 
+
+	if
+		mx > px and
 		mx < px + self:GetWide() and
-		my > py and 
+		my > py and
 		my < py + self:GetTall()
 	then
 		self.being_hovered = true
@@ -358,73 +358,73 @@ function PANEL:Think()
 		self.RichText:PerformLayout()
 		self.being_hovered = false
 	end
-		
-	
+
+
 	-- Hiding for gmod camera..
 	if hook.Call('HUDShouldDraw',GAMEMODE,"CHud"..TagHuman)==false then self:SetAlpha(0) return end
 	if (self.Dragging) then
-	
-		
-	
+
+
+
 		local x = mx - self.Dragging[1]
 		local y = my - self.Dragging[2]
 
 		--if ( self:GetScreenLock() ) then
-		
+
 			x = math.Clamp( x, 0, ScrW() - self:GetWide() )
 			y = math.Clamp( y, 0, ScrH() - self:GetTall() )
-		
+
 		--end
-		
+
 		self:SetPos( x, y )
-	
+
 	end
-	
-	
+
+
 	if ( self.Sizing ) then
-	
+
 		local x = mx - self.Sizing[1]
-		local y = my - self.Sizing[2]	
-		
+		local y = my - self.Sizing[2]
+
 		if ( x < 170 ) then x = 170 end
 		if ( y < 30 ) then y = 30 end
-	
+
 		self:SetSize( x, y )
 		self:SetCursor( "sizenwse" )
 		return
-	
+
 	end
-	
+
 	if ( self.Hovered &&
          --self.m_bSizable &&
 	     mx > (self.x + self:GetWide() - 20) &&
-	     my > (self.y + self:GetTall() - 20) ) then	
+	     my > (self.y + self:GetTall() - 20) ) then
 
 		self:SetCursor( "sizenwse" )
 		return
-		
+
 	end
-	
+
 	if ( self.Hovered && my < (self.y + 20) ) then
 		self:SetCursor( "sizeall" )
 		return
 	end
-	
+
 	self:SetCursor( "arrow" )
 	if self:IsActive() then self:Activity() end
-	
+
 	local inactive_time = RealTime() - self.LastActivity
 	--print("inactive_time",inactive_time)
 	local stayup=stayup:GetInt()
 	inactive_time = ( inactive_time - stayup ) * ( 255 / fadespeed )
 	--print("inactive_time post",inactive_time)
-	
+
 	local alpha = 255 - ( (inactive_time >= 255 and 255) or (inactive_time <= 0 and 0) or inactive_time )
 	if alpha<=0 then
 		self:SetVisible(false)
 		self:SetAlpha(255)
 	end
-	
+
 	self:SetAlpha(alpha)
 end
 
@@ -439,9 +439,9 @@ PANEL.Think=function (a)
 end
 
 function PANEL:OnMousePressed( mc )
-		
+
 	if mc == MOUSE_RIGHT or ( gui.MouseX() > (self.x + self:GetWide() - 20) &&
-			gui.MouseY() > (self.y + self:GetTall() - 20) ) then	
+			gui.MouseY() > (self.y + self:GetTall() - 20) ) then
 		self.Sizing = { gui.MouseX() - self:GetWide(), gui.MouseY() - self:GetTall() }
 		self:MouseCapture( true )
 		return
@@ -450,14 +450,14 @@ function PANEL:OnMousePressed( mc )
 		self:MouseCapture( true )
 		return
 	end
-	
+
 end
 function PANEL:FixPosition()
 	local x,y=self:GetPos()
 	local w,h=self:GetSize()
 	local sw,sh=ScrW(),ScrH()
 	local failed=false
-	if w > sw then 
+	if w > sw then
 		failed=true
 		w=sw
 	end
@@ -465,7 +465,7 @@ function PANEL:FixPosition()
 		failed=true
 		h=sh
 	end
-	if x > sw then 
+	if x > sw then
 		failed=true
 		x=0
 	end
@@ -473,14 +473,14 @@ function PANEL:FixPosition()
 		failed=true
 		y=0
 	end
-	if x+w > sw then 
+	if x+w > sw then
 		failed=true
 		x=sw-w
 	end
 	if y+h > sh then
 		failed=true
 		y=sh-h
-	end	
+	end
 
 	if failed then
 		self:SetPos(x,y)
@@ -500,26 +500,26 @@ function PANEL:OnMouseReleased()
 	e.GUI:SetCookie("h",self:GetTall())
 	e.GUI:SetCookie("x",x)
 	e.GUI:SetCookie("y",y)
-		
+
 	self:MouseCapture( false )
 
 end
- 
+
 function PANEL:ToggleActive(set)
 	if set==nil then
 		self.keepactive=!self.keepactive
-	else	
+	else
 		self.keepactive=set
 	end
 	e.internalPrint(self.keepactive and "Fading disabled" or "Fading enabled")
-	
-	
+
+
 end
 
 function PANEL:IsActive()
 
 	if self.keepactive or self.being_hovered or self:HasFocus() or vgui.FocusedHasParent( self ) then return true end
-	
+
 end
 
 -- Bring up if something happened.
@@ -543,7 +543,7 @@ function e.CreateGUI()
 		local h = tonumber( e.GUI:GetCookie("h") ) or ScrH()*0.25
 		local x = tonumber( e.GUI:GetCookie("x") ) or ScrW()*0.5 - w*0.5
 		local y = tonumber( e.GUI:GetCookie("y") ) or ScrH() - h
-		
+
 		e.GUI:SetSize(w,h)
 		e.GUI:SetPos(x,y)
 	end
@@ -563,7 +563,7 @@ end
 concommand.Add('epoe_clearlog', e.ClearLog)
 
 -- Debug
-concommand.Add('epoe_ui_remove',function() 
+concommand.Add('epoe_ui_remove',function()
 	if ValidPanel(e.GUI) then e.GUI:Remove() end
 end)
 
@@ -572,16 +572,16 @@ local lastclick  = 0
 local keepactive = false
 local function epoe_toggle(_,cmd,args)
 	if cmd=="+epoe" then
-		
+
 		gui.EnableScreenClicker(true)
 		e.ShowGUI() -- also creates it
 		local egui=e.GUI
 		if ValidPanel(egui) then
-			
+
 			local x,y=egui:LocalToScreen( )
 			x,y=x+egui:GetWide()*0.5,y+10
 			gui.SetMousePos(x,y)
-			
+
 			if lastclick+threshold>RealTime() then -- Doubleclick
 				lastclick = 0 -- reset
 				keepactive=!keepactive
@@ -589,9 +589,9 @@ local function epoe_toggle(_,cmd,args)
 			else
 				lastclick=RealTime()
 			end
-			
+
 			e.GUI:ButtonHolding(true)
-			
+
 		end
 	else
 		gui.EnableScreenClicker(false)
@@ -615,22 +615,22 @@ local notimestamp  = false
 hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 	flags = flags or 0
 	if ValidPanel( e.GUI ) then
-		
+
 		if epoe_show_on_activity:GetBool() then
 			e.ShowGUI()
 			e.GUI:Activity()
 		end
-		
+
 		if c then
 			if type(c) == "table" and type(c.r) == "number" and type(c.g) == "number" and type(c.b) == "number" then
 				e.GUI:SetColor(c.r, c.g, c.b)
 			end
-			if newText then 
-				e.GUI:AppendTextX(tostring(newText)) 
+			if newText then
+				e.GUI:AppendTextX(tostring(newText))
 			end
 			return
 		end
-		
+
 		if e.HasFlag(flags,e.IS_EPOE) then
 			e.GUI:SetColor(255,100,100)
 			e.GUI:AppendText("[EPOE] ")
@@ -638,7 +638,7 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 			e.GUI:AppendTextX(newText.."\n")
 			return
 		end
-		
+
 		if epoe_timestamps:GetBool() then
 			if !notimestamp then
 				e.GUI:SetColor(100,100,100)	e.GUI:AppendText(			"[")
@@ -657,12 +657,12 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 		else
 			e.GUI:SetColor(255,255,255)
 		end
-		
+
 		e.GUI:AppendTextX(newText)
 		if not epoe_disable_autoscroll:GetBool() and not e.GUI.being_hovered then
 			e.GUI.RichText:GotoTextEnd()
 		end
-		
+
 	end
 end)
 
