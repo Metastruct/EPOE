@@ -73,6 +73,10 @@ end
 --------------
 
 
+
+
+
+
 local PANEL={}
 function PANEL:Init()
 
@@ -108,21 +112,21 @@ function PANEL:Init()
 		Cfg.OnMousePressed=function(_,...) self.OnMousePressed(self,...) end
 		Cfg.OnMouseReleased=function(_,...) self.OnMouseReleased(self,...) end
 
-		local Button = vgui.Create( "DButton" )
+		local Button = vgui.Create( "DButton" , self )
 			Button:SetText( "Login" )
 			function Button:DoClick()
 				epoe.AddSub()
 			end
 			Button:SizeToContents() Button:SetDrawBorder(false)  Button:SetTall( 16 ) Button:SetWide( Button:GetWide(  ) + 6 ) -- gah
 		Cfg:AddPanel( Button )
-		local Button = vgui.Create( "DButton" )
+		local Button = vgui.Create( "DButton" , self )
 			Button:SetText( "Logout" )
 			function Button:DoClick()
 				epoe.DelSub()
 			end
 			Button:SizeToContents() Button:SetDrawBorder(false)  Button:SetTall( 16 ) Button:SetWide( Button:GetWide(  ) + 6 ) -- gah
 		Cfg:AddPanel( Button )
-		local Button = vgui.Create( "DButton" )
+		local Button = vgui.Create( "DButton" , self )
 			Button:SetText( "Clear" )
 			function Button:DoClick()
 				e.ClearLog()
@@ -130,7 +134,7 @@ function PANEL:Init()
 			Button:SizeToContents() Button:SetDrawBorder(false)  Button:SetTall( 16 ) Button:SetWide( Button:GetWide(  ) + 6 ) -- gah
 		Cfg:AddPanel( Button )
 
-		local checkbox = vgui.Create( "DCheckBoxLabel" )
+		local checkbox = vgui.Create( "DCheckBoxLabel" , self )
 			checkbox:SetText( "Autologin" )
 			checkbox:SetConVar( "epoe_autologin" )
 			--checkbox:SetValue( 1 )
@@ -142,30 +146,30 @@ function PANEL:Init()
 			--checkbox:SetValue( 1 )
 			checkbox:SizeToContents() checkbox:SetTall( 16 )
 		Cfg:AddPanel( checkbox )
-		local checkbox = vgui.Create( "DCheckBoxLabel" )
+		local checkbox = vgui.Create( "DCheckBoxLabel" , self )
 			checkbox:SetText( "printconsole" )
 			checkbox:SetConVar( "epoe_toconsole" )
 			--checkbox:SetValue( 1 )
 			checkbox:SizeToContents() checkbox:SetTall( 16 )
 		Cfg:AddPanel( checkbox )
-		local checkbox = vgui.Create( "DCheckBoxLabel" )
+		local checkbox = vgui.Create( "DCheckBoxLabel" , self )
 			checkbox:SetText( "Show On Activity" )
 			checkbox:SetConVar( "epoe_show_on_activity" )
 			--checkbox:SetValue( 1 )
 			checkbox:SizeToContents() checkbox:SetTall( 16 )
 		Cfg:AddPanel( checkbox )
-		local checkbox = vgui.Create( "DCheckBoxLabel" )
+		local checkbox = vgui.Create( "DCheckBoxLabel" , self )
 			checkbox:SetText( "No Autoscroll" )
 			checkbox:SetConVar( "epoe_disable_autoscroll" )
 			--checkbox:SetValue( 1 )
 			checkbox:SizeToContents() checkbox:SetTall( 16 )
 		Cfg:AddPanel( checkbox )
-		local checkbox = vgui.Create( "DCheckBoxLabel" )
+		local checkbox = vgui.Create( "DCheckBoxLabel" , self )
 			checkbox:SetText( "BG" )
 			checkbox:SetConVar( "epoe_draw_background" )
 			checkbox:SizeToContents() checkbox:SetTall( 16 )
 		Cfg:AddPanel( checkbox )
-		local checkbox = vgui.Create( "DCheckBoxLabel" )
+		local checkbox = vgui.Create( "DCheckBoxLabel" , self )
 			checkbox:SetText( "Show in screenshots" )
 			checkbox:SetConVar( "epoe_show_in_screenshots" )
 			checkbox:SizeToContents() checkbox:SetTall( 16 )
@@ -196,26 +200,39 @@ function PANEL:Init()
 	canvas:Dock(FILL)
 
 	self.RichText=vgui.Create('RichText',canvas)
-		self.RichText:InsertColorChange(255,255,255,255)
-		self.RichText:SetPaintBackgroundEnabled( false )
-		self.RichText:SetPaintBorderEnabled( false )
-		self.RichText:SetMouseInputEnabled(true)
-		self.RichText:SetVerticalScrollbarEnabled(true) -- How to make it so that shows only when required?
-		self.RichText:SetWrap(false) -- Does not work
-		self.RichText:SetFont("TitleFont") -- Does not work
-	function self.RichText:PerformLayout()
-		self:SetPos(-7,-4) -- HACKHACK
-		self:SetWide(self:GetParent():GetWide()+9+(self.being_hovered and 0 or 15)) -- HACKHACK :x
-		self:SetTall(self:GetParent():GetTall()+2) -- scrollbar?
+	local RichText=self.RichText
+		RichText:InsertColorChange(255,255,255,255)
+		RichText:SetPaintBackgroundEnabled( false )
+		RichText:SetPaintBorderEnabled( false )
+		RichText:SetMouseInputEnabled(true)
+		-- We'll keep it visible constantly but clip it off to make the richtext behave how we want
+		RichText:SetVerticalScrollbarEnabled(true)
+		
+		RichText:Dock(FILL)
+		function RichText.HideScrollbar()
+			RichText.__background=false
+			RichText:DockMargin(-8,-7,-16-4,0)
+		end
+		function RichText.ShowScrollbar()
+			RichText.__background=true
+			RichText:DockMargin(-7,0,0,0)
+		end
+		RichText:HideScrollbar()
+	function RichText:Paint()
+		if self.__background then
+			surface.SetDrawColor(70,70,70,40)
+			surface.DrawOutlinedRect(0,0,self:GetWide(),self:GetTall())
+		end
 	end
-
-	-- HACKHACK
-	timer.Simple(0.1,function()
-	    e.GUI.RichText:SetFont(epoe_font:GetString())
-
-	end)
+	
 	self:ButtonHolding(false)
 end
+
+function PANEL:PostInit()
+	self.RichText:SetFont(epoe_font:GetString())
+	self.RichText:SetVerticalScrollbarEnabled(true)
+end
+
 
 ---------------------
 -- Text manipulation
@@ -278,9 +295,9 @@ end
 ---------------------
 -- Visuals
 ---------------------
-function PANEL:PerformLayout()
+/*function PANEL:PerformLayout()
 	self.RichText:InvalidateLayout()
-end
+end*/
 
 function PANEL:Paint()
 	-- cvar callback ffs
@@ -294,17 +311,24 @@ function PANEL:Paint()
 		surface.DrawRect(0,q,self:GetWide(),self:GetTall()-q)
 
 		-- header
-
-		surface.SetDrawColor(90,90,90,255)
-		surface.DrawRect(0,0,self:GetWide(),16)
-		surface.SetDrawColor(30 ,30 ,30,255)
-		surface.DrawRect(1,1,self:GetWide()-2,16-2)
-
+			surface.SetDrawColor(90,90,90,255)
+			surface.DrawRect(0,0,self:GetWide(),16)
+		if self.__highlight then
+			surface.SetDrawColor(35 ,35 ,35,255)
+		else
+			surface.SetDrawColor(30 ,30 ,30,255)
+		end
+			surface.DrawRect(1,1,self:GetWide()-2,16-2)
+		
 		local txt="EPOE - Enhanced Perception Of Errors"
 		surface.SetFont"DebugFixed"
 		local w,h=surface.GetTextSize(txt)
 		surface.SetTextPos(3,8-h*0.5)
-		surface.SetTextColor(150,150,150,255)
+		if self.__highlight then
+			surface.SetTextColor(255,255,255,255)
+		else
+			surface.SetTextColor(150,150,150,255)
+		end
 		surface.DrawText(txt)
 	else
 		surface.SetDrawColor(40 ,40 ,40,196)
@@ -321,14 +345,14 @@ function PANEL:ButtonHolding(isHolding)
 	if isHolding then
 		self:DockPadding( 8, 16+4, 8, 8 )
 		self.being_hovered = true
-		self.RichText:PerformLayout()
+		self.RichText:ShowScrollbar()
 		self.uppermenu:Dock(TOP)
 		self.uppermenu:SetVisible(true)
 		self:FixPosition()
 		self:InvalidateLayout()
 	else
 		self.being_hovered = false
-		self.RichText:PerformLayout()
+		self.RichText:HideScrollbar()
 		self.uppermenu:Dock(NODOCK)
 
 		self:DockPadding( 0,0,0,0 )
@@ -337,9 +361,15 @@ function PANEL:ButtonHolding(isHolding)
 	end
 end
 
+
 local stayup=CreateClientConVar("epoe_ui_holdtime","5",true,false)--seconds
 local fadespeed = 3--seconds
 function PANEL:Think()
+
+	if not self.__starthack then
+		self.__starthack=true
+		self:PostInit()
+	end
 
 	local mx = gui.MouseX()
 	local my = gui.MouseY()
@@ -353,9 +383,9 @@ function PANEL:Think()
 		my < py + self:GetTall()
 	then
 		self.being_hovered = true
-		self.RichText:PerformLayout()
+		--self.RichText:PerformLayout()
 	else
-		self.RichText:PerformLayout()
+		--self.RichText:PerformLayout()
 		self.being_hovered = false
 	end
 
@@ -386,8 +416,8 @@ function PANEL:Think()
 		local x = mx - self.Sizing[1]
 		local y = my - self.Sizing[2]
 
-		if ( x < 170 ) then x = 170 end
-		if ( y < 30 ) then y = 30 end
+		if ( x < 100 ) then x = 100 end
+		if ( y < 18 ) then y = 18 end
 
 		self:SetSize( x, y )
 		self:SetCursor( "sizenwse" )
@@ -407,9 +437,12 @@ function PANEL:Think()
 
 	if ( self.Hovered && my < (self.y + 20) ) then
 		self:SetCursor( "sizeall" )
+		self.__highlight=true
 		return
 	end
 
+	self.__highlight=false
+	
 	self:SetCursor( "arrow" )
 	if self:IsActive() then self:Activity() end
 
