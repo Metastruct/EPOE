@@ -22,15 +22,21 @@ module( "epoe" )
 -- Consts
 Tag='E\''
 TagHuman='EPOE'
+Should_TagHuman='Should'..TagHuman
 
-IS_EPOE=1
-IS_ERROR=2
-IS_PRINT=4
-IS_MSG=8
-IS_MSGN=16
-IS_SEQ=32
-IS_MSGC=64
-IS_REPEAT=128
+flags={ -- One byte overhead for signaling this all. May need to add two in the future, sigh.
+	IS_EPOE=1,
+	IS_ERROR=2,
+	IS_PRINT=4,
+	IS_MSG=8,
+	IS_MSGN=16,
+	IS_SEQ=32,
+	IS_MSGC=64,
+	IS_REPEAT=128,
+}
+for k,v in pairs(flags) do
+	_M[k]=v
+end
 
 function HasFlag(byte,flag)
 	local a = (byte or 0)&flag
@@ -188,4 +194,4 @@ function ToString(t)
 	str = str .. nl .. MakeTable ( t, nice)
 	
 	return str:sub(1,-2) -- remove last redundant space
-end	
+end

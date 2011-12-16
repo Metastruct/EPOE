@@ -36,16 +36,6 @@ module( "epoe" )
 ------------------------------------
 
 
-local data={ -- flags for receiving.. Also added on shared.lua!
-	IS_EPOE=1,
-	IS_ERROR=2,
-	IS_PRINT=4,
-	IS_MSG=8,
-	IS_MSGN=16,
-	IS_SEQ=32,
-	IS_MSGC=64,
-	IS_REPEAT=128,
-}
 -- Messages can come in multiple parts
 -- TODO: If message gets aborted serverside this will fuck up, royally.
 local Buffer=""
@@ -63,7 +53,7 @@ function ProcessMessage(flags,str)
 		lastmsg=str
 	end
 	
-	-- Process sequences
+	-- Process sequences (aka long messages)
 	if HasFlag(flags,IS_SEQ) then -- Store long messages
 		Buffer=Buffer..str
 		return
@@ -74,7 +64,9 @@ function ProcessMessage(flags,str)
 	
 	
 	-- process epoe messages
-	if HasFlag(flags,IS_EPOE) then
+	
+	local isEpoe=HasFlag(flags,IS_EPOE)
+	if isEpoe then
 		
 		if str=="_S" then
 			subscribed=true
@@ -86,7 +78,7 @@ function ProcessMessage(flags,str)
 			return
 		elseif str=="_NA" then
 			if AutologinRetry() then return end -- Some servers got delayed admins?
-			internalPrint("Could not login: You need to be admin to use EPOE!")
+			internalPrint("No Access - Not admin?")
 			return
 		end
 	end
@@ -97,7 +89,7 @@ function ProcessMessage(flags,str)
 		local colbytes,newstr=str:match("^(...)(.*)$")
 		local r,g,b=string.byte(colbytes,1)-1,string.byte(colbytes,2)-1,string.byte(colbytes,3)-1
 		
-		-- your monitor is not going to miss that one bit I hope
+		-- your monitor is not going to miss that one bit for each color I hope
 		r,g,b=r==254 and 255 or r,
 			  g==254 and 255 or g,
 			  b==254 and 255 or b
@@ -106,9 +98,14 @@ function ProcessMessage(flags,str)
 		str = newstr
 	end
 	
-	-- We are going to add the newline here instead of letting the handlers take care of it
-	local nl=NewLine(flags)
-	hook.Call(TagHuman,nil,str..nl,flags,col)
+	-- We are going to add the newline here instead of letting the handlers take care of it so you can just print the stuff and be done with it
+	str=str..NewLine(flags)
+	
+	-- If we should not let's just return :x
+	if not isEpoe and hook.Call(Should_TagHuman,nil,str,flags)==false then
+		return
+	end
+	hook.Call(TagHuman,nil,str,flags,col)
 end
 
 function OnUsermessage(umsg)
@@ -156,17 +153,15 @@ concommand.Add('epoe_logout',DelSub,nil,"Logout from EPOE stream")
 ------------------------------------
 
 local autologin = CreateClientConVar("epoe_autologin","0",true,false)
-
--- Need to do it inInitPostEntity or it may fuck up. Maybe even later?
 hook.Add('InitPostEntity',TagHuman..'_autologin',function()
-	if autologin:GetBool() then RunConsoleCommand("cmd",Tag,"1") end
+	if autologin:GetBool() then AddSub() end
 end)
 
 local tries=0
 function AutologinRetry()
 	tries=tries+1
 	if tries > 2 then return true end
-	timer.Simple(3,RunConsoleCommand,"cmd",Tag,"1")
+	timer.Simple(3,AddSub)
 	internalPrint("Retrying autologin...")
 end
 

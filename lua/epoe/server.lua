@@ -208,7 +208,7 @@ end
 -- Overrides
 ------------------
 	function OnMsg(...)	
-		if InEPOE or HasNoSubs then RealMsg(...) else
+		if InEPOE or HasNoSubs then pcall(RealMsg,...) else
 			InEPOE = true	
 				
 				if HitMaxQueue() then return end
@@ -222,7 +222,7 @@ end
 					PushPayload( IS_MSG , str )
 				end
 				
-				RealMsg(...)
+				pcall(RealMsg,...)
 			
 			InEPOE=false
 		end
@@ -230,7 +230,7 @@ end
 
 	-- TODO: Add Colors..
 	function OnMsgC(color,...)	
-		if InEPOE or HasNoSubs then RealMsgC(color,...) else
+		if InEPOE or HasNoSubs then pcall(RealMsgC,color,...) else
 			InEPOE = true	
 				
 				if HitMaxQueue() then return end
@@ -245,14 +245,14 @@ end
 					PushPayload( IS_MSGC , colbytes..str )
 				end
 				
-				RealMsgC(color,...)
+				pcall(RealMsgC,color,...)
 			
 			InEPOE=false
 		end
 	end	
 
 	function OnMsgN(...)
-		if InEPOE or HasNoSubs then RealMsgN(...) else
+		if InEPOE or HasNoSubs then pcall(RealMsgN,...) else
 			InEPOE = true	
 				
 				if HitMaxQueue() then return end
@@ -265,14 +265,14 @@ end
 					PushPayload( IS_MSGN , str )
 				end
 			
-				RealMsgN(...)
+				pcall(RealMsgN,...)
 			
 			InEPOE=false
 		end
 	end
 
 	function OnPrint(...)
-		if InEPOE or HasNoSubs then RealPrint(...) else
+		if InEPOE or HasNoSubs then pcall(RealPrint,...) else
 			InEPOE = true	
 					
 				if HitMaxQueue() then return end
@@ -285,7 +285,7 @@ end
 					PushPayload( IS_PRINT , str )
 				end
 			
-				RealPrint(...)
+				pcall(RealPrint,...)
 			
 			InEPOE=false
 		end
