@@ -71,7 +71,7 @@ Reload()
 
 concommand.Add("epoe_filter_reload",Reload)
 
-local find=string.find
+local sfind=string.find
 hook.Add(Tag,Tag,function(txt,flags)
 	if not epoe_filtering:GetBool() or not e.filters.hasany then return end
 	
@@ -79,11 +79,11 @@ hook.Add(Tag,Tag,function(txt,flags)
 	
 	if #find>0 then
 		for _,str in ipairs(find) do
-			if find(txt,str,1,true) 	then return false end end
+			if sfind(txt,str,1,true) 	then return false end end
 	end
 	
 	if #regex>0 then
 		for _,str in ipairs(regex) do
-			if find(txt,str) 			then return false end end
+			if sfind(txt,str) 			then return false end end
 	end
 end)
