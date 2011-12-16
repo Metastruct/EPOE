@@ -22,7 +22,7 @@ local function add(str)
 	if strtype=='!' then -- full
 		push(full,str:sub(2,-1))
 	elseif strtype=='"' then -- string
-		str = a:match[[^"(.+)"$]] or a:match[[^"(.+)$]]
+		str = str:match[[^"(.+)"$]] or str:match[[^"(.+)$]]
 		assert(str!=nil)
 		push(find,str)
 	elseif strtype=='^' then -- regex
