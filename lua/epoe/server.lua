@@ -308,6 +308,7 @@ end
 	
 
 function SamePayload(a,b)
+	if not a or not b then return false end
 	return a.flag==b.flag and a.msg==b.msg
 end
 
