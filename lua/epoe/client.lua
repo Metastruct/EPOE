@@ -40,18 +40,26 @@ module( "epoe" )
 -- TODO: If message gets aborted serverside this will fuck up, royally.
 local Buffer=""
 
-local lastmsg="<EPOE UNDEFINED>"
-
+local lastmsg="<EPOE BROKEN>"
+local lastflags=0
 -- Handle incoming messages
 function ProcessMessage(flags,str)	
 
-	-- repeat compression
+	-- Process repeat messages
 	if HasFlag(flags,IS_REPEAT) then
-		--internalPrint("[DBG Test] last message repeated\n")
+		if str:len()>0 then
+			internalPrint("WARNING: IS_REPEAT defined but message was: '"..str.."'")
+		end
+		local newflags=lastflags|IS_REPEAT
+		if flags!=newflags then
+			internalPrint("WARNING: IS_REPEAT defined but flags were different: rcv= '"..DebugFlags(flags)..' last='..DebugFlags(lastflags).."'")
+		end
 		str=lastmsg
-	else
-		lastmsg=str
+		flags=newflags
 	end
+	lastmsg=str
+	lastflags=flags
+	
 	
 	-- Process sequences (aka long messages)
 	if HasFlag(flags,IS_SEQ) then -- Store long messages
@@ -64,7 +72,6 @@ function ProcessMessage(flags,str)
 	
 	
 	-- process epoe messages
-	
 	local isEpoe=HasFlag(flags,IS_EPOE)
 	if isEpoe then
 		

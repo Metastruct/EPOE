@@ -24,21 +24,33 @@ Tag='E\''
 TagHuman='EPOE'
 Should_TagHuman='Should'..TagHuman
 
-flags = { -- One byte overhead for signaling this all. May need to add two in the future...
+flags = { -- One byte overhead for signaling this all. Need to add two with anything more
 	IS_EPOE=	2^0,
 	IS_ERROR=	2^1,
 	IS_PRINT=	2^2,
 	IS_MSG=		2^3,
+	
 	IS_MSGN=	2^4,
 	IS_SEQ=		2^5,
-	IS_MSGC=	2^6,
-	IS_REPEAT=	2^7,
+	IS_REPEAT=	2^6,
+	IS_MSGC=	2^7,
 }
+
 -- Add them to the module as variables
 for name,byte in pairs(flags) do 	
 	assert(byte>=0)
 	assert(byte<=255) -- Increase (user/net)messages from char to short if you're going to change this for some reason
 	_M[name]=byte
+end
+
+function DebugFlags(flag)
+	local a={}
+	for name,byte in pairs(flags) do
+		if HasFlag(flag,byte) then
+			table.insert(a,name)
+		end
+	end
+	return table.concat(a,", ")
 end
 
 function HasFlag(byte,flag)

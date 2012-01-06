@@ -20,7 +20,7 @@ local setmetatable=setmetatable
 local util=util
 local GMOD_VERSION=VERSION
 -- inform the client of the version
-CreateConVar( "epoe_version", "2.1", FCVAR_NOTIFY )
+CreateConVar( "epoe_version", "2.3", FCVAR_NOTIFY )
 
 module( "epoe" )
 
@@ -64,14 +64,14 @@ end
 		if (pl and pl.IsValid and pl:IsValid()) and pl:IsPlayer() then
 			HasNoSubs=false
 			Sub[pl]=true
-			umsg.Start(Tag,pl)	umsg.Char(IS_EPOE)	umsg.String("_S") --[[_S=Subscribe]]	umsg.End()
+			Transmit(IS_EPOE,"_S",pl)
 		end
 	end
 
 	function DelSub(pl)
 		Sub[pl]=nil
 		CalculateSubs()
-		umsg.Start(Tag,pl)	umsg.Char(IS_EPOE)	umsg.String("_US") --[[_US=Unsubscribe]]	umsg.End()
+		Transmit(IS_EPOE,"_US",pl)
 	end
 
 	function CalculateSubs()
@@ -109,8 +109,7 @@ end
 			if CanSubscribe(pl) then
 				AddSub(pl)
 			else
-				-- uhoh
-				umsg.Start(Tag,pl)	umsg.Char(IS_EPOE)	umsg.String("_NA") --[[_NA=Not admin]]	umsg.End()
+				Transmit(IS_EPOE,"_NA",pl)
 			end
 		else
 			DelSub(pl)
@@ -362,6 +361,13 @@ function PushPayload(flags,s)
 	
 end
 
+function Transmit(flags,msg,rf)
+	umsg.Start(Tag,rf==true and RF or rf)
+		umsg.Char(flags-128)
+		umsg.String(msg)
+	umsg.End()
+end
+
 ------------------
 -- Transmit one from the queue
 -- Return: true if queue is empty
@@ -373,15 +379,9 @@ function OnBeingTransmit()
 	local flags=payload.flag or 0
 	assert(flags>=0)
 	assert(flags<=255)
-	
-	flags=flags-128
+
 	local msg=payload.msg or "EPOE ERROR"
-	
-	umsg.Start(Tag,RF)
-		umsg.Char(flags)
-		umsg.String(msg)
-	umsg.End()
-	
+	Transmit(flags,msg,true)
 end
 
 
