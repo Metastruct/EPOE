@@ -309,20 +309,26 @@ end
 	
 
 function SamePayload(a,b)
+	if a==b then return true end -- nil or same message will pass this, hmm
 	if not a or not b then return false end
+	
+	-- strip repeat flags for comparison
+	--a.flag=a.flag & andnot(IS_REPEAT)
+	--b.flag=b.flag & andnot(IS_REPEAT)
+
 	return a.flag==b.flag and a.msg==b.msg
 end
 
 -- Check if the payload is same and make a new payload and push that instead
 function DoPush(payload)
-	local last = Messages:peek()
+	--[[local last = Messages:peek()
 	if SamePayload(last,payload) then
 		local newload={
 			flag= payload.flag|IS_REPEAT,
 			msg="" -- no message as previous message sent it
 			}
 		return Messages:push(newload)
-	end
+	end]]
 	
 	Messages:push(payload)
 end
