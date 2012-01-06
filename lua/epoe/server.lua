@@ -365,9 +365,13 @@ function OnBeingTransmit()
 
 	local payload=Messages:pop()
 	if payload==nil then return true end
+	local flags=payload.flag or 0
+	flags=flags-127
+	local msg=payload.msg or "EPOE ERROR"
+	
 	umsg.Start(Tag,RF)
-		umsg.Char(payload.flag or 0)
-		umsg.String(payload.msg or "EPOE ERROR")
+		umsg.Char(flags)
+		umsg.String(msg)
 	umsg.End()
 	
 end
