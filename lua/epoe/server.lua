@@ -321,7 +321,7 @@ function DoPush(payload)
 			msg="" -- no message as previous message sent it
 			}
 		return Messages:push(newload)
-	else
+	end
 	
 	Messages:push(payload)
 end
