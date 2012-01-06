@@ -308,24 +308,29 @@ end
 ------------------
 	
 
-local function DivideStr(str,pos)
-	local cur,remaining = str:sub(1,pos),str:sub(pos,#str-pos)
-	return cur,remaining
+function SamePayload(a,b)
+	return a.flag==b.flag and a.msg==b.msg
 end
 
+-- Check if the payload is same and make a new payload and push that instead
 function DoPush(payload)
 	local last = Messages:peek()
-	if last and payload.flag==last.flag and payload.msg==last.msg then
-		if payload.flag!=IS_SEQ then
-			payload={
-				flag= payload.flag|IS_REPEAT,
-				msg=""
-				}
-		end
-	end
+	if SamePayload(last,payload) then
+		local newload={
+			flag= payload.flag|IS_REPEAT,
+			msg="" -- no message as previous message sent it
+			}
+		return Messages:push(newload)
+	else
+	
 	Messages:push(payload)
 end
 
+
+function DivideStr(str,pos)
+	local cur,remaining = str:sub(1,pos),str:sub(pos,#str-pos)
+	return cur,remaining
+end
 -- Make sure our message is less than 200 bytes to make it sendable.
 -- If it isn't divide it to parts
 function PushPayload(flags,s)
@@ -365,9 +370,16 @@ function OnBeingTransmit()
 
 	local payload=Messages:pop()
 	if payload==nil then return true end
+	local flags=payload.flag or 0
+	assert(flags>=0)
+	assert(flags<=255)
+	
+	flags=flags-128
+	local msg=payload.msg or "EPOE ERROR"
+	
 	umsg.Start(Tag,RF)
-		umsg.Char(payload.flag or 0)
-		umsg.String(payload.msg or "EPOE ERROR")
+		umsg.Char(flags)
+		umsg.String(msg)
 	umsg.End()
 	
 end

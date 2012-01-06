@@ -24,18 +24,21 @@ Tag='E\''
 TagHuman='EPOE'
 Should_TagHuman='Should'..TagHuman
 
-flags={ -- One byte overhead for signaling this all. May need to add two in the future, sigh.
-	IS_EPOE=1,
-	IS_ERROR=2,
-	IS_PRINT=4,
-	IS_MSG=8,
-	IS_MSGN=16,
-	IS_SEQ=32,
-	IS_MSGC=64,
-	IS_REPEAT=128,
+flags = { -- One byte overhead for signaling this all. May need to add two in the future...
+	IS_EPOE=	2^0,
+	IS_ERROR=	2^1,
+	IS_PRINT=	2^2,
+	IS_MSG=		2^3,
+	IS_MSGN=	2^4,
+	IS_SEQ=		2^5,
+	IS_MSGC=	2^6,
+	IS_REPEAT=	2^7,
 }
-for k,v in pairs(flags) do
-	_M[k]=v
+-- Add them to the module as variables
+for name,byte in pairs(flags) do 	
+	assert(byte>=0)
+	assert(byte<=255) -- Increase (user/net)messages from char to short if you're going to change this for some reason
+	_M[name]=byte
 end
 
 function HasFlag(byte,flag)
@@ -59,12 +62,14 @@ SPEW_WARNING=1
 MaxQueue = 2048
 
 -- How many usermessages can we send in a tick
--- 3 seems to be a good value. I haven't really experimented with this.
+-- 3 seems to be a good value
+-- Warning, increasing tickrate without modifying this might be a lethal combination
 UMSGS_IN_TICK = 3
 
 
 ------------
 -- Small stack implementation
+-- Sigh complexity from LILO with no gain...
 ------------
 	local class = {}
 	local mt = {__index = class}
@@ -95,7 +100,7 @@ UMSGS_IN_TICK = 3
 	end
 	
 	function class:peek()
-		return self[self.lilo and 1 or #self]
+		return self[self.lilo and #self or 1]
 	end
 	
 	function class.push(a,b)
@@ -130,13 +135,14 @@ function ColorToStr(color)
 	return string.char(r)..string.char(g)..string.char(b)
 end
 function StrToColor(str)
-	-- stub. - CBA
+	return Color(255,0,255,255) -- STUB
 end
 		
 	
 ---------------------------------------
 -- A bit customization for tostringing values. Looks nicer and is more useful (most often)
--- Infinite TODO: Make even more useful.
+-- Infinite TODO: Make even more useful
+-- TODO: Bail out on huge tables or we risk server lags
 ---------------------------------------
 function ToString(t)
 	local 		nl,tab  = "",  ""
