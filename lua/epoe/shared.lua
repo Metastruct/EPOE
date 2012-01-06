@@ -16,7 +16,7 @@ local concommand=concommand
 local tostring=tostring
 local type=type
 local string=string
-
+local assert=assert
 module( "epoe" )
 
 -- Consts
