@@ -110,7 +110,6 @@ end
 
 function OnUsermessage(umsg)
 	local flags = umsg:ReadChar()
-	flags=flags+127
 	local str  = umsg:ReadString()
 	ProcessMessage(flags,str)
 end
