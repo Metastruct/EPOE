@@ -5,6 +5,7 @@ require ( "hook" )
 local G=_G
 local umsg=umsg
 local ValidEntity=ValidEntity
+local assert=assert
 local RecipientFilter=RecipientFilter
 local error=error
 local pairs=pairs
