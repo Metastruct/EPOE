@@ -29,7 +29,7 @@ flags = { -- One byte overhead for signaling this all. Need to add two with anyt
 	IS_ERROR=	2^1,
 	IS_PRINT=	2^2,
 	IS_MSG=		2^3,
-	
+
 	IS_MSGN=	2^4,
 	IS_SEQ=		2^5,
 	--IS_REPEAT=	2^6,
@@ -68,7 +68,7 @@ function NewLine(flags)
 		return ""
 	end
 	return "\n"
-	
+
 end
 
 -- enginespew const
@@ -114,11 +114,11 @@ UMSGS_IN_TICK = 3
 	function class:pop()
 		return remove( self , self.lilo and #self or 1 )
 	end
-	
+
 	function class:peek()
 		return self[self.lilo and #self or 1]
 	end
-	
+
 	function class.push(a,b)
 		insert( a , b )
 		return a
@@ -135,8 +135,8 @@ UMSGS_IN_TICK = 3
 	function class:clear()
 		return Empty( self )
 	end
-	
-	
+
+
 ---------------------------------------
 -- for MsgC
 -- TODO: Client version without loss
@@ -144,7 +144,7 @@ UMSGS_IN_TICK = 3
 function ColorToStr(color)
 	local r,g,b=color.r,color.g,color.b
 		r,g,b=r+1,g+1,b+1
-		
+
 		r,g,b=r>=255 and 255 or r<=0 and 1 or r,
 			  g>=255 and 255 or g<=0 and 1 or g,
 			  b>=255 and 255 or b<=0 and 1 or b
@@ -153,8 +153,8 @@ end
 function StrToColor(str)
 	return Color(255,0,255,255) -- STUB
 end
-		
-	
+
+
 ---------------------------------------
 -- A bit customization for tostringing values. Looks nicer and is more useful (most often)
 -- Infinite TODO: Make even more useful
@@ -194,7 +194,7 @@ function ToString(t)
 				str = str .. idt .. tab .. tab ..tab .. tab .. nl
 
 			else
-				
+
 				if 	type(value) == "string" then 
 					value = tostring(value)
 				elseif  type(value) == "Vector" then
@@ -204,7 +204,7 @@ function ToString(t)
 				else
 					value = tostring(value)
 				end
-				
+
 				str = str .. key .. tab .. value .. " ".. nl
 
 			end
@@ -214,6 +214,6 @@ function ToString(t)
 	end
 	local str = ""
 	str = str .. nl .. MakeTable ( t, nice)
-	
+
 	return str:sub(1,-2) -- remove last redundant space
 end

@@ -58,7 +58,7 @@ end
 	}
 	-- Garbage collect whenever you want...
 	setmetatable(Sub,{__mode="k"})
-	
+
 	HasNoSubs=true
 
 	function AddSub(pl)
@@ -80,9 +80,9 @@ end
 			HasNoSubs=false
 			return
 		end
-		
+
 		HasNoSubs=true
-		
+
 		DisableTick()
 	end
 
@@ -103,9 +103,9 @@ end
 
 	function OnSubCmd(pl,_,argz)
 		if not (pl and pl.IsValid and pl:IsValid()) then return end -- Consoles can't subscribe. Sorry :(
-		
+
 		local wantsub=util.tobool(argz[1] or "0")
-		
+
 		if wantsub then
 			if CanSubscribe(pl) then
 				AddSub(pl)
@@ -116,14 +116,14 @@ end
 			DelSub(pl)
 			CanSubscribe(pl,true)
 		end
-		
+
 	end
 	concommand.Add(Tag,OnSubCmd)
 
 	function GetSubscribers()
 		return Sub
 	end
-	
+
 
 RF=RecipientFilter()
 local RF=RF
@@ -153,7 +153,7 @@ end
 
 -- Prevent local errors from screwing our system
 InEPOE=true
-	
+
 -- Holds the messages that are to be sent to clients
 Messages=FIFO() -- shared.lua
 local Messages=Messages
@@ -162,13 +162,13 @@ local Messages=Messages
 function Recover()
 	EnableTick()
 	Messages:clear() -- We were in flood protection mode. Don't continue doing it...
-	
+
 	InEPOE = false
-	
+
 	local payload={ flag=IS_EPOE,
 	msg="Queue reset! (Over "..tostring(MaxQueue or "unknown").." messages pushed triggering safeguards)" }
 	Messages:push(payload)
-	
+
 end
 
 
@@ -191,17 +191,17 @@ local DisableTick=DisableTick
 function HitMaxQueue()
 
 	if Messages:len() > MaxQueue then
-		
+
 		DisableTick()
 		Messages:clear()
-		
+
 		InEPOE=true
 		timer.Simple(recover_time,Recover)
-		
+
 		return true
-	
+
 	end
-	
+
 end
 
 ------------------
@@ -210,20 +210,20 @@ end
 	function OnMsg(...)	
 		if InEPOE or HasNoSubs then pcall(RealMsg,...) else
 			InEPOE = true	
-				
+
 				if HitMaxQueue() then return end
-				
+
 				EnableTick()
-				
+
 				local data={...}
 				local err,str=pcall(ToString,data) -- just to be sure
-				
+
 				if str then
 					PushPayload( IS_MSG , str )
 				end
-				
+
 				pcall(RealMsg,...)
-			
+
 			InEPOE=false
 		end
 	end
@@ -232,21 +232,21 @@ end
 	function OnMsgC(color,...)	
 		if InEPOE or HasNoSubs then pcall(RealMsgC,color,...) else
 			InEPOE = true	
-				
+
 				if HitMaxQueue() then return end
-				
+
 				EnableTick()
-				
+
 				local data={...}
 				local err,str=pcall(ToString,data) -- just to be sure
-				
+
 				if str then
 					local colbytes = ColorToStr(color)
 					PushPayload( IS_MSGC , colbytes..str )
 				end
-				
+
 				pcall(RealMsgC,color,...)
-			
+
 			InEPOE=false
 		end
 	end	
@@ -254,19 +254,19 @@ end
 	function OnMsgN(...)
 		if InEPOE or HasNoSubs then pcall(RealMsgN,...) else
 			InEPOE = true	
-				
+
 				if HitMaxQueue() then return end
-				
+
 				EnableTick()
-			
+
 				local data={...}
 				local err,str=pcall(ToString,data)
 				if str then
 					PushPayload( IS_MSGN , str )
 				end
-			
+
 				pcall(RealMsgN,...)
-			
+
 			InEPOE=false
 		end
 	end
@@ -274,44 +274,44 @@ end
 	function OnPrint(...)
 		if InEPOE or HasNoSubs then pcall(RealPrint,...) else
 			InEPOE = true	
-					
+
 				if HitMaxQueue() then return end
 
 				EnableTick()
-			
+
 				local data={...}
 				local err,str=pcall(ToString,data)
 				if str then
 					PushPayload( IS_PRINT , str )
 				end
-			
+
 				pcall(RealPrint,...)
-			
+
 			InEPOE=false
 		end
 	end
 
 	function OnLuaError(str)
 		if InEPOE or HasNoSubs then return end
-		
+
 		InEPOE = true
-			
+
 			if HitMaxQueue() then return end
-			
+
 			EnableTick()
 
 			PushPayload( IS_ERROR , tostring(str) )
-		
+
 		InEPOE=false
 	end
-	
+
 ------------------
-	
+
 
 function SamePayload(a,b)
 	if a==b then return true end -- nil or same message will pass this, hmm
 	if not a or not b then return false end
-	
+
 	-- strip repeat flags for comparison
 	--a.flag=a.flag & andnot(IS_REPEAT)
 	--b.flag=b.flag & andnot(IS_REPEAT)
@@ -329,7 +329,7 @@ function DoPush(payload)
 			}
 		return Messages:push(newload)
 	end]]
-	
+
 	Messages:push(payload)
 end
 
@@ -357,16 +357,16 @@ function PushPayload(flags,s)
 				msg=str
 			}		
 		end
-		
+
 	end
-	
+
 	-- safeguard --
-	
+
 	EnableTick()
 	Messages:clear()
 	InEPOE=false			
 	Messages:push{flag=IS_EPOE,msg="Cancelling messages, too many iterations."}
-	
+
 end
 
 function Transmit(flags,msg,rf)
@@ -400,51 +400,51 @@ function OnTick()
 	if InEPOE then return end
 	--RealMsgN(InEPOE and "IN EPOE","OnTick")
 	InEPOE = true
-		
+
 		Refresh()
 		if HasNoSubs then 
 			Messages:clear() 
 		elseif !HitMaxQueue() and Messages:len()>0 then 
-		
+
 			for i=1,UMSGS_IN_TICK do 
-				
+
 				if OnBeingTransmit() then -- No more in queue
 					DisableTick()
 					break
 				end
-				
+
 			end
-		
+
 		end
-	
+
 	InEPOE=false
 end
 
 -- Initialize EPOE
 function Initialize()
 	InEPOE=true
-	
+
 		G.require	"enginespew"
-		
+
 		G.print	"EPOE hooks added"
 		G.Msg   =	OnMsg
 		G.MsgC   =	OnMsgC
 		G.MsgN  =	OnMsgN
 		G.print =	OnPrint
-		
+
 
 		local inhook = false -- Prevent deadloop. Should not happen type.
 		hook.Add("EngineSpew", TagHuman, function(spewType, msg, group, level) 
 			if inhook then return end
 			inhook = true
-			
+
 			if spewType == 1 --[[ = SPEW_WARNING]] then -- TODO: Add possibility for full console output.
 				OnLuaError( msg ) 
 			end
 			inhook = false
 		end )
-		
-	
+
+
 	InEPOE=false
 end
 

@@ -60,7 +60,7 @@ function ProcessMessage(flags,str)
 	lastmsg=str
 	lastflags=flags
 	]]
-	
+
 	-- Process sequences (aka long messages)
 	if HasFlag(flags,IS_SEQ) then -- Store long messages
 		Buffer=Buffer..str
@@ -69,12 +69,12 @@ function ProcessMessage(flags,str)
 		str=Buffer..str
 		Buffer=''
 	end
-	
-	
+
+
 	-- process epoe messages
 	local isEpoe=HasFlag(flags,IS_EPOE)
 	if isEpoe then
-		
+
 		if str=="_S" then
 			subscribed=true
 				internalPrint("Subscribed")
@@ -89,25 +89,25 @@ function ProcessMessage(flags,str)
 			return
 		end
 	end
-	
+
 	-- Handle color appending in a hacky way
 	local col
 	if HasFlag(flags,IS_MSGC) then
 		local colbytes,newstr=str:match("^(...)(.*)$")
 		local r,g,b=string.byte(colbytes,1)-1,string.byte(colbytes,2)-1,string.byte(colbytes,3)-1
-		
+
 		-- your monitor is not going to miss that one bit for each color I hope
 		r,g,b=r==254 and 255 or r,
 			  g==254 and 255 or g,
 			  b==254 and 255 or b
-		
+
 		col=Color(r,g,b,255)
 		str = newstr
 	end
-	
+
 	-- We are going to add the newline here instead of letting the handlers take care of it so you can just print the stuff and be done with it
 	str=str..NewLine(flags)
-	
+
 	-- If we should not let's just return :x
 	if not isEpoe and hook.Call(Should_TagHuman,nil,str,flags)==false then
 		return
@@ -182,7 +182,7 @@ function MODULE.Msg(...)
 	local ok,str=pcall(ToString,{...})
 	if not ok then internalPrint(str) return end
 	if not str then return end
-	
+
 	ProcessMessage(IS_MSG,str)
 end
 
@@ -190,7 +190,7 @@ function MODULE.MsgN(...)
 	local ok,str=pcall(ToString,{...})
 	if not ok then internalPrint(str) return end
 	if not str then return end
-	
+
 	ProcessMessage(IS_MSGN,str)
 end
 
@@ -198,7 +198,7 @@ function MODULE.Print(...)
 	local ok,str=pcall(ToString,{...})
 	if not ok then internalPrint(str) return end
 	if not str then return end
-	
+
 	ProcessMessage(IS_PRINT,str)
 
 end
@@ -209,7 +209,7 @@ function MODULE.Err(...)
 	local ok,str=pcall(ToString,{...})
 	if not ok then internalPrint(str) return end
 	if not str then return end
-	
+
 	ProcessMessage(IS_ERROR,str)
 end
 
@@ -220,7 +220,7 @@ function MODULE.MsgC(col,...)
 	local ok,str=pcall(ToString,{...})
 	if not ok then internalPrint(str) return end
 	if not str then return end
-	
+
 	ProcessMessage(IS_MSGC,ColorToStr(col)..str)
 end
 

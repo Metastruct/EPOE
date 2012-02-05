@@ -48,7 +48,7 @@ local function Reload()
 	table.Empty( full )
 	table.Empty( find )
 	table.Empty( regex )
-	
+
 	local data=file.Read("epoe_filters.txt")
 	if not data then return end
 	local i=0
@@ -74,14 +74,14 @@ concommand.Add("epoe_filter_reload",Reload)
 local sfind=string.find
 hook.Add(Tag,Tag,function(txt,flags)
 	if not epoe_filtering:GetBool() or not e.filters.hasany then return end
-	
+
 	if #full>0 and full[txt] 			then return false end
-	
+
 	if #find>0 then
 		for _,str in ipairs(find) do
 			if sfind(txt,str,1,true) 	then return false end end
 	end
-	
+
 	if #regex>0 then
 		for _,str in ipairs(regex) do
 			if sfind(txt,str) 			then return false end end

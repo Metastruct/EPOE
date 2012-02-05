@@ -207,7 +207,7 @@ function PANEL:Init()
 		RichText:SetMouseInputEnabled(true)
 		-- We'll keep it visible constantly but clip it off to make the richtext behave how we want
 		RichText:SetVerticalScrollbarEnabled(true)
-		
+
 		RichText:Dock(FILL)
 		function RichText.HideScrollbar()
 			RichText.__background=false
@@ -224,7 +224,7 @@ function PANEL:Init()
 			surface.DrawOutlinedRect(0,0,self:GetWide(),self:GetTall())
 		end
 	end
-	
+
 	self:ButtonHolding(false)
 end
 
@@ -319,7 +319,7 @@ function PANEL:Paint()
 			surface.SetDrawColor(30 ,30 ,30,255)
 		end
 			surface.DrawRect(1,1,self:GetWide()-2,16-2)
-		
+
 		local txt="EPOE - Enhanced Perception Of Errors"
 		surface.SetFont"DebugFixed"
 		local w,h=surface.GetTextSize(txt)
@@ -442,7 +442,7 @@ function PANEL:Think()
 	end
 
 	self.__highlight=false
-	
+
 	self:SetCursor( "arrow" )
 	if self:IsActive() then self:Activity() end
 
