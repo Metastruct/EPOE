@@ -219,13 +219,16 @@ function ToString(t)
 	return str:sub(1,-2) -- remove last redundant space
 end
 
--- TODO!
-function ToStringEx(...)
-	local n=0
+function ToStringEx(delim,...)
+	local res=""
 	for n=1,select('#',...) do
 		local e = select(n,...)
-		n=n+1
-		tostring(e)
+		if type(e)=="table" then
+		e=ToString(e)
+		else
+		    e=tostring(e)
+		end
+		res = res .. (n==1 and "" or delim) .. e
 	end
-	return ToString{...}
+	return res
 end
