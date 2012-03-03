@@ -215,8 +215,8 @@ end
 
 				EnableTick()
 
-				local data={...}
-				local err,str=pcall(ToString,data) -- just to be sure
+				
+				local err,str=pcall(ToStringEx,...) -- just to be sure
 
 				if str then
 					PushPayload( IS_MSG , str )
@@ -237,8 +237,8 @@ end
 
 				EnableTick()
 
-				local data={...}
-				local err,str=pcall(ToString,data) -- just to be sure
+				
+				local err,str=pcall(ToStringEx,...)
 
 				if str then
 					local colbytes = ColorToStr(color)
@@ -259,8 +259,8 @@ end
 
 				EnableTick()
 
-				local data={...}
-				local err,str=pcall(ToString,data)
+				
+				local err,str=pcall(ToStringEx,...)
 				if str then
 					PushPayload( IS_MSGN , str )
 				end
@@ -279,8 +279,8 @@ end
 
 				EnableTick()
 
-				local data={...}
-				local err,str=pcall(ToString,data)
+				
+				local err,str=pcall(ToStringEx,...)
 				if str then
 					PushPayload( IS_PRINT , str )
 				end

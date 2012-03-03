@@ -16,6 +16,7 @@ local concommand=concommand
 local tostring=tostring
 local type=type
 local string=string
+local select=select
 local assert=assert
 module( "epoe" )
 
@@ -216,4 +217,15 @@ function ToString(t)
 	str = str .. nl .. MakeTable ( t, nice)
 
 	return str:sub(1,-2) -- remove last redundant space
+end
+
+-- TODO!
+function ToStringEx(...)
+	local n=0
+	for n=1,select('#',...) do
+		local e = select(n,...)
+		n=n+1
+		tostring(e)
+	end
+	return ToString{...}
 end
