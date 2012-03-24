@@ -184,9 +184,17 @@ function PANEL:Init()
 		FontChooser:AddChoice("BudgetLabel","BudgetLabel")
 		FontChooser:AddChoice("ConsoleText","ConsoleText")
 		function FontChooser:OnSelect(_,_,font)
-			e.GUI.RichText:SetFont(font)
+			if VERSION>=150 then
+				e.GUI.RichText:SetFontInternal(font)
+			else
+				e.GUI.RichText:SetFont(font)
+			end
 		end
 		FontChooser:SetConVar("epoe_font")
+		if VERSION>=150 then
+			FontChooser:SetValue(GetConVarString"epoe_font")
+		end
+		
 		FontChooser:SizeToContents()
 		FontChooser:SetTall(16)
 		FontChooser:SetWide(FontChooser:GetWide()+32)
@@ -218,18 +226,28 @@ function PANEL:Init()
 			RichText:DockMargin(-7,0,0,0)
 		end
 		RichText:HideScrollbar()
-	function RichText:Paint()
-		if self.__background then
-			surface.SetDrawColor(70,70,70,40)
-			surface.DrawOutlinedRect(0,0,self:GetWide(),self:GetTall())
+		
+		function RichText.Paint(RichText)
+			if RichText.__background then
+				surface.SetDrawColor(70,70,70,40)
+				surface.DrawOutlinedRect(0,0,RichText:GetWide(),RichText:GetTall())
+			end
+			if not self.__wtfhack then
+				self.__wtfhack = true
+				self:PostInit()
+			end
 		end
-	end
 
 	self:ButtonHolding(false)
 end
 
 function PANEL:PostInit()
-	self.RichText:SetFont(epoe_font:GetString())
+	if VERSION>=150 then
+		self.RichText:SetFontInternal(epoe_font:GetString())
+		self.RichText:SetTextInset(20,20)
+	else
+		self.RichText:SetFont(epoe_font:GetString())
+	end
 	self.RichText:SetVerticalScrollbarEnabled(true)
 end
 
