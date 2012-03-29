@@ -8,9 +8,9 @@ if ValidPanel(e.GUI) then e.GUI:Remove() end
 local gradient = surface.GetTextureID( "VGUI/gradient_up" )
 local epoe_font = nil
 if VERSION >= 150 then
-	local epoe_font = CreateClientConVar("epoe_font", 			"Default", true, false)
+	epoe_font = CreateClientConVar("epoe_font", 			"Default", true, false)
 else
-	local epoe_font = CreateClientConVar("epoe_font", 			"ConsoleFont", true, false)
+	epoe_font = CreateClientConVar("epoe_font", 			"ConsoleFont", true, false)
 end
 local epoe_draw_background = CreateClientConVar("epoe_draw_background", 			"1", true, false)
 local epoe_show_in_screenshots = CreateClientConVar("epoe_show_in_screenshots", "0", true, false)
