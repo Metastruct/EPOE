@@ -248,7 +248,8 @@ end
 function PANEL:PostInit()
 	if VERSION>=150 then
 		self.RichText:SetFontInternal(epoe_font:GetString())
-		self.RichText:SetTextInset(20,20)
+		--self.RichText:SetTextInset(20,20) -- DUNT WERK
+		self.RichText:SetSize(self:GetSize()) -- DOCK Padding wont work either, setsize only?!
 	else
 		self.RichText:SetFont(epoe_font:GetString())
 	end
