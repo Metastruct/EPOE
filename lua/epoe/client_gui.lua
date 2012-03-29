@@ -220,7 +220,7 @@ function PANEL:Init()
 		-- We'll keep it visible constantly but clip it off to make the richtext behave how we want
 		RichText:SetVerticalScrollbarEnabled(true)
 
-		RichText:Dock(FILL)
+		--RichText:Dock(FILL)
 		function RichText.HideScrollbar()
 			RichText.__background=false
 			RichText:DockMargin(-8,-7,-16-4,0)
