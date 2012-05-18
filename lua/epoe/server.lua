@@ -19,7 +19,7 @@ local len=string.len
 local string=string
 local setmetatable=setmetatable
 local util=util
-local GMOD_VERSION=VERSION
+--local GMOD_VERSION=VERSION
 -- inform the client of the version
 CreateConVar( "epoe_version", "2.4", FCVAR_NOTIFY )
 
@@ -35,12 +35,12 @@ G._MsgN=G._MsgN or G.MsgN
 G._print=G._print or G.print
 
 -- Store local real messages, real ones
-RealMsg=G.Msg
-RealMsgC=GMOD_VERSION > 129 and G.MsgC or function(col,...) 
+RealMsg=G._MsgC
+RealMsgC=G._MsgC or function(col,...) 
 	RealMsg(...)
 end
-RealMsgN=G.MsgN
-RealPrint=G.print
+RealMsgN=G._MsgN
+RealPrint=G._print
 
 
 -- Hack
