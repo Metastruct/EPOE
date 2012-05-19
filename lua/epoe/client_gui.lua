@@ -6,12 +6,8 @@ local TagHuman=e.TagHuman
 if ValidPanel(e.GUI) then e.GUI:Remove() end
 
 local gradient = surface.GetTextureID( "VGUI/gradient_up" )
-local epoe_font = nil
-if VERSION >= 150 then
-	epoe_font = CreateClientConVar("epoe_font", 			"Default", true, false)
-else
-	epoe_font = CreateClientConVar("epoe_font", 			"ConsoleFont", true, false)
-end
+local epoe_font = CreateClientConVar("epoe_font", 			"BudgetLabel", true, false)
+
 local epoe_draw_background = CreateClientConVar("epoe_draw_background", 			"1", true, false)
 local epoe_show_in_screenshots = CreateClientConVar("epoe_show_in_screenshots", "0", true, false)
 
@@ -186,7 +182,9 @@ function PANEL:Init()
 		FontChooser:AddChoice("DebugFixed","DebugFixed")
 		FontChooser:AddChoice("HudHintTextSmall","HudHintTextSmall")
 		FontChooser:AddChoice("BudgetLabel","BudgetLabel")
-		FontChooser:AddChoice("ConsoleText","ConsoleText")
+		if VERSION<150 then
+			FontChooser:AddChoice("ConsoleText","ConsoleText")
+		end
 		function FontChooser:OnSelect(_,_,font)
 			if VERSION>=150 then
 				e.GUI.RichText:SetFontInternal(font)
