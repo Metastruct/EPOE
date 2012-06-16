@@ -25,6 +25,32 @@ CreateConVar( "epoe_version", "2.4", FCVAR_NOTIFY )
 
 module( "epoe" )
 
+local filter=CreateConVar("epoe_filter", "0")
+
+local blacklist = {}
+
+function ReadBlacklist()
+	if file.Exists("epoe_blacklist.txt") then
+		local c = file.Read("epoe_blacklist.txt")
+		local tbl = string.Explode("\n", c)
+		if tbl then
+			blacklist = tbl
+		end
+	else
+		file.Write("epoe_blacklist.txt", "")
+	end
+end
+
+local function DoShow(msg)
+	if GetConVar("epoe_filter"):GetInt() == 0 then return true end
+	for k, v in pairs(blacklist) do
+		if msg:find(v) then
+			return false
+		end
+	end
+	return true
+end
+
 -- Constants 
 local recover_time = 2 -- 0.1 = agressive. 2 = safer. 
 
@@ -218,7 +244,7 @@ end
 				
 				local err,str=pcall(ToStringEx,"",...) -- just to be sure
 
-				if str then
+				if str and DoShow(str) then
 					PushPayload( IS_MSG , str )
 				end
 
@@ -240,7 +266,7 @@ end
 				
 				local err,str=pcall(ToStringEx,"",...)
 
-				if str then
+				if str and DoShow(str) then
 					local colbytes = ColorToStr(color)
 					PushPayload( IS_MSGC , colbytes..str )
 				end
@@ -261,7 +287,7 @@ end
 
 				
 				local err,str=pcall(ToStringEx,"",...)
-				if str then
+				if str and DoShow(str) then
 					PushPayload( IS_MSGN , str )
 				end
 
@@ -281,7 +307,7 @@ end
 
 				
 				local err,str=pcall(ToStringEx," ",...)
-				if str then
+				if str and DoShow(str) then
 					PushPayload( IS_PRINT , str )
 				end
 
@@ -431,6 +457,8 @@ function Initialize()
 		G.MsgC   =	OnMsgC
 		G.MsgN  =	OnMsgN
 		G.print =	OnPrint
+		
+		ReadBlacklist()
 
 
 		local inhook = false -- Prevent deadloop. Should not happen type.
