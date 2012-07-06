@@ -1,5 +1,5 @@
 "AddonInfo"
 {
 	"name"				"EPOE"
-	"version"			"2.1337"	
+	"version"			"2.1338"	
 }
