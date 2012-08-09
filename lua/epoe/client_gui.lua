@@ -700,6 +700,8 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 				e.GUI:SetColor(255,255,255)	e.GUI:AppendText(os.date(	"%H"))
 				e.GUI:SetColor(255,255,255)	e.GUI:AppendText(			":")
 				e.GUI:SetColor(255,255,255)	e.GUI:AppendText(os.date(	"%M"))
+				e.GUI:SetColor(255,255,255)	e.GUI:AppendText(			":")
+				e.GUI:SetColor(255,255,255)	e.GUI:AppendText(os.date(	"%S"))
 				e.GUI:SetColor(100,100,100)	e.GUI:AppendText(			"] ")
 			end
 			notimestamp = not ( newText:Right(1)=="\n" ) -- negation hard
