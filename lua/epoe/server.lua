@@ -40,7 +40,7 @@ end
 
 -- Store local real messages, real ones
 RealMsg=G._MsgC
-RealMsgC=G._MsgC and G._MsgC!=G_.Msg and G._MsgC or MsgC_Compat 
+RealMsgC=G._MsgC and G._MsgC!=G.Msg and G._MsgC or MsgC_Compat 
 RealMsgN=G._MsgN
 RealPrint=G._print
 
