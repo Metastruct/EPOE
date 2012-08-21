@@ -6,12 +6,11 @@ local TagHuman=e.TagHuman
 if ValidPanel(e.GUI) then e.GUI:Remove() end
 
 local gradient = surface.GetTextureID( "VGUI/gradient_up" )
-
 local epoe_font = CreateClientConVar("epoe_font", 			"BudgetLabel", true, false)
+
 local epoe_draw_background = CreateClientConVar("epoe_draw_background", 			"1", true, false)
 local epoe_show_in_screenshots = CreateClientConVar("epoe_show_in_screenshots", "0", true, false)
-local epoe_keep_active = CreateClientConVar("epoe_keep_active", "0", false, false)
-local epoe_max_alpha = CreateClientConVar("epoe_max_alpha", "255", true, false)
+
 --- HELPER ---
 local function CheckFor(tbl,a,b)
     local a_len=#a
@@ -83,6 +82,7 @@ function PANEL:Init()
 
 	-- Activity fade
 	self.LastActivity = RealTime()
+	self.keepactive = 	false
 
 	self:SetFocusTopLevel( true )
 	self:SetCursor( "sizeall" )
@@ -176,27 +176,27 @@ function PANEL:Init()
 		Cfg:AddPanel( checkbox )
 
 
-		local FontChooser = vgui.Create("DComboBox", Frame )
-		FontChooser:AddChoice("Fixed (outline)","BudgetLabel")
-		FontChooser:AddChoice("Fixed","DebugFixed")
-		FontChooser:AddChoice("Fixed 2","DebugFixedSmall")
-		FontChooser:AddChoice("Smallest","HudHintTextSmall")
-		FontChooser:AddChoice("Smaller","ConsoleText")
-		FontChooser:AddChoice("Small","DefaultSmall")
-		FontChooser:AddChoice("Big","Default")
-		FontChooser:AddChoice("Huge","HUDNumber1")
-		FontChooser:AddChoice("wat","HDRDemoText")
-		function FontChooser:Think()
-			self:ConVarStringThink()
-			FontChooser:SizeToContents()
-			FontChooser:SetTall(16)
-			FontChooser:SetWide(FontChooser:GetWide()+32)
+		local FontChooser = vgui.Create(VERSION>=150 and "DComboBox" or "DMultiChoice", Frame )
+		function FontChooser:ApplySchemeSettings()end
+		FontChooser:AddChoice("Default","Default")
+		FontChooser:AddChoice("DebugFixed","DebugFixed")
+		FontChooser:AddChoice("HudHintTextSmall","HudHintTextSmall")
+		FontChooser:AddChoice("BudgetLabel","BudgetLabel")
+		if VERSION<150 then
+			FontChooser:AddChoice("ConsoleText","ConsoleText")
 		end
-
 		function FontChooser:OnSelect(_,_,font)
-			e.GUI.RichText:SetFontInternal(font)
+			if VERSION>=150 then
+				e.GUI.RichText:SetFontInternal(font)
+			else
+				e.GUI.RichText:SetFont(font)
+			end
 		end
 		FontChooser:SetConVar("epoe_font")
+		if VERSION>=150 then
+			FontChooser:SetValue(GetConVarString"epoe_font")
+		end
+		
 		FontChooser:SizeToContents()
 		FontChooser:SetTall(16)
 		FontChooser:SetWide(FontChooser:GetWide()+32)
@@ -217,29 +217,41 @@ function PANEL:Init()
 		RichText:SetMouseInputEnabled(true)
 		-- We'll keep it visible constantly but clip it off to make the richtext behave how we want
 		RichText:SetVerticalScrollbarEnabled(true)
-
-		RichText:Dock(FILL)
+		if VERSION < 150 then
+			RichText:Dock(FILL)
+		end
 		function RichText.HideScrollbar()
 			RichText.__background=false
-			RichText:DockMargin(0,0,-20,0)
+			RichText:DockMargin(-8,-7,-16-4,0)
 		end
 		function RichText.ShowScrollbar()
 			RichText.__background=true
-			RichText:DockMargin(0,0,0,0)
+			RichText:DockMargin(-7,0,0,0)
 		end
 		RichText:HideScrollbar()
-	function RichText:Paint()
-		if self.__background then
-			surface.SetDrawColor(70,70,70,40)
-			surface.DrawOutlinedRect(0,0,self:GetWide(),self:GetTall())
+		
+		function RichText.Paint(RichText)
+			if RichText.__background then
+				surface.SetDrawColor(70,70,70,40)
+				surface.DrawOutlinedRect(0,0,RichText:GetWide(),RichText:GetTall())
+			end
+			if not self.__wtfhack then
+				self.__wtfhack = true
+				self:PostInit()
+			end
 		end
-	end
 
 	self:ButtonHolding(false)
 end
 
 function PANEL:PostInit()
-	self.RichText:SetFontInternal(epoe_font:GetString())
+	if VERSION>=150 then
+		self.RichText:SetFontInternal(epoe_font:GetString())
+		--self.RichText:SetTextInset(20,20) -- DUNT WERK
+		self.RichText:SetSize(self:GetSize()) -- DOCK Padding wont work either, setsize only?!
+	else
+		self.RichText:SetFont(epoe_font:GetString())
+	end
 	self.RichText:SetVerticalScrollbarEnabled(true)
 end
 
@@ -372,8 +384,7 @@ function PANEL:ButtonHolding(isHolding)
 end
 
 
-local epoe_ui_holdtime=CreateClientConVar("epoe_ui_holdtime","5",true,false)--seconds
-local remainvisible=CreateClientConVar("epoe_ui_obeydrawing","1",true,false)
+local stayup=CreateClientConVar("epoe_ui_holdtime","5",true,false)--seconds
 local fadespeed = 3--seconds
 function PANEL:Think()
 
@@ -402,7 +413,7 @@ function PANEL:Think()
 
 
 	-- Hiding for gmod camera..
-	if remainvisible:GetBool() and hook.Call('HUDShouldDraw',GAMEMODE,"CHud"..TagHuman)==false and not self.being_hovered then self:SetAlpha(0) return end
+	if hook.Call('HUDShouldDraw',GAMEMODE,"CHud"..TagHuman)==false then self:SetAlpha(0) return end
 	if (self.Dragging) then
 
 
@@ -459,8 +470,8 @@ function PANEL:Think()
 
 	local inactive_time = RealTime() - self.LastActivity
 	--print("inactive_time",inactive_time)
-	local epoe_ui_holdtime=epoe_ui_holdtime:GetInt()
-	inactive_time = ( inactive_time - epoe_ui_holdtime ) * ( 255 / fadespeed )
+	local stayup=stayup:GetInt()
+	inactive_time = ( inactive_time - stayup ) * ( 255 / fadespeed )
 	--print("inactive_time post",inactive_time)
 
 	local alpha = 255 - ( (inactive_time >= 255 and 255) or (inactive_time <= 0 and 0) or inactive_time )
@@ -469,13 +480,7 @@ function PANEL:Think()
 		self:SetAlpha(255)
 	end
 
-	local alphascale = 255
-	if not self.__highlight and not self.__holding then
-		alphascale = epoe_max_alpha:GetInt()
-		alphascale = alphascale >255 and 255 or alphascale<0 and 0 or alphascale
-		alphascale=alphascale/255
-	end
-	self:SetAlpha(math.ceil(alpha*alphascale))
+	self:SetAlpha(alpha)
 end
 
 -- woo clever..
@@ -535,7 +540,7 @@ function PANEL:FixPosition()
 	if failed then
 		self:SetPos(x,y)
 		self:SetSize(w,h)
-		--self.RichText:AppendText"GUI: Recovered position after invalid values\n"
+		self.RichText:AppendText"GUI: Recovered position after invalid values\n"
 	end
 end
 
@@ -555,22 +560,20 @@ function PANEL:OnMouseReleased()
 
 end
 
-function PANEL:ToggleActive()
-	local state=epoe_keep_active:GetBool()
-	if state then
-		RunConsoleCommand("epoe_keep_active","0")
+function PANEL:ToggleActive(set)
+	if set==nil then
+		self.keepactive=!self.keepactive
 	else
-		RunConsoleCommand("epoe_keep_active","1")
+		self.keepactive=set
 	end
-	
-	e.internalPrint(state and "Fading Enabled" or "Fading Disabled")
+	e.internalPrint(self.keepactive and "Fading disabled" or "Fading enabled")
 
 
 end
 
 function PANEL:IsActive()
 
-	if epoe_keep_active:GetBool() or self.being_hovered or self:HasFocus() or vgui.FocusedHasParent( self ) then return true end
+	if self.keepactive or self.being_hovered or self:HasFocus() or vgui.FocusedHasParent( self ) then return true end
 
 end
 
@@ -621,7 +624,7 @@ end)
 
 local threshold  = 0.35 -- I'm sorry if you can't click this fast!
 local lastclick  = 0
-
+local keepactive = false
 local function epoe_toggle(_,cmd,args)
 	if cmd=="+epoe" then
 
@@ -636,7 +639,8 @@ local function epoe_toggle(_,cmd,args)
 
 			if lastclick+threshold>RealTime() then -- Doubleclick
 				lastclick = 0 -- reset
-				e.GUI:ToggleActive()
+				keepactive=!keepactive
+				e.GUI:ToggleActive(keepactive)
 			else
 				lastclick=RealTime()
 			end
@@ -696,6 +700,8 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 				e.GUI:SetColor(255,255,255)	e.GUI:AppendText(os.date(	"%H"))
 				e.GUI:SetColor(255,255,255)	e.GUI:AppendText(			":")
 				e.GUI:SetColor(255,255,255)	e.GUI:AppendText(os.date(	"%M"))
+				e.GUI:SetColor(255,255,255)	e.GUI:AppendText(			":")
+				e.GUI:SetColor(255,255,255)	e.GUI:AppendText(os.date(	"%S"))
 				e.GUI:SetColor(100,100,100)	e.GUI:AppendText(			"] ")
 			end
 			notimestamp = not ( newText:Right(1)=="\n" ) -- negation hard
@@ -716,3 +722,4 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 
 	end
 end)
+

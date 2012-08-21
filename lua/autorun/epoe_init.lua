@@ -1,7 +1,7 @@
 local function DoClient()
 	include('epoe/client.lua')
 	include('epoe/client_ui.lua')
-	include('epoe/client_gui.lua')
+	include("epoe/client_gui"..(VERSION<150 and "_12" or "")..".lua")
 	include('epoe/autoplace.lua')
 	include("epoe/client_filter.lua")
 end
@@ -47,7 +47,7 @@ if SERVER then
 
 	AddCSLuaFile("epoe/client.lua")
 	AddCSLuaFile("epoe/client_ui.lua")
-	AddCSLuaFile("epoe/client_gui.lua")
+	AddCSLuaFile("epoe/client_gui"..(VERSION<150 and "_12" or "")..".lua")
 	AddCSLuaFile("epoe/client_filter.lua")
 	AddCSLuaFile("epoe/shared.lua")
 	AddCSLuaFile("epoe/autoplace.lua")
