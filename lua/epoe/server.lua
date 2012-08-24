@@ -34,13 +34,13 @@ G._MsgC=G._MsgC or G.MsgC or G.Msg
 G._MsgN=G._MsgN or G.MsgN
 G._print=G._print or G.print
 
-local function MsgC_Compat (col,...) 
-	RealMsg(...)
-end
 
 -- Store local real messages, real ones
-RealMsg=G._MsgC
+RealMsg=G._Msg
+
+MsgC_Compat=function(col,...)RealMsg(...)end
 RealMsgC=G._MsgC and G._MsgC!=G.Msg and G._MsgC or MsgC_Compat
+
 RealMsgN=G._MsgN
 RealPrint=G._print
 
