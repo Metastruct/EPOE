@@ -97,9 +97,9 @@ function ProcessMessage(flags,str)
 		local colbytes,newstr=str:match("^(...)(.*)$")
 		local r,g,b=string.byte(colbytes,1)-1,string.byte(colbytes,2)-1,string.byte(colbytes,3)-1
 		
-		if GM13 then -- FIXME QUICK... FIX THIS WHOLE SHIT
+		/*if GM13 then -- FIXME QUICK... FIX THIS WHOLE SHIT
 			r,g,b=r*2,g*2,b*2
-		end
+		end*/
 		-- your monitor is not going to miss that one bit for each color I hope
 		r,g,b=r>=254 and 255 or r,
 			  g>=254 and 255 or g,
