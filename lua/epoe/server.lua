@@ -458,7 +458,7 @@ function Initialize()
 		G.MsgC			= OnMsgC
 		G.MsgN			= OnMsgN
 		G.print			= OnPrint
-		if VERSION>150 then
+		if G.VERSION>150 then
 			G.ErrorNoHalt	= OnLuaErrorNoHalt
 			local nextspew
 			hook.Add("EngineSpew",TagHuman,function(a,msg,c,d)

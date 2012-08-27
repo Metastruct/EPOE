@@ -16,7 +16,7 @@ hook.Add(TagHuman,TagHuman..'_CLI',function(Text,flags,col)
 		return
 	end
 
-	if if e.HasFlag(flags,e.IS_MSGC) and VERSION>150 and epoe_toconsole_colors:GetBool() then
+	if e.HasFlag(flags,e.IS_MSGC) and VERSION>150 and epoe_toconsole_colors:GetBool() then
 		if col then
 			MsgC(col,Text)
 			return
