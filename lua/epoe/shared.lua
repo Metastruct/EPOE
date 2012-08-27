@@ -144,15 +144,19 @@ UMSGS_IN_TICK = 3
 -- for MsgC
 -- TODO: Client version without loss
 ---------------------------------------
+local big=252 -- AGH GM13??
 function ColorToStr(color)
 	local r,g,b=color.r,color.g,color.b
-		r,g,b=r+1,g+1,b+1
 
-		r,g,b=r>=255 and 255 or r<=0 and 1 or r,
-			  g>=255 and 255 or g<=0 and 1 or g,
-			  b>=255 and 255 or b<=0 and 1 or b
+	r,g,b=
+		r>=big and big or r<0 and 0 or r,
+		g>=big and big or g<0 and 0 or g,
+		b>=big and big or b<0 and 0 or b
+
+	r,g,b=r+1,g+1,b+1
 	return string.char(r)..string.char(g)..string.char(b)
 end
+
 function StrToColor(str)
 	return Color(255,0,255,255) -- STUB
 end

@@ -93,6 +93,7 @@ function ProcessMessage(flags,str)
 
 	-- Handle color appending in a hacky way
 	local col
+	local big=252 -- AGH GM13??
 	if HasFlag(flags,IS_MSGC) then
 		local colbytes,newstr=str:match("^(...)(.*)$")
 		local r,g,b=string.byte(colbytes,1)-1,string.byte(colbytes,2)-1,string.byte(colbytes,3)-1
@@ -101,9 +102,9 @@ function ProcessMessage(flags,str)
 			r,g,b=r*2,g*2,b*2
 		end*/
 		-- your monitor is not going to miss that one bit for each color I hope
-		r,g,b=r>=254 and 255 or r,
-			  g>=254 and 255 or g,
-			  b>=254 and 255 or b
+		r,g,b=r>=big and 255 or r,
+			  g>=big and 255 or g,
+			  b>=big and 255 or b
 		
 		col=Color(r,g,b,255)
 		str = newstr
