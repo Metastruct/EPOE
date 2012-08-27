@@ -28,6 +28,7 @@ local G=_G
 local MsgC=MsgC
 local Color=Color
 local CreateClientConVar=CreateClientConVar
+local GM13=VERSION>150
 
 module( "epoe" )
 
@@ -95,12 +96,15 @@ function ProcessMessage(flags,str)
 	if HasFlag(flags,IS_MSGC) then
 		local colbytes,newstr=str:match("^(...)(.*)$")
 		local r,g,b=string.byte(colbytes,1)-1,string.byte(colbytes,2)-1,string.byte(colbytes,3)-1
-
+		
+		if GM13 then -- FIXME QUICK... FIX THIS WHOLE SHIT
+			r,g,b=r*2,g*2,b*2
+		end
 		-- your monitor is not going to miss that one bit for each color I hope
-		r,g,b=r==254 and 255 or r,
-			  g==254 and 255 or g,
-			  b==254 and 255 or b
-
+		r,g,b=r>=254 and 255 or r,
+			  g>=254 and 255 or g,
+			  b>=254 and 255 or b
+		
 		col=Color(r,g,b,255)
 		str = newstr
 	end

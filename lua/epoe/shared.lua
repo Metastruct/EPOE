@@ -18,6 +18,8 @@ local type=type
 local string=string
 local select=select
 local assert=assert
+local GM13=VERSION>150
+
 module( "epoe" )
 
 -- Consts
@@ -65,7 +67,7 @@ end
 
 -- Certain messages don't need a newline.
 function NewLine(flags)
-	if HasFlag(flags,IS_SEQ) or HasFlag(flags,IS_MSG) or HasFlag(flags,IS_MSGC) or HasFlag(flags,IS_EPOE) or HasFlag(flags,IS_ERROR) then 
+	if HasFlag(flags,IS_SEQ) or HasFlag(flags,IS_MSG) or HasFlag(flags,IS_MSGC) or (HasFlag(flags,IS_ERROR) and not GM13) or HasFlag(flags,IS_EPOE)  then 
 		return ""
 	end
 	return "\n"
