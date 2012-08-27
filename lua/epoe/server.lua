@@ -15,6 +15,7 @@ local pcall=pcall
 local concommand=concommand
 local tostring=tostring
 local timer=timer
+local CreateConVar=CreateConVar
 local len=string.len
 local string=string
 local setmetatable=setmetatable
@@ -22,6 +23,10 @@ local util=util
 --local GMOD_VERSION=VERSION
 -- inform the client of the version
 CreateConVar( "epoe_version", "2.4", FCVAR_NOTIFY )
+
+local epoe_client_traces=CreateConVar("epoe_client_traces","0")
+local epoe_server_traces=CreateConVar("epoe_server_traces","0")
+local epoe_client_errors=CreateConVar("epoe_client_errors","1")
 
 module( "epoe" )
 
@@ -43,13 +48,16 @@ RealMsgC=G._MsgC and G._MsgC!=G.Msg and G._MsgC or MsgC_Compat
 
 RealMsgN=G._MsgN
 RealPrint=G._print
+RealErrorNoHalt=G.ErrorNoHalt
 
-
--- Hack
+/*-- Big Hack
 local function ErrorNoHalt(...)
-	G.timer.Simple(0.01,G.ErrorNoHalt,...)
+	local t={...}
+	G.timer.Simple(0.01,function()
+		RealErrorNoHalt(unpack(t))
+	end)
 end
-
+*/
 
 
 ------------------ SUBS SYSTEM ------------------
@@ -306,7 +314,25 @@ end
 
 		InEPOE=false
 	end
+	function OnLuaErrorNoHalt(...)
+		if InEPOE or HasNoSubs then pcall(RealErrorNoHalt,...) else
+			InEPOE = true
 
+				if HitMaxQueue() then return end
+
+				EnableTick()
+
+				
+				local err,str=pcall(ToStringEx," ",...)
+				if str then
+					PushPayload( IS_ERROR , str )
+				end
+
+				pcall(RealErrorNoHalt,...)
+
+			InEPOE=false
+		end
+	end
 ------------------
 
 
@@ -428,24 +454,49 @@ function Initialize()
 
 		G.require	"enginespew"
 
+		G.Msg			= OnMsg
+		G.MsgC			= OnMsgC
+		G.MsgN			= OnMsgN
+		G.print			= OnPrint
+		if VERSION>150 then
+			G.ErrorNoHalt	= OnLuaErrorNoHalt
+			local nextspew
+			hook.Add("EngineSpew",TagHuman,function(a,msg,c,d)
+				if InEPOE or a!=0 or c!="" or d!=0 or msg:sub(1,1)!="[" then return end
+				
+				if nextspew then
+					if not epoe_client_errors:GetBool() then return end
+					nextspew=false
+					local newmsg = not  epoe_client_traces:GetBool() and msg:match("(.-)\n") or msg
+					OnLuaError( "CLIENT ERR: "..newmsg )
+					return 
+				end
+				if msg:find("] Lua Error:",1,true) then 
+					nextspew=true 
+					return
+				end
+				if msg:find(":%d+%] ") then 
+					local newmsg = not epoe_server_traces:GetBool() and msg:match("(.-)\n") or msg
+					
+					OnLuaError( newmsg )
+					return 
+				end
+			
+			end)
+		else
+			local inhook = false -- Prevent deadloop. Should not happen type.
+			hook.Add("EngineSpew", TagHuman, function(spewType, msg, group, level) 
+				if inhook then return end
+				inhook = true
+
+				if spewType == 1 --[[ = SPEW_WARNING]] then -- TODO: Add possibility for full console output.
+					OnLuaError( msg ) 
+				end
+				inhook = false
+			end )
+		end
 		G.print	"EPOE hooks added"
-		G.Msg   =	OnMsg
-		G.MsgC   =	OnMsgC
-		G.MsgN  =	OnMsgN
-		G.print =	OnPrint
-
-
-		local inhook = false -- Prevent deadloop. Should not happen type.
-		hook.Add("EngineSpew", TagHuman, function(spewType, msg, group, level) 
-			if inhook then return end
-			inhook = true
-
-			if spewType == 1 --[[ = SPEW_WARNING]] then -- TODO: Add possibility for full console output.
-				OnLuaError( msg ) 
-			end
-			inhook = false
-		end )
-
+		
 
 	InEPOE=false
 end
