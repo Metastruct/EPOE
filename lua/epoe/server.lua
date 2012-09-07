@@ -462,16 +462,21 @@ function Initialize()
 			G.ErrorNoHalt	= OnLuaErrorNoHalt
 			local nextspew
 			hook.Add("EngineSpew",TagHuman,function(a,msg,c,d)
-				if InEPOE or a!=0 or c!="" or d!=0 or msg:sub(1,1)!="[" then return end
+				if (!msg or msg:sub(1,1)!="[" or a!=0 or c!="" or d!=0  ) and not nextspew then return end
+				if InEPOE then return end
 				
 				if nextspew then
+					--RealPrint("CLERRSTOP: '"..msg.."'")
 					if not epoe_client_errors:GetBool() then return end
 					nextspew=false
 					local newmsg = not  epoe_client_traces:GetBool() and msg:match("(.-)\n") or msg
 					OnLuaError( "CLIENT ERR: "..newmsg )
+					
 					return 
+					
 				end
 				if msg:find("] Lua Error:",1,true) then 
+					--RealPrint("CLERRSTART: '"..msg.."'")
 					nextspew=true 
 					return
 				end
