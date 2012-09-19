@@ -361,41 +361,40 @@ function DoPush(payload)
 	Messages:push(payload)
 end
 
-
-function DivideStr(str,pos)
-	local cur,remaining = str:sub(1,pos),str:sub(pos,#str-pos)
-	return cur,remaining
-end
--- Make sure our message is less than 200 bytes to make it sendable.
--- If it isn't divide it to parts
-function PushPayload(flags,s)
-	local str=""
-	local remaining=s
-	for i=0,512 do -- Should be long enough for anything. We get hit by other limitations if more..
-		str,remaining=DivideStr(remaining,190) -- Max 200 bytes. Hmm...
-		if len(remaining)==0 then
+-- Divides the payload to ok sized chunks and THEN sends it. GMod13 needs this too as you don't want to receive 66*64KB every second in the mega worst case scenario
+function PushPayload(flags,text)
+	
+	local txt,i=true,1 
+	local size=190 -- usermessage size. GMod13 might want bigger at some point :)
+	local textlen=#text
+	local first=true
+	while txt and txt!="" do 
+	
+		txt=text:sub(i,i+size-1)
+		i=i+size
+		if txt!="" or first then
+			local curflags=flags
+			if textlen>=i then
+				curflags=flags|IS_SEQ -- bitwise, don't let me down <3
+			end
 			DoPush{
-				flag=flags, -- Byte
-				msg=str -- arbitrary
+				flag=curflags, 
+				msg=txt
 			}			
-			return
-		else
-			DoPush{
-				flag=flags|IS_SEQ,
-				msg=str
-			}		
 		end
-
+		first=false
+		
+		if i>63*1024 then -- let's stop here. You've done well enough...
+			EnableTick()
+			Messages:clear()
+			InEPOE=false			
+			Messages:push{flag=IS_EPOE,msg="Cancelling messages, too many iterations."}
+			return
+		end
 	end
-
-	-- safeguard --
-
-	EnableTick()
-	Messages:clear()
-	InEPOE=false			
-	Messages:push{flag=IS_EPOE,msg="Cancelling messages, too many iterations."}
-
 end
+
+
 
 function Transmit(flags,msg,rf)
 	umsg.Start(Tag,rf==true and RF or rf)
