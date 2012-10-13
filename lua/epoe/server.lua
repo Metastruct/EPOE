@@ -467,8 +467,8 @@ function Initialize()
 				if incoming_clienterr then
 					--RealPrint("CLERRSTOP: '"..msg.."'")
 					if not epoe_client_errors:GetBool() then return end
-					incoming_clienterr=false
 					local pl,userid=false,incoming_clienterr:match(".+|(%d*)|.-$")
+					incoming_clienterr=false
 					if userid then
 						userid=tonumber(userid)
 						for k,v in pairs(player.GetAll()) do
