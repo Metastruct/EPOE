@@ -447,7 +447,7 @@ function OnTick()
 	InEPOE=false
 end
 
--- Initialize EPOE
+-- Initialize EPOE 
 function Initialize()
 	InEPOE=true
 
@@ -459,24 +459,37 @@ function Initialize()
 		G.print			= OnPrint
 		if G.VERSION>150 then
 			G.ErrorNoHalt	= OnLuaErrorNoHalt
-			local nextspew
+			local incoming_clienterr
 			hook.Add("EngineSpew",TagHuman,function(a,msg,c,d)
-				if (!msg or msg:sub(1,1)!="[" or a!=0 or c!="" or d!=0  ) and not nextspew then return end
+				if (!msg or msg:sub(1,1)!="[" or a!=0 or c!="" or d!=0  ) and not incoming_clienterr then return end
 				if InEPOE then return end
 				
-				if nextspew then
+				if incoming_clienterr then
 					--RealPrint("CLERRSTOP: '"..msg.."'")
 					if not epoe_client_errors:GetBool() then return end
-					nextspew=false
-					local newmsg = not  epoe_client_traces:GetBool() and msg:match("(.-)\n") or msg
-					OnLuaError( "CLIENT ERR: "..newmsg )
+					incoming_clienterr=false
+					local pl,userid=false,incoming_clienterr:match(".+|(%d*)|.-$")
+					if userid then
+						userid=tonumber(userid)
+						for k,v in pairs(player.GetAll()) do
+							if v:UserID()==userid then
+								pl=v
+								break
+							end
+						end
+					end
+					msg=msg and msg:gsub("^\n*","") -- trim newlines from beginning
+					
+					-- epoe_client_traces=print everything from the error 
+					local newmsg = not  epoe_client_traces:GetBool() and msg:match("%[ERROR%] (.-)\n") or (msg:match("%[ERROR%] (.+)") or msg)
+					OnLuaError( (pl and tostring(pl) or "CLIENT").." ERR: "..newmsg )
 					
 					return 
 					
 				end
 				if msg:find("] Lua Error:",1,true) then 
 					--RealPrint("CLERRSTART: '"..msg.."'")
-					nextspew=true 
+					incoming_clienterr=msg 
 					return
 				end
 				if msg:find(":%d+%] ") then 
