@@ -3,23 +3,29 @@
 require ( "hook" )
 
 local G=_G
-local umsg=umsg
+
 local ValidEntity=ValidEntity
 local assert=assert
 local RecipientFilter=RecipientFilter
 local error=error
 local pairs=pairs
+local pcall=pcall
+local tostring=tostring
+local tonumber=tonumber
+local CreateConVar=CreateConVar
+local setmetatable=setmetatable
+
+local len=string.len
+
+local concommand=concommand
+local player=player
+local umsg=umsg
+local timer=timer
+local string=string
+local util=util
 local hook=hook
 local table=table
-local pcall=pcall
-local concommand=concommand
-local tostring=tostring
-local timer=timer
-local CreateConVar=CreateConVar
-local len=string.len
-local string=string
-local setmetatable=setmetatable
-local util=util
+
 --local GMOD_VERSION=VERSION
 -- inform the client of the version
 CreateConVar( "epoe_version", "2.4", FCVAR_NOTIFY )
