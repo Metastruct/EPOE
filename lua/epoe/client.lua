@@ -12,7 +12,7 @@ local hook=hook
 local table=table
 local pcall=pcall
 local concommand=concommand
-local tostring=tostring
+local ToStringEx=ToStringEx
 local type=type
 local string=string
 local usermessage=usermessage
@@ -134,7 +134,7 @@ usermessage.Hook(Tag,OnUsermessage)
 -- EPOE Messages
 ------------------------------------
 function internalPrint(...)
-	local noerr,str=pcall(ToString,{...}) -- just to be sure
+	local noerr,str=pcall(ToStringEx,...) -- just to be sure
 	if !str then
 		return
 	end
@@ -184,7 +184,7 @@ end
 ------------------------------------
 local MODULE=_M
 function MODULE.Msg(...)
-	local ok,str=pcall(ToString,{...})
+	local ok,str=pcall(ToStringEx,...)
 	if not ok then internalPrint(str) return end
 	if not str then return end
 
@@ -192,7 +192,7 @@ function MODULE.Msg(...)
 end
 
 function MODULE.MsgN(...)
-	local ok,str=pcall(ToString,{...})
+	local ok,str=pcall(ToStringEx,...)
 	if not ok then internalPrint(str) return end
 	if not str then return end
 
@@ -200,7 +200,7 @@ function MODULE.MsgN(...)
 end
 
 function MODULE.Print(...)
-	local ok,str=pcall(ToString,{...})
+	local ok,str=pcall(ToStringEx,...)
 	if not ok then internalPrint(str) return end
 	if not str then return end
 
@@ -211,7 +211,7 @@ end
 MODULE.print = MODULE.Print
 
 function MODULE.Err(...)
-	local ok,str=pcall(ToString,{...})
+	local ok,str=pcall(ToStringEx,...)
 	if not ok then internalPrint(str) return end
 	if not str then return end
 
@@ -222,7 +222,7 @@ MODULE.errornohalt = MODULE.Err
 
 function MODULE.MsgC(col,...)
 	if not col or not col.r then return end
-	local ok,str=pcall(ToString,{...})
+	local ok,str=pcall(ToStringEx,...)
 	if not ok then internalPrint(str) return end
 	if not str then return end
 
@@ -235,8 +235,8 @@ function MODULE.AddText(...)
 		if type(v) == "table" and type(v.r) == "number" and type(v.g) == "number" and type(v.b) == "number" then
 			col=Color(v.r,v.g,v.b,255)
 		else
-			local ok,str=pcall(ToString,{v})
-			ProcessMessage(IS_MSGC,ColorToStr(col)..(ok and str or tostring(v)))
+			local ok,str=pcall(ToStringEx,{v})
+			ProcessMessage(IS_MSGC,ColorToStr(col)..(ok and str or ToStringEx(v)))
 		end
 	end
 end

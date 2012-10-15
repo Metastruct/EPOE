@@ -18,6 +18,7 @@ local type=type
 local string=string
 local select=select
 local assert=assert
+local getmetatable=debug.getmetatable
 local GM13=VERSION>150
 
 module( "epoe" )
@@ -162,12 +163,7 @@ function StrToColor(str)
 end
 
 
----------------------------------------
--- A bit customization for tostringing values. Looks nicer and is more useful (most often)
--- Infinite TODO: Make even more useful
--- TODO: Bail out on huge tables or we risk server lags
----------------------------------------
-function ToString(t)
+function ToString(t) -- depreciated
 	local 		nl,tab  = "",  ""
 
 	local function MakeTable ( t, nice, indent, done)
@@ -225,12 +221,58 @@ function ToString(t)
 	return str:sub(1,-2) -- remove last redundant space
 end
 
+
+function ToStringTableInfo(t)
+	local num=0
+	local nonnum=0
+	local tables
+	local meta=getmetatable(t)
+	local str=tostring(t)
+	str=str:gsub("table: ","table:( ")
+	for k,v in pairs(t) do
+		local ktype=type(k)
+		if ktype=="number" then
+			num=num+1
+		elseif ktype=="table" then
+			nonnum=nonnum+1
+			tables=true
+		else
+			nonnum=nonnum+1
+		end
+		if type(v) == "table" then
+			tables=true
+		end
+	end
+	if nonnum>0 then
+		str=str..', !#'..nonnum
+	end
+	if num>0 then
+		local nums=#t
+		if nums==num then
+			str=str..', #'..num
+		else
+			str=str..', #'..num..'/'..nums
+		end
+	end
+	/*if num>0 and nonnum>0 then
+		str=str..', count='..(num+nonnum)
+	end*/
+	if meta then
+		str=str..', meta'
+	end
+	if tables then
+		str=str..', subtables'
+	end
+	str=str..' )'
+	return str
+end
+
 function ToStringEx(delim,...)
 	local res=""
 	for n=1,select('#',...) do
 		local e = select(n,...)
 		if type(e)=="table" then
-		e=ToString(e)
+			e=ToStringTableInfo(e)
 		else
 		    e=tostring(e)
 		end
