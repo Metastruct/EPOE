@@ -235,8 +235,8 @@ function MODULE.AddText(...)
 		if type(v) == "table" and type(v.r) == "number" and type(v.g) == "number" and type(v.b) == "number" then
 			col=Color(v.r,v.g,v.b,255)
 		else
-			local ok,str=pcall(ToStringEx,"",{v})
-			ProcessMessage(IS_MSGC,ColorToStr(col)..(ok and str or ToStringEx("",v)))
+			local ok,str=pcall(ToStringEx,"",v)
+			ProcessMessage(IS_MSGC,ColorToStr(col)..str)
 		end
 	end
 end
