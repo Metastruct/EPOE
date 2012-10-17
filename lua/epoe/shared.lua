@@ -20,7 +20,9 @@ local select=select
 local assert=assert
 local getmetatable=debug.getmetatable
 local GM13=VERSION>150
-
+local bit=bit
+if not bit then error"You need http://luaforge.net/projects/bit/ OR https://dl.dropbox.com/u/1910689/gmod/bit.lua in extensions for Garry's Mod 12!" end
+local G=_G
 module( "epoe" )
 
 -- Consts
@@ -62,9 +64,11 @@ function DebugFlags(flag)
 end
 
 function HasFlag(byte,flag)
-	local a = (byte or 0)&flag
+	local a = bit.band(byte or 0,flag)
 	return a==flag
-end
+end	
+
+
 
 -- Certain messages don't need a newline.
 function NewLine(flags)

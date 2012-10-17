@@ -25,6 +25,8 @@ local string=string
 local util=util
 local hook=hook
 local table=table
+local bit=bit
+if not bit then error"You need http://luaforge.net/projects/bit/ OR https://dl.dropbox.com/u/1910689/gmod/bit.lua for Garry's Mod 12!" end
 
 --local GMOD_VERSION=VERSION
 -- inform the client of the version
@@ -347,13 +349,14 @@ function SamePayload(a,b)
 	if not a or not b then return false end
 
 	-- strip repeat flags for comparison
-	--a.flag=a.flag & andnot(IS_REPEAT)
-	--b.flag=b.flag & andnot(IS_REPEAT)
+	--a.flag=a.flag BAND andnot(IS_REPEAT)
+	--b.flag=b.flag BAND andnot(IS_REPEAT)
 
 	return a.flag==b.flag and a.msg==b.msg
 end
 
 -- Check if the payload is same and make a new payload and push that instead
+-- NOTE: Removed due to unforeseen behaviour causing more problems than fixes
 function DoPush(payload)
 	--[[local last = Messages:peek()
 	if SamePayload(last,payload) then
@@ -381,7 +384,7 @@ function PushPayload(flags,text)
 		if txt!="" or first then
 			local curflags=flags
 			if textlen>=i then
-				curflags=flags|IS_SEQ -- bitwise, don't let me down <3
+				curflags=bit.bor(flags,IS_SEQ) -- bitwise, don't let me down <3
 			end
 			DoPush{
 				flag=curflags, 
