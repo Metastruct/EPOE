@@ -202,6 +202,36 @@ function PANEL:Init()
 		FontChooser:SetWide(FontChooser:GetWide()+32)
 		Cfg:AddPanel( FontChooser )
 
+		-- FEEL FREE TO CHANGE/FIX/REMOVE( :( ) THIS
+		pcall(function()
+			local PlaceChooser = vgui.Create("DComboBox", Frame )
+			PlaceChooser:AddChoice("Wherever", "0")
+			PlaceChooser:AddChoice("Top Left", "1")
+			PlaceChooser:AddChoice("Top", "2")
+			PlaceChooser:AddChoice("Top Right", "3")
+			PlaceChooser:AddChoice("Left", "4")
+			PlaceChooser:AddChoice("Center", "5")
+			PlaceChooser:AddChoice("Right", "6")
+			PlaceChooser:AddChoice("Bottom Left", "7")
+			PlaceChooser:AddChoice("Bottom", "8")
+			PlaceChooser:AddChoice("Bottom Right", "9")
+			function PlaceChooser:Think()
+				self:ConVarStringThink()
+				PlaceChooser:SizeToContents()
+				PlaceChooser:SetTall(16)
+				PlaceChooser:SetWide(PlaceChooser:GetWide()+32)
+			end
+
+			function PlaceChooser:OnSelect(index, value, data)
+				LocalPlayer():ConCommand("epoe_autoplace " .. (index - 1))
+			end
+			PlaceChooser:ChooseOptionID((GetConVarNumber("epoe_autoplace") or 0) + 1)
+			PlaceChooser:SizeToContents()
+			PlaceChooser:SetTall(16)
+			PlaceChooser:SetWide(PlaceChooser:GetWide()+32)
+			Cfg:AddPanel( PlaceChooser )
+		end)
+
 	self.uppermenu=Cfg
 
 
