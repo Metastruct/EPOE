@@ -470,7 +470,7 @@ function Initialize()
 			G.ErrorNoHalt	= OnLuaErrorNoHalt
 			local incoming_clienterr
 			hook.Add("EngineSpew",TagHuman,function(a,msg,c,d)
-				if (!msg or msg:sub(1,1)!="[" or a!=0 or c!="" or d!=0  ) and not incoming_clienterr then return end
+				if (!msg or (msg:sub(1,1)!="[" and msg:sub(1,2)!="\n[") or a!=0 or c!="" or d!=0  ) and not incoming_clienterr then return end
 				if InEPOE then return end
 				
 				if incoming_clienterr then
@@ -501,7 +501,8 @@ function Initialize()
 					incoming_clienterr=msg 
 					return
 				end
-				if msg:find(":%d+%] ") then 
+				if msg:sub(1,9)=="\n[ERROR] " then
+					msg=msg:sub(10,-1)
 					local newmsg = not epoe_server_traces:GetBool() and msg:match("(.-)\n") or msg
 					
 					OnLuaError( newmsg )
