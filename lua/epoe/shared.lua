@@ -277,6 +277,8 @@ function ToStringEx(delim,...)
 		local e = select(n,...)
 		if type(e)=="table" then
 			e=ToStringTableInfo(e)
+		elseif e == nil then
+			e=type(select(n,...))
 		else
 		    e=tostring(e)
 		end
