@@ -19,7 +19,7 @@ local string=string
 local select=select
 local assert=assert
 local getmetatable=debug.getmetatable
-local GM13=VERSION>150
+local GM13=true
 local bit=bit
 if not bit then error"You need http://luaforge.net/projects/bit/ OR https://dl.dropbox.com/u/1910689/gmod/bit.lua in extensions for Garry's Mod 12!" end
 local G=_G

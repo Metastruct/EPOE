@@ -28,7 +28,7 @@ local G=_G
 local MsgC=MsgC
 local Color=Color
 local CreateClientConVar=CreateClientConVar
-local GM13=VERSION>150
+local GM13=true
 
 module( "epoe" )
 

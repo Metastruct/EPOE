@@ -30,7 +30,7 @@ if not bit then error"You need http://luaforge.net/projects/bit/ OR https://dl.d
 
 --local GMOD_VERSION=VERSION
 -- inform the client of the version
-CreateConVar( "epoe_version", "2.4", FCVAR_NOTIFY )
+CreateConVar( "epoe_version", "2.5", FCVAR_NOTIFY )
 
 local epoe_client_traces=CreateConVar("epoe_client_traces","0")
 local epoe_server_traces=CreateConVar("epoe_server_traces","0")
@@ -466,62 +466,51 @@ function Initialize()
 		G.MsgC			= OnMsgC
 		G.MsgN			= OnMsgN
 		G.print			= OnPrint
-		if G.VERSION>150 then
-			G.ErrorNoHalt	= OnLuaErrorNoHalt
-			local incoming_clienterr
-			hook.Add("EngineSpew",TagHuman,function(a,msg,c,d)
-				if (!msg or (msg:sub(1,1)!="[" and msg:sub(1,2)!="\n[") or a!=0 or c!="" or d!=0  ) and not incoming_clienterr then return end
-				if InEPOE then return end
-				
-				if incoming_clienterr then
-					--RealPrint("CLERRSTOP: '"..msg.."'")
-					if not epoe_client_errors:GetBool() then return end
-					local pl,userid=false,incoming_clienterr:match(".+|(%d*)|.-$")
-					incoming_clienterr=false
-					if userid then
-						userid=tonumber(userid)
-						for k,v in pairs(player.GetAll()) do
-							if v:UserID()==userid then
-								pl=v
-								break
-							end
+		
+		G.ErrorNoHalt	= OnLuaErrorNoHalt
+		local incoming_clienterr
+		hook.Add("EngineSpew",TagHuman,function(a,msg,c,d)
+			if (!msg or (msg:sub(1,1)!="[" and msg:sub(1,2)!="\n[") or a!=0 or c!="" or d!=0  ) and not incoming_clienterr then return end
+			if InEPOE then return end
+			
+			if incoming_clienterr then
+				--RealPrint("CLERRSTOP: '"..msg.."'")
+				if not epoe_client_errors:GetBool() then return end
+				local pl,userid=false,incoming_clienterr:match(".+|(%d*)|.-$")
+				incoming_clienterr=false
+				if userid then
+					userid=tonumber(userid)
+					for k,v in pairs(player.GetAll()) do
+						if v:UserID()==userid then
+							pl=v
+							break
 						end
 					end
-					msg=msg and msg:gsub("^\n*","") -- trim newlines from beginning
-					
-					-- epoe_client_traces=print everything from the error 
-					local newmsg = not  epoe_client_traces:GetBool() and msg:match("%[ERROR%] (.-)\n") or (msg:match("%[ERROR%] (.+)") or msg)
-					OnLuaError( (pl and tostring(pl) or "CLIENT").." ERR: "..newmsg )
-					
-					return 
-					
 				end
-				if msg:find("] Lua Error:",1,true) then 
-					--RealPrint("CLERRSTART: '"..msg.."'")
-					incoming_clienterr=msg 
-					return
-				end
-				if msg:sub(1,9)=="\n[ERROR] " then
-					msg=msg:sub(10,-1)
-					local newmsg = not epoe_server_traces:GetBool() and msg:match("(.-)\n") or msg
-					
-					OnLuaError( newmsg )
-					return 
-				end
-			
-			end)
-		else
-			local inhook = false -- Prevent deadloop. Should not happen type.
-			hook.Add("EngineSpew", TagHuman, function(spewType, msg, group, level) 
-				if inhook then return end
-				inhook = true
-
-				if spewType == 1 --[[ = SPEW_WARNING]] then -- TODO: Add possibility for full console output.
-					OnLuaError( msg ) 
-				end
-				inhook = false
-			end )
-		end
+				msg=msg and msg:gsub("^\n*","") -- trim newlines from beginning
+				
+				-- epoe_client_traces=print everything from the error 
+				local newmsg = not  epoe_client_traces:GetBool() and msg:match("%[ERROR%] (.-)\n") or (msg:match("%[ERROR%] (.+)") or msg)
+				OnLuaError( (pl and tostring(pl) or "CLIENT").." ERR: "..newmsg )
+				
+				return 
+				
+			end
+			if msg:find("] Lua Error:",1,true) then 
+				--RealPrint("CLERRSTART: '"..msg.."'")
+				incoming_clienterr=msg 
+				return
+			end
+			if msg:sub(1,9)=="\n[ERROR] " then
+				msg=msg:sub(10,-1)
+				local newmsg = not epoe_server_traces:GetBool() and msg:match("(.-)\n") or msg
+				
+				OnLuaError( newmsg )
+				return 
+			end
+		
+		end)
+		
 		G.print	"EPOE hooks added"
 		
 

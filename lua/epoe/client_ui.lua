@@ -1,6 +1,6 @@
 local e=epoe -- Why not just module("epoe") like elsewhere?
 local TagHuman=e.TagHuman
-local GM13=VERSION>150
+local GM13=true
 ---------------
 -- Clientside Console UI
 ---------------
