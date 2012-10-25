@@ -489,8 +489,12 @@ function Initialize()
 				end
 				msg=msg and msg:gsub("^\n*","") -- trim newlines from beginning
 				
-				-- epoe_client_traces=print everything from the error 
+				-- epoe_client_traces 1 = print everything from the error 
 				local newmsg = not  epoe_client_traces:GetBool() and msg:match("%[ERROR%] (.-)\n") or (msg:match("%[ERROR%] (.+)") or msg)
+				
+				-- Remove spaces and newlines from end since Garry loves adding those
+				newmsg = newmsg:gsub("[\n ]+$","")
+				
 				OnLuaError( (pl and tostring(pl) or "CLIENT").." ERR: "..newmsg )
 				
 				return 
