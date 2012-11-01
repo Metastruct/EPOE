@@ -273,7 +273,9 @@ end
 
 function ToStringEx(delim,...)
 	local res=""
-	for n=1,select('#',...) do
+	local count=select('#',...)
+	count=count==0 and 1 or count
+	for n=1,count do
 		local e = select(n,...)
 		if type(e)=="table" then
 			e=ToStringTableInfo(e)
