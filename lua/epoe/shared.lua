@@ -23,6 +23,8 @@ local GM13=true
 local bit=bit
 if not bit then error"You need http://luaforge.net/projects/bit/ OR https://dl.dropbox.com/u/1910689/gmod/bit.lua in extensions for Garry's Mod 12!" end
 local G=_G
+
+
 module( "epoe" )
 
 -- Consts
@@ -38,7 +40,7 @@ flags = { -- One byte overhead for signaling this all. Need to add two with anyt
 
 	IS_MSGN=	2^4,
 	IS_SEQ=		2^5,
-	--IS_REPEAT=	2^6,
+	IS_CERROR=	2^6,
 	IS_MSGC=	2^7,
 }
 

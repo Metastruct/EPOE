@@ -45,22 +45,6 @@ local lastmsg="<EPOE BROKEN>"
 local lastflags=0
 -- Handle incoming messages
 function ProcessMessage(flags,str)	
---[[
-	-- Process repeat messages
-	if HasFlag(flags,IS_REPEAT) then
-		if str:len()>0 then
-			internalPrint("WARNING: IS_REPEAT defined but message was: '"..str.."'")
-		end
-		local newflags=lastflags|IS_REPEAT
-		if flags!=newflags then
-			internalPrint("WARNING: IS_REPEAT defined but flags were different: rcv= '"..DebugFlags(flags)..' last='..DebugFlags(lastflags).."'")
-		end
-		str=lastmsg
-		flags=newflags
-	end
-	lastmsg=str
-	lastflags=flags
-	]]
 
 	-- Process sequences (aka long messages)
 	if HasFlag(flags,IS_SEQ) then -- Store long messages

@@ -1,6 +1,5 @@
 local e=epoe -- Why not just module("epoe") like elsewhere?
 local TagHuman=e.TagHuman
-local GM13=true
 ---------------
 -- Clientside Console UI
 ---------------
@@ -15,7 +14,7 @@ hook.Add(TagHuman,TagHuman..'_CLI',function(Text,flags,col)
 		Msg("[EPOE] ")print(Text)		
 		return
 	end
-	if e.HasFlag(flags,e.IS_MSGC) and GM13 and epoe_toconsole_colors:GetBool() then
+	if e.HasFlag(flags,e.IS_MSGC) and epoe_toconsole_colors:GetBool() then
 		if col then
 			MsgC(col,Text)
 			return

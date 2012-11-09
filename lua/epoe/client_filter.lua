@@ -1,3 +1,6 @@
+-- TODO
+-- Add error filtering here!
+
 local e=epoe
 local Tag=e.Should_TagHuman -- or "EPOE"
 local push=table.insert

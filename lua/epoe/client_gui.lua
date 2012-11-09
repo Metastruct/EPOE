@@ -702,16 +702,6 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 			e.GUI:Activity()
 		end
 
-		if c then
-			if type(c) == "table" and type(c.r) == "number" and type(c.g) == "number" and type(c.b) == "number" then
-				e.GUI:SetColor(c.r, c.g, c.b)
-			end
-			if newText then
-				e.GUI:AppendTextX(tostring(newText))
-			end
-			return
-		end
-
 		if e.HasFlag(flags,e.IS_EPOE) then
 			e.GUI:SetColor(255,100,100)
 			e.GUI:AppendText("[EPOE] ")
@@ -730,9 +720,14 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 			end
 			notimestamp = not ( newText:Right(1)=="\n" ) -- negation hard
 		end
-		-- HUGE TODO: Colors :X
-		if e.HasFlag(flags,e.IS_ERROR) then
+		
+		-- did I really write this. Oh well...
+		if e.HasFlag(flags,e.IS_MSGC) and c and type(c) == "table" and type(c.r) == "number" and type(c.g) == "number" and type(c.b) == "number" then
+			e.GUI:SetColor(c.r, c.g, c.b)
+		elseif e.HasFlag(flags,e.IS_ERROR) then
 			e.GUI:SetColor(255,80,80)
+		elseif e.HasFlag(flags,e.IS_CERROR) then
+			e.GUI:SetColor( 234,111,111)
 		elseif e.HasFlag(flags,e.IS_MSGN) or e.HasFlag(flags,e.IS_MSG) then
 			e.GUI:SetColor( 255,181,80)
 		else
@@ -740,6 +735,7 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 		end
 
 		e.GUI:AppendTextX(newText)
+		
 		if not epoe_disable_autoscroll:GetBool() and not e.GUI.being_hovered then
 			e.GUI.RichText:GotoTextEnd()
 		end

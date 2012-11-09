@@ -26,12 +26,11 @@ local util=util
 local hook=hook
 local table=table
 local bit=bit
-if not bit then error"You need http://luaforge.net/projects/bit/ OR https://dl.dropbox.com/u/1910689/gmod/bit.lua for Garry's Mod 12!" end
 
---local GMOD_VERSION=VERSION
 -- inform the client of the version
-CreateConVar( "epoe_version", "2.5", FCVAR_NOTIFY )
+CreateConVar( "epoe_version", "2.55", FCVAR_NOTIFY )
 
+-- TODO: Move these on clientside
 local epoe_client_traces=CreateConVar("epoe_client_traces","0")
 local epoe_server_traces=CreateConVar("epoe_server_traces","0")
 local epoe_client_errors=CreateConVar("epoe_client_errors","1")
@@ -321,6 +320,20 @@ end
 			PushPayload( IS_ERROR , tostring(str) )
 
 		InEPOE=false
+	end	
+	
+	function OnClientLuaError(str)
+		if InEPOE or HasNoSubs then return end
+
+		InEPOE = true
+
+			if HitMaxQueue() then return end
+
+			EnableTick()
+
+			PushPayload( IS_CERROR , tostring(str) )
+
+		InEPOE=false
 	end
 	function OnLuaErrorNoHalt(...)
 		if InEPOE or HasNoSubs then pcall(RealErrorNoHalt,...) else
@@ -495,7 +508,7 @@ function Initialize()
 				-- Remove spaces and newlines from end since Garry loves adding those
 				newmsg = newmsg:gsub("[\n ]+$","")
 				
-				OnLuaError( (pl and tostring(pl) or "CLIENT").." ERR: "..newmsg )
+				OnClientLuaError( (pl and tostring(pl) or incoming_clienterr and tostring(incoming_clienterr) or "CLIENT").." ERR: "..newmsg )
 				
 				return 
 				
@@ -505,7 +518,7 @@ function Initialize()
 				incoming_clienterr=msg 
 				return
 			end
-			if msg:sub(1,9)=="\n[ERROR] " then
+			if msg:sub(1,9)=="\n[ERROR] " then -- Does it change if it's a workshop error? If it does, we're fucked.
 				msg=msg:sub(10,-1)
 				local newmsg = not epoe_server_traces:GetBool() and msg:match("(.-)\n") or msg
 				
@@ -515,7 +528,7 @@ function Initialize()
 		
 		end)
 		
-		G.print	"EPOE hooks added"
+		G.print	"[EPOE] Hooks added!"
 		
 
 	InEPOE=false
