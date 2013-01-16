@@ -45,6 +45,7 @@ G._Msg=G._Msg or G.Msg
 G._MsgC=G._MsgC or G.MsgC or G.Msg
 G._MsgN=G._MsgN or G.MsgN
 G._print=G._print or G.print
+G._MsgAll=G._MsgAll or G.MsgAll
 
 
 -- Store local real messages, real ones
@@ -55,6 +56,7 @@ RealMsgC=G._MsgC and G._MsgC!=G.Msg and G._MsgC or MsgC_Compat
 
 RealMsgN=G._MsgN
 RealPrint=G._print
+RealMsgAll=G._MsgAll
 RealErrorNoHalt=G.ErrorNoHalt
 
 /*-- Big Hack
@@ -307,6 +309,26 @@ end
 			InEPOE=false
 		end
 	end
+	
+	function OnMsgAll(...)
+		if InEPOE or HasNoSubs then pcall(RealMsgAll,...) else
+			InEPOE = true	
+
+				if HitMaxQueue() then return end
+
+				EnableTick()
+
+				
+				local err,str=pcall(ToStringEx," ",...)
+				if str then
+					PushPayload( IS_PRINT , str )
+				end
+
+				pcall(RealMsgAll,...)
+
+			InEPOE=false
+		end
+	end
 
 	function OnLuaError(str)
 		if InEPOE or HasNoSubs then return end
@@ -479,6 +501,7 @@ function Initialize()
 		G.MsgC			= OnMsgC
 		G.MsgN			= OnMsgN
 		G.print			= OnPrint
+		G.MsgAll		= OnMsgAll
 		
 		G.ErrorNoHalt	= OnLuaErrorNoHalt
 		local incoming_clienterr
