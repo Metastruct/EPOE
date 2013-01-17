@@ -321,7 +321,7 @@ end
 				
 				local err,str=pcall(ToStringEx," ",...)
 				if str then
-					PushPayload( IS_PRINT , str )
+					PushPayload( IS_MSG , str )
 				end
 
 				pcall(RealMsgAll,...)
