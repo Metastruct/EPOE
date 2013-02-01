@@ -20,7 +20,7 @@ local full=e.filters.full
 local find=e.filters.find
 local regex=e.filters.regex
 
-local function add(str)
+local function add(str,k)
 	local strtype=str:sub(1,1) 
 	if strtype=='!' then -- full
 		push(full,str:sub(2,-1))
@@ -43,28 +43,27 @@ local function add(str)
 		timer.Simple(0,e.internalPrint,"Filters: Line "..k..": Match type "..strtype.." is unknown!")
 		return false
 	end
+	e.filters.hasany = true
 	return true
 end
-
+concommand.Add("epoe_filter_addmanual",function(_,_,_,filter) if not add(filter,-1) then Msg"[EPOE] "print"Filter add failed" end end )
 local function Reload() 
 
 	table.Empty( full )
 	table.Empty( find )
 	table.Empty( regex )
-
+	e.filters.hasany = false
+	
 	local data=file.Read("epoe_filters.txt")
 	if not data then return end
 	local i=0
 	for k,str in pairs(string.Explode("\n",data)) do
 		str=string.TrimLeft(str) -- we may have spaces on right side
 		if str:len()>0 then
-			if add(str) then
+			if add(str,k) then
 				i=i+1
 			end
 		end
-	end
-	if i>0 then
-		e.filters.hasany=true
 	end
 	if epoe_filtering:GetBool() and i>1 then
 		timer.Simple(0,e.AddText,Color(255,255,255),"[EPOE] Filters: ",Color(255,255,255,255),"Loaded "..i.."filters.")
