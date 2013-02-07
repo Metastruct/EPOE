@@ -191,18 +191,18 @@ function Recover()
 end
 
 
-local TickEnabled=false
+local TickEnabled = false
 function EnableTick()
 	if TickEnabled then return end
-	TickEnabled = true
 	hook.Add('Tick',TagHuman,OnTick)
+	TickEnabled = true
 end
 local EnableTick=EnableTick
 
 function DisableTick()
 	--RealMsgN(InEPOE and "IN EPOE",TickEnabled,"DisableTick")
-	if not TickEnabled then return end
 	TickEnabled = false
+	if not TickEnabled then return end
 	hook.Remove('Tick',TagHuman)
 end
 local DisableTick=DisableTick
