@@ -4,7 +4,7 @@ require ( "hook" )
 
 local G=_G
 
-local ValidEntity=ValidEntity
+local IsValid=IsValid
 local assert=assert
 local RecipientFilter=RecipientFilter
 local error=error

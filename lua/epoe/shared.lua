@@ -5,7 +5,7 @@ local setmetatable=setmetatable
 
 local umsg=umsg
 local humans=player.GetHumans()
-local ValidEntity=ValidEntity
+local IsValid=IsValid
 local RecipientFilter=RecipientFilter
 local error=error
 local pairs=pairs
