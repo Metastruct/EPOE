@@ -495,7 +495,7 @@ end
 function Initialize()
 	InEPOE=true
 
-		G.require	"enginespew"
+		local enginespew_loaded = pcall(G.require,"enginespew")
 
 		G.Msg			= OnMsg
 		G.MsgC			= OnMsgC
@@ -505,7 +505,7 @@ function Initialize()
 		
 		G.ErrorNoHalt	= OnLuaErrorNoHalt
 		local incoming_clienterr
-		hook.Add("EngineSpew",TagHuman,function(a,msg,c,d)
+		hook.Add("EngineSpew",TagHuman,function(a,msg,c,d, r,g,b)
 			if (!msg or (msg:sub(1,1)!="[" and msg:sub(1,2)!="\n[") or a!=0 or c!="" or d!=0  ) and not incoming_clienterr then return end
 			if InEPOE then return end
 			
@@ -551,8 +551,12 @@ function Initialize()
 		
 		end)
 		
-		G.print	"[EPOE] Hooks added!"
-		
+		_M.enginespew_loaded = enginespew_loaded
+		if enginespew_loaded then
+			G.print	"[EPOE] Tested and operational!"
+		else
+			G.print	"[EPOE WARNING] Hooks added, but EngineSpew not loaded! Errors will not display!"
+		end
 
 	InEPOE=false
 end
