@@ -85,12 +85,12 @@ end
 SPEW_WARNING=1
 
 -- Safeguard for super big tables and queue filling faster than emptying. Increase if it becomes a problem with big tables.
-MaxQueue = 2048
+MaxQueue = 2048+1024
 
 -- How many usermessages can we send in a tick
 -- 3 seems to be a good value
 -- Warning, increasing tickrate without modifying this might be a lethal combination
-UMSGS_IN_TICK = 3
+UMSGS_IN_TICK = 6
 
 
 ------------
