@@ -14,6 +14,7 @@ local tostring=tostring
 local tonumber=tonumber
 local CreateConVar=CreateConVar
 local setmetatable=setmetatable
+local RunStringEx=RunStringEx
 
 local len=string.len
 
@@ -88,9 +89,13 @@ end
 		end
 	end
 
-	function DelSub(pl)
+	function DelSub(pl,notrans)
+		
 		Sub[pl]=nil
 		CalculateSubs()
+		
+		if notrans then return end
+		
 		Transmit(IS_EPOE,"_US",pl)
 	end
 
@@ -107,9 +112,8 @@ end
 
 	-- Could probably remove this.
 	function OnEntityRemoved(pl)
-		if !(pl and pl.IsValid and pl:IsValid()) then return end
-		if 	pl:IsPlayer() then
-			DelSub(pl)
+		if pl and pl.IsValid and pl:IsValid() and pl:IsPlayer() then
+			DelSub(pl,true)
 		end
 	end
 	hook.Add('EntityRemoved',TagHuman,OnEntityRemoved)
@@ -144,7 +148,7 @@ end
 	end
 
 
-RF=RecipientFilter()
+_M.RF=_M.RF or RecipientFilter()
 local RF=RF
 
 -- Refresh pretty much everything for us
@@ -492,18 +496,54 @@ function OnTick()
 end
 
 -- Initialize EPOE 
-function Initialize()
-	InEPOE=true
+function Initialize() InEPOE=true
 
-		local enginespew_loaded = pcall(G.require,"enginespew")
+	G.Msg			= OnMsg
+	G.MsgC			= OnMsgC
+	G.MsgN			= OnMsgN
+	G.print			= OnPrint
+	G.MsgAll		= OnMsgAll
+	
+	G.ErrorNoHalt	= OnLuaErrorNoHalt
 
-		G.Msg			= OnMsg
-		G.MsgC			= OnMsgC
-		G.MsgN			= OnMsgN
-		G.print			= OnPrint
-		G.MsgAll		= OnMsgAll
+	local module_loaded = false
+	
+	
+	local luaerror2_loaded = pcall(G.require,"luaerror2")
+	
+	if luaerror2_loaded then
+		luaerror2_loaded = false
+		hook.Add("LuaError", TagHuman,function() 
+			luaerror2_loaded = true
+			return true
+		end)
+		RunStringEx("luaerror2_test()","EPOE")
+		hook.Remove("LuaError", TagHuman)
+	end
 		
-		G.ErrorNoHalt	= OnLuaErrorNoHalt
+	if not module_loaded and luaerror2_loaded then
+		module_loaded = true
+		local inhook = false
+		hook.Add("LuaError", TagHuman,function(serverside, err, stack)
+			if inhook then return end
+			inhook = true
+			OnLuaError( err )
+			
+			inhook = false
+		end)
+		hook.Add("ClientLuaError",TagHuman,function(pl,err)
+			OnClientLuaError(tostring(pl)..' ERROR: '..tostring(err))
+		end)
+	end
+	
+	local enginespew_loaded
+	if not module_loaded then
+		enginespew_loaded = pcall(G.require,"enginespew")
+	end
+	
+	if not module_loaded and enginespew_loaded then
+		module_loaded = true
+		
 		local incoming_clienterr
 		hook.Add("EngineSpew",TagHuman,function(a,msg,c,d, r,g,b)
 			if (!msg or (msg:sub(1,1)!="[" and msg:sub(1,2)!="\n[") or a!=0 or c!="" or d!=0  ) and not incoming_clienterr then return end
@@ -550,15 +590,20 @@ function Initialize()
 			end
 		
 		end)
-		
-		_M.enginespew_loaded = enginespew_loaded
-		if enginespew_loaded then
+	end
+	
+	InEPOE=false -- !!!!
+
+	if module_loaded then
+		if luaerror2_loaded then
 			G.print	"[EPOE] Tested and operational!"
 		else
-			G.print	"[EPOE WARNING] Hooks added, but EngineSpew not loaded! Errors will not display!"
+			G.print	"[EPOE] Tested and operational (Warning: Not using LuaError2: http://facepunch.com/showthread.php?t=1252625 )"
 		end
+	else
+		G.print	"[EPOE WARNING] Loaded, but EngineSpew/LuaError2 are not working! Errors will not show!"
+	end
 
-	InEPOE=false
 end
 
 -- TODO: Initialize earlier to hook even module prints
