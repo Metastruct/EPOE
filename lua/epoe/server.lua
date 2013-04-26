@@ -32,9 +32,10 @@ local bit=bit
 CreateConVar( "epoe_version", "2.55", FCVAR_NOTIFY )
 
 -- TODO: Move these on clientside
-local epoe_client_traces=CreateConVar("epoe_client_traces","0")
-local epoe_server_traces=CreateConVar("epoe_server_traces","0")
-local epoe_client_errors=CreateConVar("epoe_client_errors","1")
+--local epoe_client_traces=CreateConVar("epoe_client_traces","0")
+--local epoe_server_traces=CreateConVar("epoe_server_traces","0")
+--local epoe_client_errors=CreateConVar("epoe_client_errors","1")
+local epoe_relay_msgall = CreateConVar("epoe_relay_msgall","0")
 
 module( "epoe" )
 
@@ -239,7 +240,7 @@ end
 				EnableTick()
 
 				
-				local err,str=pcall(ToStringEx,"",...) -- just to be sure
+				local ok,str=pcall(ToStringEx,"",...) -- just to be sure
 
 				if str then
 					PushPayload( IS_MSG , str )
@@ -261,7 +262,7 @@ end
 				EnableTick()
 
 				
-				local err,str=pcall(ToStringEx,"",...)
+				local ok,str=pcall(ToStringEx,"",...)
 
 				if str then
 					local colbytes = ColorToStr(color)
@@ -283,7 +284,7 @@ end
 				EnableTick()
 
 				
-				local err,str=pcall(ToStringEx,"",...)
+				local ok,str=pcall(ToStringEx,"",...)
 				if str then
 					PushPayload( IS_MSGN , str )
 				end
@@ -303,7 +304,7 @@ end
 				EnableTick()
 
 				
-				local err,str=pcall(ToStringEx," ",...)
+				local ok,str=pcall(ToStringEx," ",...)
 				if str then
 					PushPayload( IS_PRINT , str )
 				end
@@ -315,16 +316,16 @@ end
 	end
 	
 	function OnMsgAll(...)
-		if InEPOE or HasNoSubs then pcall(RealMsgAll,...) else
+		if InEPOE or HasNoSubs then pcall(RealMsgAll,...) else			
 			InEPOE = true	
-
+				
 				if HitMaxQueue() then return end
 
 				EnableTick()
 
 				
-				local err,str=pcall(ToStringEx," ",...)
-				if str then
+				local ok,str=pcall(ToStringEx," ",...)
+				if str and epoe_relay_msgall:GetBool() then
 					PushPayload( IS_MSG , str )
 				end
 
@@ -370,7 +371,7 @@ end
 				EnableTick()
 
 				
-				local err,str=pcall(ToStringEx," ",...)
+				local ok,str=pcall(ToStringEx," ",...)
 				if str then
 					PushPayload( IS_ERROR , str )
 				end
@@ -551,7 +552,7 @@ function Initialize() InEPOE=true
 			
 			if incoming_clienterr then
 				--RealPrint("CLERRSTOP: '"..msg.."'")
-				if not epoe_client_errors:GetBool() then return end
+				--if not epoe_client_errors:GetBool() then return end
 				local pl,userid=false,incoming_clienterr:match(".+|(%d*)|.-$")
 				incoming_clienterr=false
 				if userid then
@@ -566,7 +567,7 @@ function Initialize() InEPOE=true
 				msg=msg and msg:gsub("^\n*","") -- trim newlines from beginning
 				
 				-- epoe_client_traces 1 = print everything from the error 
-				local newmsg = not  epoe_client_traces:GetBool() and msg:match("%[ERROR%] (.-)\n") or (msg:match("%[ERROR%] (.+)") or msg)
+				local newmsg = --[[not  epoe_client_traces:GetBool() and msg:match("%[ERROR%] (.-)\n") or]] tostring(msg:match("%[ERROR%] (.+)") or msg)
 				
 				-- Remove spaces and newlines from end since Garry loves adding those
 				newmsg = newmsg:gsub("[\n ]+$","")
@@ -583,7 +584,7 @@ function Initialize() InEPOE=true
 			end
 			if msg:sub(1,9)=="\n[ERROR] " then -- Does it change if it's a workshop error? If it does, we're fucked.
 				msg=msg:sub(10,-1)
-				local newmsg = not epoe_server_traces:GetBool() and msg:match("(.-)\n") or msg
+				local newmsg = --{{not epoe_server_traces:GetBool() and msg:match("(.-)\n") or]] msg
 				
 				OnLuaError( newmsg )
 				return 
