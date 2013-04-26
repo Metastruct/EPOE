@@ -552,6 +552,8 @@ function Initialize() InEPOE=true
 				err=err:gsub("^\n",'')
 			end
 			
+			err=err and err:gsub("\n$",'') -- temp
+			
 			OnClientLuaError(tostring(pl)..' ERROR: '..tostring(err))
 		end)
 	end
