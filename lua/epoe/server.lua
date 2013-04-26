@@ -546,6 +546,12 @@ function Initialize() InEPOE=true
 			inhook = false
 		end)
 		hook.Add("ClientLuaError",TagHuman,function(pl,err)
+			if err and err:sub(1,9)=="\n[ERROR] " then -- Does it change if it's a workshop error? If it does, we're fucked.
+				err=err:sub(10,-1)
+			elseif err then
+				err=err:gsub("^\n",'')
+			end
+			
 			OnClientLuaError(tostring(pl)..' ERROR: '..tostring(err))
 		end)
 	end
