@@ -44,31 +44,24 @@ local recover_time = 2 -- 0.1 = agressive. 2 = safer.
 
 -- Store global old print functions. Original ones.
 G._Msg=G._Msg or G.Msg
-G._MsgC=G._MsgC or G.MsgC or G.Msg
+G._MsgC=G._MsgC or G.MsgC
 G._MsgN=G._MsgN or G.MsgN
 G._print=G._print or G.print
 G._MsgAll=G._MsgAll or G.MsgAll
+G._ErrorNoHalt=G._ErrorNoHalt or G.ErrorNoHalt
+-- Yes, this is a function, not to be confused with "error"
+G._Error=G._Error or G.Error
 
 
 -- Store local real messages, real ones
 RealMsg=G._Msg
-
-MsgC_Compat=function(col,...)RealMsg(...)end
-RealMsgC=G._MsgC and G._MsgC!=G.Msg and G._MsgC or MsgC_Compat
-
+RealMsgC=G._MsgC
 RealMsgN=G._MsgN
 RealPrint=G._print
 RealMsgAll=G._MsgAll
-RealErrorNoHalt=G.ErrorNoHalt
-
-/*-- Big Hack
-local function ErrorNoHalt(...)
-	local t={...}
-	G.timer.Simple(0.01,function()
-		RealErrorNoHalt(unpack(t))
-	end)
-end
-*/
+RealErrorNoHalt=G._ErrorNoHalt
+RealError=G._Error -- Caps-error, not lowercase error
+Realerror=G.error
 
 
 ------------------ SUBS SYSTEM ------------------
@@ -381,6 +374,24 @@ end
 			InEPOE=false
 		end
 	end
+	function OnError(...)
+		if InEPOE or HasNoSubs then pcall(RealError,...) else
+			InEPOE = true
+
+				if HitMaxQueue() then return end
+
+				EnableTick()
+
+				local ok,str=pcall(ToStringEx," ",...)
+				if str then
+					PushPayload( IS_ERROR , str:gsub("\n$","") ) -- hack until I fix this for good
+				end
+
+				pcall(RealError,...)
+
+			InEPOE = false
+		end
+	end
 ------------------
 
 
@@ -506,7 +517,9 @@ function Initialize() InEPOE=true
 	G.MsgAll		= OnMsgAll
 	
 	G.ErrorNoHalt	= OnLuaErrorNoHalt
-
+	G.Error	= OnError -- Similar if not same as ErrorNoHalt
+	--G.error = OnLuaError
+	
 	local module_loaded = false
 	
 	
