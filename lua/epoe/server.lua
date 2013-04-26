@@ -373,7 +373,7 @@ end
 				
 				local ok,str=pcall(ToStringEx," ",...)
 				if str then
-					PushPayload( IS_ERROR , str )
+					PushPayload( IS_ERROR , str:gsub("\n$","") ) -- hack until I fix this for good
 				end
 
 				pcall(RealErrorNoHalt,...)
