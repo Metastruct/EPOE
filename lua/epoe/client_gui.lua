@@ -195,24 +195,39 @@ function PANEL:Init()
 		
 		AddFont("Fixed (outline)","BudgetLabel")
 		AddFont("Fixed","DebugFixed")
-		AddFont("Fixed 2","DebugFixedSmall")
+		
+		AddFont("Pico","DebugFixedSmall")
+		
 		AddFont("Smallest","HudHintTextSmall")
 		AddFont("Smaller","ConsoleText")
 		AddFont("Small","DefaultSmall")
+		
 		AddFont("Big","Default")
+		AddFont("Bigger","HDRDemoText")
+		
 		AddFont("Huge","HUDNumber1")
-		AddFont("wat","HDRDemoText")
+		AddFont("Huger","HUDNumber5")
+		
 		AddFont("TEST","BUTOFCOURSE")
 		
-		function FontChooser:Think()
-			self:ConVarStringThink()
+		function FontChooser.Think(FontChooser)
+			FontChooser:ConVarStringThink()
+		end
+
+		function FontChooser.PerformLayout(FontChooser,w,h)
+			DComboBox.PerformLayout(FontChooser,w,h)
+			
 			FontChooser:SizeToContents()
 			FontChooser:SetTall(16)
 			FontChooser:SetWide(FontChooser:GetWide()+32)
+			
+			Cfg:InvalidateLayout()
 		end
 
-		function FontChooser:OnSelect(_,_,font)
-			e.GUI.RichText:SetFontInternal(font)
+		-- we're overriding big time
+		function FontChooser.OnSelect(FontChooser,_,_,font)
+			self.RichText:SetFontInternal(font)
+			RunConsoleCommand("epoe_font",font)
 		end
 		FontChooser:SetConVar("epoe_font")
 		FontChooser:SizeToContents()
@@ -287,8 +302,17 @@ function PANEL:Init()
 end
 
 function PANEL:PostInit()
-	self.RichText:SetFontInternal(epoe_font:GetString())
 	self.RichText:SetVerticalScrollbarEnabled(true)
+	
+	local ok = pcall(function()
+		self.RichText:SetFontInternal( epoe_font:GetString() )
+	end)
+	
+	if not ok then
+		RunConsoleCommand("epoe_font","BudgetLabel")
+		self.RichText:SetFontInternal( "BudgetLabel" )
+	end
+	
 end
 
 
