@@ -25,6 +25,8 @@ local timer=timer
 local string=string
 local util=util
 local hook=hook
+local ipairs=ipairs
+
 local table=table
 local bit=bit
 
@@ -67,7 +69,7 @@ Realerror=G.error
 ------------------ SUBS SYSTEM ------------------
 
 	-- Subscribed people
-	Sub = {
+	Sub = _M.Sub or {
 		-- player = true
 	}
 	-- Garbage collect whenever you want...
@@ -541,6 +543,23 @@ function Initialize() InEPOE=true
 		hook.Add("LuaError", TagHuman,function(serverside, err, stack)
 			if inhook then return end
 			inhook = true
+				
+							
+			local stackinfo={}
+			for level,info in ipairs(stack) do
+				local msg
+				if info.what == "C" then
+					msg = "C"
+				else
+					msg = tostring(info.short_src)..':'..tostring(info.currentline)..' \t('..tostring(info.name or "")..')'
+				end
+				
+				if msg then
+					table.insert(stackinfo,level..(level>9 and ' ' or '  ')..msg)
+				end
+			end
+			err=err..(#stackinfo >0 and '\n\t'..table.concat(stackinfo,"\n\t")..'\n' or "")
+
 			OnLuaError( err )
 			
 			inhook = false
