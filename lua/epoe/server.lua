@@ -546,7 +546,7 @@ function Initialize() InEPOE=true
 				
 							
 			local stackinfo={}
-			for level,info in ipairs(stack) do
+			for level,info in ipairs(stack or {}) do
 				local msg
 				if info.what == "C" then
 					msg = "C"
