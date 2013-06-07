@@ -14,15 +14,14 @@ hook.Add(TagHuman,TagHuman..'_CLI',function(Text,flags,col)
 		Msg("[EPOE] ")print(Text)		
 		return
 	end
-	if e.HasFlag(flags,e.IS_MSGC) and epoe_toconsole_colors:GetBool() then
-		if col then
-			MsgC(col,Text)
-			return
-		end
+	
+	if not epoe_toconsole:GetBool() then return end
+	
+	if e.HasFlag(flags,e.IS_MSGC) and epoe_toconsole_colors:GetBool() and col then
+		MsgC(col,Text)
+		return
 	end
 	
-	-- TODO: Colors
-	if epoe_toconsole:GetBool() then
-		Msg(Text)
-	end
+	Msg(Text)
+
 end)
