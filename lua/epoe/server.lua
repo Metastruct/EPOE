@@ -624,7 +624,7 @@ function Initialize() InEPOE=true
 			end
 			if msg:sub(1,9)=="\n[ERROR] " then -- Does it change if it's a workshop error? If it does, we're fucked.
 				msg=msg:sub(10,-1)
-				local newmsg = --{{not epoe_server_traces:GetBool() and msg:match("(.-)\n") or]] msg
+				local newmsg = --[[not epoe_server_traces:GetBool() and msg:match("(.-)\n") or]] msg
 				
 				OnLuaError( newmsg )
 				return 
