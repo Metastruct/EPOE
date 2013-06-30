@@ -533,7 +533,7 @@ function Initialize() InEPOE=true
 			luaerror2_loaded = true
 			return true
 		end)
-		RunStringEx("luaerror2_test()","EPOE")
+		RunStringEx("if_you_see_this__remove_luaerror2()","EPOE")
 		hook.Remove("LuaError", TagHuman)
 	end
 		
