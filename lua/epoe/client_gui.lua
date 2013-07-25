@@ -193,14 +193,16 @@ function PANEL:Init()
 			end
 		end
 		
-		AddFont("Fixed (outline)","BudgetLabel")
-		AddFont("Fixed","DebugFixed")
+		AddFont("Fixed","BudgetLabel")
+		AddFont("Fixed Shadow","DefaultFixedDropShadow")
+		AddFont("Fixed Tiny","DebugFixed")
 		
-		AddFont("Pico","DebugFixedSmall")
+		AddFont("Even smaller","DebugFixedSmall")
 		
 		AddFont("Smallest","HudHintTextSmall")
 		AddFont("Smaller","ConsoleText")
 		AddFont("Small","DefaultSmall")
+		AddFont("Chat","ChatFont")
 		
 		AddFont("Big","Default")
 		AddFont("Bigger","HDRDemoText")
