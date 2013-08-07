@@ -174,8 +174,9 @@ end
 InEPOE=true
 
 -- Holds the messages that are to be sent to clients
-Messages=FIFO() -- shared.lua
-local Messages=Messages
+local Messages = _M.GetTable and _M.GetTable() or FIFO() -- shared.lua
+function GetTable()	return Messages end -- Now you can print epoe table, not this table.
+
 
 -- Flood Protection
 function Recover()
