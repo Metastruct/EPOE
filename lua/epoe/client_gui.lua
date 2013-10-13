@@ -137,11 +137,11 @@ function PANEL:Init()
 		Cfg:AddPanel( Button )
 
 		
-		local function CheckBox(txt,cvar) 
+		local function CheckBox(txt,cvar)
 			local checkbox = vgui.Create( "DCheckBoxLabel" , self )
 				checkbox:SetText( txt )
 				checkbox:SetConVar( cvar )
-				checkbox:SizeToContents() 
+				checkbox:SizeToContents()
 				
 				checkbox:SetMouseInputEnabled( true )
 				checkbox:SetKeyboardInputEnabled( true )
@@ -160,7 +160,7 @@ function PANEL:Init()
 				
 				checkbox.m_iIndent=-16
 				checkbox.Button:SetAlpha(0)
-				checkbox:SetWide(checkbox:GetWide() -8 ) 
+				checkbox:SetWide(checkbox:GetWide() -8 )
 				checkbox.Paint=function(checkbox,w,h)
 					if checkbox.Label:IsHovered() or checkbox:IsHovered() or checkbox.Button:IsHovered() then
 						surface.SetDrawColor(255,255,255,self.pressing and 150 or 55)
@@ -173,7 +173,7 @@ function PANEL:Init()
 				end
 
 				checkbox:SetTall( 16 )
-			Cfg:AddPanel( checkbox )	
+			Cfg:AddPanel( checkbox )
 		end
 		CheckBox("autologin","epoe_autologin")
 		CheckBox("time","epoe_timestamps")

@@ -41,8 +41,8 @@ local epoe_relay_msgall = CreateConVar("epoe_relay_msgall","0")
 
 module( "epoe" )
 
--- Constants 
-local recover_time = 2 -- 0.1 = agressive. 2 = safer. 
+-- Constants
+local recover_time = 2 -- 0.1 = agressive. 2 = safer.
 
 -- Store global old print functions. Original ones.
 G._Msg=G._Msg or G.Msg
@@ -227,9 +227,9 @@ end
 ------------------
 -- Overrides
 ------------------
-	function OnMsg(...)	
+	function OnMsg(...)
 		if InEPOE or HasNoSubs then pcall(RealMsg,...) else
-			InEPOE = true	
+			InEPOE = true
 
 				if HitMaxQueue() then return end
 
@@ -249,9 +249,9 @@ end
 	end
 
 	-- TODO: Add Colors..
-	function OnMsgC(color,...)	
+	function OnMsgC(color,...)
 		if InEPOE or HasNoSubs then pcall(RealMsgC,color,...) else
-			InEPOE = true	
+			InEPOE = true
 
 				if HitMaxQueue() then return end
 
@@ -269,11 +269,11 @@ end
 
 			InEPOE=false
 		end
-	end	
+	end
 
 	function OnMsgN(...)
 		if InEPOE or HasNoSubs then pcall(RealMsgN,...) else
-			InEPOE = true	
+			InEPOE = true
 
 				if HitMaxQueue() then return end
 
@@ -293,7 +293,7 @@ end
 
 	function OnPrint(...)
 		if InEPOE or HasNoSubs then pcall(RealPrint,...) else
-			InEPOE = true	
+			InEPOE = true
 
 				if HitMaxQueue() then return end
 
@@ -312,8 +312,8 @@ end
 	end
 	
 	function OnMsgAll(...)
-		if InEPOE or HasNoSubs then pcall(RealMsgAll,...) else			
-			InEPOE = true	
+		if InEPOE or HasNoSubs then pcall(RealMsgAll,...) else
+			InEPOE = true
 				
 				if HitMaxQueue() then return end
 
@@ -343,7 +343,7 @@ end
 			PushPayload( IS_ERROR , tostring(str) )
 
 		InEPOE=false
-	end	
+	end
 	
 	function OnClientLuaError(str)
 		if InEPOE or HasNoSubs then return end
@@ -427,11 +427,11 @@ end
 -- Divides the payload to ok sized chunks and THEN sends it. GMod13 needs this too as you don't want to receive 66*64KB every second in the mega worst case scenario
 function PushPayload(flags,text)
 	
-	local txt,i=true,1 
+	local txt,i=true,1
 	local size=190 -- usermessage size. GMod13 might want bigger at some point :)
 	local textlen=#text
 	local first=true
-	while txt and txt!="" do 
+	while txt and txt!="" do
 	
 		txt=text:sub(i,i+size-1)
 		i=i+size
@@ -441,16 +441,16 @@ function PushPayload(flags,text)
 				curflags=bit.bor(flags,IS_SEQ) -- bitwise, don't let me down <3
 			end
 			DoPush{
-				flag=curflags, 
+				flag=curflags,
 				msg=txt
-			}			
+			}
 		end
 		first=false
 		
 		if i>63*1024 then -- let's stop here. You've done well enough...
 			EnableTick()
 			Messages:clear()
-			InEPOE=false			
+			InEPOE=false
 			Messages:push{flag=IS_EPOE,msg="Cancelling messages, too many iterations."}
 			return
 		end
@@ -492,11 +492,11 @@ function OnTick()
 	InEPOE = true
 
 		Refresh()
-		if HasNoSubs then 
-			Messages:clear() 
-		elseif !HitMaxQueue() and Messages:len()>0 then 
+		if HasNoSubs then
+			Messages:clear()
+		elseif !HitMaxQueue() and Messages:len()>0 then
 
-			for i=1,UMSGS_IN_TICK do 
+			for i=1,UMSGS_IN_TICK do
 
 				if OnBeingTransmit() then -- No more in queue
 					DisableTick()
@@ -510,7 +510,7 @@ function OnTick()
 	InEPOE=false
 end
 
--- Initialize EPOE 
+-- Initialize EPOE
 function Initialize() InEPOE=true
 
 	G.Msg			= OnMsg
@@ -530,7 +530,7 @@ function Initialize() InEPOE=true
 	
 	if luaerror2_loaded then
 		luaerror2_loaded = false
-		hook.Add("LuaError", TagHuman,function() 
+		hook.Add("LuaError", TagHuman,function()
 			luaerror2_loaded = true
 			return true
 		end)
@@ -607,7 +607,7 @@ function Initialize() InEPOE=true
 				end
 				msg=msg and msg:gsub("^\n*","") -- trim newlines from beginning
 				
-				-- epoe_client_traces 1 = print everything from the error 
+				-- epoe_client_traces 1 = print everything from the error
 				local newmsg = --[[not  epoe_client_traces:GetBool() and msg:match("%[ERROR%] (.-)\n") or]] tostring(msg:match("%[ERROR%] (.+)") or msg)
 				
 				-- Remove spaces and newlines from end since Garry loves adding those
@@ -615,12 +615,12 @@ function Initialize() InEPOE=true
 				
 				OnClientLuaError( (pl and tostring(pl) or incoming_clienterr and tostring(incoming_clienterr) or "CLIENT").." ERR: "..newmsg )
 				
-				return 
+				return
 				
 			end
-			if msg:find("] Lua Error:",1,true) then 
+			if msg:find("] Lua Error:",1,true) then
 				--RealPrint("CLERRSTART: '"..msg.."'")
-				incoming_clienterr=msg 
+				incoming_clienterr=msg
 				return
 			end
 			if msg:sub(1,9)=="\n[ERROR] " then -- Does it change if it's a workshop error? If it does, we're fucked.
@@ -628,7 +628,7 @@ function Initialize() InEPOE=true
 				local newmsg = --[[not epoe_server_traces:GetBool() and msg:match("(.-)\n") or]] msg
 				
 				OnLuaError( newmsg )
-				return 
+				return
 			end
 		
 		end)

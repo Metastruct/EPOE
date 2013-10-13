@@ -11,7 +11,7 @@ hook.Add(TagHuman,TagHuman..'_CLI',function(Text,flags,col)
 	if e.HasFlag(flags,e.IS_EPOE) then
 		e.ShowGUI() -- Force it
 		e.GUI:Activity()
-		Msg("[EPOE] ")print(Text)		
+		Msg("[EPOE] ")print(Text)
 		return
 	end
 	

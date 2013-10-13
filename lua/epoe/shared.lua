@@ -42,7 +42,7 @@ flags = { -- One byte overhead for signaling this all. Need to add two with anyt
 }
 
 -- Add them to the module as variables
-for name,byte in pairs(flags) do 	
+for name,byte in pairs(flags) do
 	assert(byte>=0)
 	assert(byte<=255) -- Increase (user/net)messages from char to short if you're going to change this for some reason
 	_M[name]=byte
@@ -65,18 +65,18 @@ end
 function HasFlag(byte,flag)
 	local a = bit.band(byte or 0,flag)
 	return a==flag
-end	
+end
 
 
 
 -- Certain messages don't need a newline.
 function NewLine(flags)
-	if HasFlag(flags,IS_SEQ) 
-	or HasFlag(flags,IS_MSG) 
-	or HasFlag(flags,IS_MSGC) 
+	if HasFlag(flags,IS_SEQ)
+	or HasFlag(flags,IS_MSG)
+	or HasFlag(flags,IS_MSGC)
 --	or HasFlag(flags,IS_ERROR)
-	or HasFlag(flags,IS_EPOE) 
-	then 
+	or HasFlag(flags,IS_EPOE)
+	then
 		return ""
 	end
 	return "\n"
@@ -102,7 +102,7 @@ UMSGS_IN_TICK = 6
 	local class = {}
 	local mt = {__index = class}
 
-	function FIFO()		
+	function FIFO()
 		return setmetatable( {} , mt )
 	end
 
@@ -112,7 +112,7 @@ UMSGS_IN_TICK = 6
 
 
 	-- Push
-	function mt.__add(a,b)	
+	function mt.__add(a,b)
 		insert( a , b )
 		return a
 	end
@@ -188,7 +188,7 @@ function ToString(t) -- depreciated
 			str = str .. idt .. tab .. tab
 
 			if not sequential then
-				if type(key) == "number" or type(key) == "boolean" then 
+				if type(key) == "number" or type(key) == "boolean" then
 					key ='['..tostring(key)..']' ..tab..'='
 				else
 					key = tostring(key) ..tab..'='
@@ -206,7 +206,7 @@ function ToString(t) -- depreciated
 
 			else
 
-				if 	type(value) == "string" then 
+				if 	type(value) == "string" then
 					value = tostring(value)
 				elseif  type(value) == "Vector" then
 					value = 'Vector('..value.x..','..value.y..','..value.z..')'

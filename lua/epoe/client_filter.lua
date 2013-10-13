@@ -21,7 +21,7 @@ local find=e.filters.find
 local regex=e.filters.regex
 
 local function add(str,k)
-	local strtype=str:sub(1,1) 
+	local strtype=str:sub(1,1)
 	if strtype=='!' then -- full
 		push(full,str:sub(2,-1))
 	elseif strtype=='"' then -- string
@@ -47,7 +47,7 @@ local function add(str,k)
 	return true
 end
 concommand.Add("epoe_filter_addmanual",function(_,_,_,filter) if not add(filter,-1) then Msg"[EPOE] "print"Filter add failed" end end )
-local function Reload() 
+local function Reload()
 
 	table.Empty( full )
 	table.Empty( find )

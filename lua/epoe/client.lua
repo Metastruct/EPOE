@@ -44,7 +44,7 @@ local Buffer=""
 local lastmsg="<EPOE BROKEN>"
 local lastflags=0
 -- Handle incoming messages
-function ProcessMessage(flags,str)	
+function ProcessMessage(flags,str)
 
 	-- Process sequences (aka long messages)
 	if HasFlag(flags,IS_SEQ) then -- Store long messages
