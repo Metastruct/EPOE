@@ -771,14 +771,6 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 			e.GUI:Activity()
 		end
 
-		if e.HasFlag(flags,e.IS_EPOE) then
-			e.GUI:SetColor(255,100,100)
-			e.GUI:AppendText("[EPOE] ")
-			e.GUI:SetColor(255,250,250)
-			e.GUI:AppendTextX(newText.."\n")
-			return
-		end
-
 		if epoe_timestamps:GetBool() then
 			if !notimestamp then
 				e.GUI:SetColor(100,100,100)	e.GUI:AppendText(			"[")
@@ -790,6 +782,15 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 			notimestamp = not ( newText:Right(1)=="\n" ) -- negation hard
 		end
 		
+		if e.HasFlag(flags,e.IS_EPOE) then
+			e.GUI:SetColor(255,100,100)
+			e.GUI:AppendText("[EPOE] ")
+			e.GUI:SetColor(255,250,250)
+			e.GUI:AppendTextX(newText.."\n")
+			notimestamp = false
+			return
+		end
+
 		-- did I really write this. Oh well...
 		if e.HasFlag(flags,e.IS_MSGC) and c and type(c) == "table" and type(c.r) == "number" and type(c.g) == "number" and type(c.b) == "number" then
 			e.GUI:SetColor(c.r, c.g, c.b)
