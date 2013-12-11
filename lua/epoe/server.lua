@@ -17,7 +17,7 @@ local RunStringEx=RunStringEx
 local FrameTime=FrameTime
 local Color=Color
 local len=string.len
-
+local next=next
 local concommand=concommand
 local player=player
 local net=net
