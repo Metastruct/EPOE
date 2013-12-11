@@ -1,14 +1,3 @@
-local function DoClient()
-	include('epoe/client.lua')
-	include('epoe/client_ui.lua')
-	include("epoe/client_gui.lua")
-	include('epoe/autoplace.lua')
-	include("epoe/client_filter.lua")
-end
-
-local function DoServer()
-	include('epoe/server.lua')
-end
 if epoe then -- Implements reloading it all
 	-- Prevent hooks from calling
 
@@ -21,20 +10,13 @@ if epoe then -- Implements reloading it all
 		epoe=nil
 		package.loaded.epoe=nil
 
-		DoServer()
-
 	else -- TODO
 
 		pcall(function()
 			epoe.InEPOE=true
 			e.GUI:Remove()
 		end)
-
-		DoClient()
-
 	end
-
-	return
 
 end
 
@@ -52,8 +34,12 @@ if SERVER then
 	AddCSLuaFile("epoe/shared.lua")
 	AddCSLuaFile("epoe/autoplace.lua")
 
-	DoServer()
+	include('epoe/server.lua')
 
 else
-	DoClient()
+	include('epoe/client.lua')
+	include('epoe/client_ui.lua')
+	include("epoe/client_gui.lua")
+	include('epoe/autoplace.lua')
+	include("epoe/client_filter.lua")
 end
