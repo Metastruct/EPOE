@@ -6,7 +6,6 @@ local G=_G
 
 local IsValid=IsValid
 local assert=assert
-local RecipientFilter=RecipientFilter
 local error=error
 local pairs=pairs
 local pcall=pcall
@@ -20,7 +19,7 @@ local len=string.len
 
 local concommand=concommand
 local player=player
-local umsg=umsg
+local net=net
 local timer=timer
 local string=string
 local util=util
@@ -31,7 +30,7 @@ local table=table
 local bit=bit
 
 -- inform the client of the version
-CreateConVar( "epoe_version", "2.55", FCVAR_NOTIFY )
+CreateConVar( "epoe_version", "2.6", FCVAR_NOTIFY )
 
 -- TODO: Move these on clientside
 --local epoe_client_traces=CreateConVar("epoe_client_traces","0")
@@ -42,7 +41,7 @@ local epoe_relay_msgall = CreateConVar("epoe_relay_msgall","0")
 module( "epoe" )
 
 -- Constants
-local recover_time = 2 -- 0.1 = agressive. 2 = safer.
+local recover_time = FrameTime() -- 0 == skip one tick
 
 -- Store global old print functions. Original ones.
 G._Msg=G._Msg or G.Msg
@@ -70,45 +69,73 @@ Realerror=G.error
 
 	-- Subscribed people
 	Sub = _M.Sub or {
-		-- player = true
+		-- pl = true,
 	}
-	-- Garbage collect whenever you want...
-	setmetatable(Sub,{__mode="k"})
-
-	HasNoSubs=true
-
-	function AddSub(pl)
-		if (pl and pl.IsValid and pl:IsValid()) and pl:IsPlayer() then
-			HasNoSubs=false
-			Sub[pl]=true
-			Transmit(IS_EPOE,"_S",pl)
+	
+	transmit = false
+	HasNoSubs = false
+	
+	function GetTransmit()
+		if transmit==false then
+			transmit = {}
+			
+			local uids = {}
+			for k,v in next,player.GetHumans() do
+				uids[v]=v:UserID()
+			end
+			
+			local gotsubs
+			for k,v in next,Sub do
+				local pl = uids[k]
+				if pl and pl:IsValid() then
+					table.insert(transmit,pl)
+					gotsubs = true
+				end
+			end
+			if gotsubs then
+				HasNoSubs = false
+			else
+				HasNoSubs = true
+			end
 		end
+		return transmit
+	end
+	function InvalidateTransmit()
+		transmit = false
+	end
+	
+	function AddSub(pl)
+		if !pl or !pl.IsValid or !pl:IsValid() or !pl:IsPlayer() then
+			return
+		end
+		local uid = pl:UserID()
+		
+		if Sub[uid] then return end
+		Sub[uid] = true
+		InvalidateTransmit()
+		
+		Transmit(IS_EPOE,"_S",pl)
 	end
 
 	function DelSub(pl,notrans)
+		if !pl or !pl.IsValid or !pl:IsValid() or !pl:IsPlayer() then
+			return
+		end
+		local uid = pl:UserID()
 		
-		Sub[pl]=nil
-		CalculateSubs()
+		if not Sub[uid] then return end
+		
+		Sub[uid] = nil
+		InvalidateTransmit()
 		
 		if notrans then return end
 		
 		Transmit(IS_EPOE,"_US",pl)
 	end
 
-	function CalculateSubs()
-		for k,v in pairs(Sub) do
-			HasNoSubs=false
-			return
-		end
-
-		HasNoSubs=true
-
-		DisableTick()
-	end
-
 	-- Could probably remove this.
 	function OnEntityRemoved(pl)
-		if pl and pl.IsValid and pl:IsValid() and pl:IsPlayer() then
+		if pl:IsPlayer() then
 			DelSub(pl,true)
 		end
 	end
@@ -121,7 +148,7 @@ Realerror=G.error
 	end
 
 	function OnSubCmd(pl,_,argz)
-		if not (pl and pl.IsValid and pl:IsValid()) then return end -- Consoles can't subscribe. Sorry :(
+		if not (pl and pl.IsValid and pl:IsValid()) then return end
 
 		local wantsub=util.tobool(argz[1] or "0")
 
@@ -142,29 +169,6 @@ Realerror=G.error
 	function GetSubscribers()
 		return Sub
 	end
-
-
-_M.RF=_M.RF or RecipientFilter()
-local RF=RF
-
--- Refresh pretty much everything for us
-function Refresh()
-	--RealMsgN(InEPOE and "IN EPOE","Refresh")
-	RF:RemoveAllPlayers()
-	CalculateSubs()
-	if HasNoSubs then return end
-	for pl,_ in pairs(Sub) do
-		if (pl and pl.IsValid and pl:IsValid()) and CheckSub(pl) then
-			RF:AddPlayer(pl)
-		end
-	end
-end
-
--- Override and return false to prevent player from receiving more updates.
--- Added for dynamic demote from EPOE. Can get spammed so should be lightweight to call.
-function CheckSub()
-	return true
-end
 
 -------------------------------------------------
 
@@ -261,8 +265,8 @@ end
 				local ok,str=pcall(ToStringEx,"",...)
 
 				if str then
-					local colbytes = ColorToStr(color)
-					PushPayload( IS_MSGC , colbytes..str )
+					local msgc_col = color
+					PushPayload( IS_MSGC , str, msgc_col )
 				end
 
 				pcall(RealMsgC,color,...)
@@ -424,8 +428,9 @@ function DoPush(payload)
 	Messages:push(payload)
 end
 
--- Divides the payload to ok sized chunks and THEN sends it. GMod13 needs this too as you don't want to receive 66*64KB every second in the mega worst case scenario
-function PushPayload(flags,text)
+-- Divides the payload to ok sized chunks and THEN sends it. 
+-- GMod13 needs this too as you don't want to receive 66*64KB every second in the mega worst case scenario
+function PushPayload(flags,text,msgc_col)
 	
 	local txt,i=true,1
 	local size=190 -- usermessage size. GMod13 might want bigger at some point :)
@@ -438,12 +443,17 @@ function PushPayload(flags,text)
 		if txt!="" or first then
 			local curflags=flags
 			if textlen>=i then
-				curflags=bit.bor(flags,IS_SEQ) -- bitwise, don't let me down <3
+				curflags=bit.bor(flags,IS_SEQ) -- enable flag
 			end
-			DoPush{
+			payload = {
 				flag=curflags,
-				msg=txt
+				msg=txt,
 			}
+			if msgc_col then
+				payload.msgc_col = msgc_col
+			end
+			
+			DoPush(payload)
 		end
 		first=false
 		
@@ -459,18 +469,27 @@ end
 
 
 
-function Transmit(flags,msg,rf)
-	umsg.Start(Tag,rf==true and RF or rf)
-		umsg.Char(flags-128)
-		umsg.String(msg)
-	umsg.End()
+function Transmit(flags,msg,targets,msgc_col)
+	net.Start(Tag)
+		net.WriteUInt(flags,8)
+
+		-- seq does not have color
+		if HasFlag(flags,IS_MSGC) and not HasFlag(flags,IS_SEQ) then 
+			msgc_col=msgc_col or Color(255,0,255,255)
+			net.WriteUInt(8,msgc_col.r)
+			net.WriteUInt(8,msgc_col.g)
+			net.WriteUInt(8,msgc_col.b)
+		end
+		
+		net.WriteString(msg)
+	net.Send(targets==true and GetTransmit() or targets)
 end
 
 ------------------
 -- Transmit one from the queue
 -- Return: true if queue is empty
 ------------------
-function OnBeingTransmit()
+function DoTransmit()
 
 	local payload=Messages:pop()
 	if payload==nil then return true end
@@ -479,7 +498,9 @@ function OnBeingTransmit()
 	assert(flags<=255)
 
 	local msg=payload.msg or "EPOE ERROR"
-	Transmit(flags,msg,true)
+	local msgc_col=payload.msgc_col
+	
+	Transmit(flags,msg,true,msgc_col)
 end
 
 
@@ -496,9 +517,9 @@ function OnTick()
 			Messages:clear()
 		elseif !HitMaxQueue() and Messages:len()>0 then
 
-			for i=1,UMSGS_IN_TICK do
+			for i=1,MSGS_IN_TICK do
 
-				if OnBeingTransmit() then -- No more in queue
+				if DoTransmit() then -- No more in queue
 					DisableTick()
 					break
 				end
@@ -638,9 +659,9 @@ function Initialize() InEPOE=true
 
 	if module_loaded then
 		if luaerror2_loaded then
-			G.print	"[EPOE] Tested and operational!"
+			G.print	"[EPOE] Tested and operational! (Using LuaError2)"
 		else
-			G.print	"[EPOE] Tested and operational (Warning: Not using LuaError2: http://facepunch.com/showthread.php?t=1252625 )"
+			G.print	"[EPOE] Tested and operational! (Using EngineSpew)"
 		end
 	else
 		G.print	"[EPOE WARNING] Loaded, but EngineSpew/LuaError2 are not working! Errors will not show!"

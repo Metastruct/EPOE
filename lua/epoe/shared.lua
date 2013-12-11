@@ -3,10 +3,8 @@ local remove=table.remove
 local Empty=table.Empty
 local setmetatable=setmetatable
 
-local umsg=umsg
-local humans=player.GetHumans()
+local player=player
 local IsValid=IsValid
-local RecipientFilter=RecipientFilter
 local error=error
 local pairs=pairs
 local hook=hook
@@ -90,10 +88,11 @@ SPEW_WARNING=1
 MaxQueue = 2048+1024
 
 -- How many usermessages can we send in a tick
--- 3 seems to be a good value
--- Warning, increasing tickrate without modifying this might be a lethal combination
-UMSGS_IN_TICK = 6
-
+-- TOO BIG: might flood out admins
+local ift = FrameTime()
+ift=ift>100 and 100 or ift<16 and 16 or ift
+MSGS_IN_TICK = math.ceil ( (6*ft)/(1/33) ) -- OLD: 6
+MSGS_IN_TICK = MSGS_IN_TICK>50 and 50 or MSGS_IN_TICK<1 and 1 or MSGS_IN_TICK
 
 ------------
 -- Small stack implementation
@@ -147,29 +146,6 @@ UMSGS_IN_TICK = 6
 	function class:clear()
 		return Empty( self )
 	end
-
-
----------------------------------------
--- for MsgC
--- TODO: Client version without loss
----------------------------------------
-local big=252 -- AGH GM13??
-function ColorToStr(color)
-	local r,g,b=color.r,color.g,color.b
-
-	r,g,b=
-		r>=big and big or r<0 and 0 or r,
-		g>=big and big or g<0 and 0 or g,
-		b>=big and big or b<0 and 0 or b
-
-	r,g,b=r+1,g+1,b+1
-	return string.char(r)..string.char(g)..string.char(b)
-end
-
-function StrToColor(str)
-	return Color(255,0,255,255) -- STUB
-end
-
 
 function ToString(t) -- depreciated
 	local 		nl,tab  = "",  ""

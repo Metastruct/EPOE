@@ -2,11 +2,10 @@ local insert=table.insert
 local remove=table.remove
 local Empty=table.Empty
 local setmetatable=setmetatable
-local umsg=umsg
-local humans=player.GetHumans()
+local net=net
 local IsValid=IsValid
-local RecipientFilter=RecipientFilter
 local error=error
+local player=player
 local pairs=pairs
 local hook=hook
 local table=table
@@ -28,7 +27,7 @@ local G=_G
 local MsgC=MsgC
 local Color=Color
 local CreateClientConVar=CreateClientConVar
-local GM13=true
+
 
 module( "epoe" )
 
@@ -41,10 +40,10 @@ module( "epoe" )
 -- TODO: If message gets aborted serverside this will fuck up, royally.
 local Buffer=""
 
-local lastmsg="<EPOE BROKEN>"
+local lastmsg="<SHOULD NOT SEE>"
 local lastflags=0
 -- Handle incoming messages
-function ProcessMessage(flags,str)
+function ProcessMessage(flags,str,col)
 
 	-- Process sequences (aka long messages)
 	if HasFlag(flags,IS_SEQ) then -- Store long messages
@@ -70,28 +69,9 @@ function ProcessMessage(flags,str)
 			return
 		elseif str=="_NA" then
 			if AutologinRetry() then return end -- Some servers got delayed admins?
-			internalPrint("No Access - Not admin?")
+			internalPrint("No Access to server")
 			return
 		end
-	end
-
-	-- Handle color appending in a hacky way
-	local col
-	local big=252 -- AGH GM13??
-	if HasFlag(flags,IS_MSGC) then
-		local colbytes,newstr=str:match("^(...)(.*)$")
-		local r,g,b=string.byte(colbytes,1)-1,string.byte(colbytes,2)-1,string.byte(colbytes,3)-1
-		
-		/*if GM13 then -- FIXME QUICK... FIX THIS WHOLE SHIT
-			r,g,b=r*2,g*2,b*2
-		end*/
-		-- your monitor is not going to miss that one bit for each color I hope
-		r,g,b=r>=big and 255 or r,
-			  g>=big and 255 or g,
-			  b>=big and 255 or b
-		
-		col=Color(r,g,b,255)
-		str = newstr
 	end
 
 	-- We are going to add the newline here instead of letting the handlers take care of it so you can just print the stuff and be done with it
@@ -104,14 +84,18 @@ function ProcessMessage(flags,str)
 	hook.Call(TagHuman,nil,str,flags,col)
 end
 
-function OnUsermessage(umsg)
-	local flags = umsg:ReadChar()
-	flags=flags+128
-	local str  = umsg:ReadString()
-	ProcessMessage(flags,str)
+function OnMessage(len)
+	local flags = net.ReadUInt(8)
+	local msgc_col
+	if HasFlag(flags,IS_MSGC) and not HasFlag(flags,IS_SEQ) then -- seq does not have color
+		local r,g,b = net.ReadUInt(8) or 0, net.ReadUInt(8) or 255, net.ReadUInt(8) or 255
+		msgc_col = Color(255,255,255,255)
+	end
+	local str  = net.ReadString()
+	ProcessMessage(flags,str,msgc_col)
 end
 
-usermessage.Hook(Tag,OnUsermessage)
+net.Receive(Tag,function(len) OnMessage(len) end)
 
 
 ------------------------------------
@@ -210,7 +194,7 @@ function MODULE.MsgC(col,...)
 	if not ok then internalPrint(str) return end
 	if not str then return end
 
-	ProcessMessage(IS_MSGC,ColorToStr(col)..str)
+	ProcessMessage(IS_MSGC,str,col)
 end
 
 function MODULE.AddText(...)
