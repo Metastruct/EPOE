@@ -457,7 +457,7 @@ function PushPayload(flags,text,msgc_col)
 			if textlen>=i then
 				curflags=bit.bor(flags,IS_SEQ) -- enable flag
 			end
-			payload = {
+			local payload = {
 				flag=curflags,
 				msg=txt,
 			}
