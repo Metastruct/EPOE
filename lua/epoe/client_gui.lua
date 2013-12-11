@@ -1,5 +1,5 @@
 
-local e=epoe -- Why not just module("epoe") like elsewhere?
+local e=epoe -- we cant be in epoe table or we'd need to add locals here on everything too
 local TagHuman=e.TagHuman
 
 -- For reloading

@@ -14,7 +14,8 @@ local tonumber=tonumber
 local CreateConVar=CreateConVar
 local setmetatable=setmetatable
 local RunStringEx=RunStringEx
-
+local FrameTime=FrameTime
+local Color=Color
 local len=string.len
 
 local concommand=concommand
