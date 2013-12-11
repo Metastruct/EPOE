@@ -45,12 +45,10 @@ util.AddNetworkString(Tag)
 
 -- How many usermessages can we send in a tick
 -- TOO BIG: might flood out admins
-local ift = FrameTime()
-if ift and ift!=0 then
-	ift=ift>100 and 100 or ift<16 and 16 or ift
-	MSGS_IN_TICK = math.ceil ( (6*ift)/(1/33) ) -- OLD: 6
-	MSGS_IN_TICK = MSGS_IN_TICK>50 and 50 or MSGS_IN_TICK<1 and 1 or MSGS_IN_TICK
-end
+local ift = 1 / FrameTime() -- should return tickrate
+ift=ift>100 and 100 or ift<16 and 16 or ift
+MSGS_IN_TICK = math.ceil ( (6*ift)/(1/33) ) -- OLD: 6
+MSGS_IN_TICK = MSGS_IN_TICK>50 and 50 or MSGS_IN_TICK<1 and 1 or MSGS_IN_TICK
 
 -- Constants
 local recover_time = FrameTime() -- 0 == skip one tick
@@ -88,20 +86,21 @@ Realerror=G.error
 	HasNoSubs = false
 	
 	function GetTransmit()
-		if transmit==false then
+		if transmit == false then
+		
 			transmit = {}
 			
 			local uids = {}
 			for k,v in next,player.GetHumans() do
-				uids[v]=v:UserID()
+				uids[v:UserID()]=v
 			end
 			
 			local gotsubs
 			for k,v in next,Sub do
-				local pl = uids[k]
-				if pl and pl:IsValid() then
+				local pl = uids[k] 
+				if pl then
 					table.insert(transmit,pl)
-					gotsubs = true
+					gotsubs = true					
 				end
 			end
 			if gotsubs then
@@ -112,6 +111,7 @@ Realerror=G.error
 		end
 		return transmit
 	end
+	
 	function InvalidateTransmit()
 		transmit = false
 	end
