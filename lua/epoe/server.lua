@@ -23,6 +23,7 @@ local player=player
 local net=net
 local timer=timer
 local string=string
+local player=player
 local util=util
 local math=math
 local hook=hook
