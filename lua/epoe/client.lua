@@ -87,7 +87,7 @@ end
 function OnMessage(len)
 	local flags = net.ReadUInt(8)
 	local msgc_col
-	if HasFlag(flags,IS_MSGC) and not HasFlag(flags,IS_SEQ) then -- seq does not have color
+	if HasMsgCParams(flags) then
 		local r,g,b = net.ReadUInt(8), net.ReadUInt(8), net.ReadUInt(8)
 		msgc_col = Color(r or 0,g or 255,b or 255,255)
 	end

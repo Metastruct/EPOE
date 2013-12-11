@@ -486,11 +486,11 @@ function Transmit(flags,msg,targets,msgc_col)
 		net.WriteUInt(flags,8)
 
 		-- seq does not have color
-		if HasFlag(flags,IS_MSGC) and not HasFlag(flags,IS_SEQ) then 
+		if HasMsgCParams(flags) then 
 			msgc_col=msgc_col or Color(255,0,255,255)
-			net.WriteUInt(8,msgc_col.r)
-			net.WriteUInt(8,msgc_col.g)
-			net.WriteUInt(8,msgc_col.b)
+			net.WriteUInt(msgc_col.r,8)
+			net.WriteUInt(msgc_col.g,8)
+			net.WriteUInt(msgc_col.b,8)
 		end
 		
 		net.WriteString(msg)

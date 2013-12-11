@@ -67,7 +67,9 @@ function HasFlag(byte,flag)
 	return a==flag
 end
 
-
+function HasMsgCParams(flags)
+	return HasFlag(flags,IS_MSGC) and not HasFlag(flags,IS_SEQ)
+end
 
 -- Certain messages don't need a newline.
 function NewLine(flags)
