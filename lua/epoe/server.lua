@@ -24,6 +24,7 @@ local net=net
 local timer=timer
 local string=string
 local util=util
+local math=math
 local hook=hook
 local ipairs=ipairs
 
@@ -32,7 +33,6 @@ local bit=bit
 
 -- inform the client of the version
 CreateConVar( "epoe_version", "2.6", FCVAR_NOTIFY )
-
 -- TODO: Move these on clientside
 --local epoe_client_traces=CreateConVar("epoe_client_traces","0")
 --local epoe_server_traces=CreateConVar("epoe_server_traces","0")
@@ -40,6 +40,16 @@ CreateConVar( "epoe_version", "2.6", FCVAR_NOTIFY )
 local epoe_relay_msgall = CreateConVar("epoe_relay_msgall","0")
 
 module( "epoe" )
+util.AddNetworkString(Tag)
+
+-- How many usermessages can we send in a tick
+-- TOO BIG: might flood out admins
+local ift = FrameTime()
+if ift and ift!=0 then
+	ift=ift>100 and 100 or ift<16 and 16 or ift
+	MSGS_IN_TICK = math.ceil ( (6*ift)/(1/33) ) -- OLD: 6
+	MSGS_IN_TICK = MSGS_IN_TICK>50 and 50 or MSGS_IN_TICK<1 and 1 or MSGS_IN_TICK
+end
 
 -- Constants
 local recover_time = FrameTime() -- 0 == skip one tick
@@ -513,7 +523,6 @@ function OnTick()
 	--RealMsgN(InEPOE and "IN EPOE","OnTick")
 	InEPOE = true
 
-		Refresh()
 		if HasNoSubs then
 			Messages:clear()
 		elseif !HitMaxQueue() and Messages:len()>0 then

@@ -88,13 +88,7 @@ SPEW_WARNING=1
 
 -- Safeguard for super big tables and queue filling faster than emptying. Increase if it becomes a problem with big tables.
 MaxQueue = 2048+1024
-
--- How many usermessages can we send in a tick
--- TOO BIG: might flood out admins
-local ift = FrameTime()
-ift=ift>100 and 100 or ift<16 and 16 or ift
-MSGS_IN_TICK = math.ceil ( (6*ift)/(1/33) ) -- OLD: 6
-MSGS_IN_TICK = MSGS_IN_TICK>50 and 50 or MSGS_IN_TICK<1 and 1 or MSGS_IN_TICK
+MSGS_IN_TICK = 6
 
 ------------
 -- Small stack implementation
