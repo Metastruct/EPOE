@@ -112,8 +112,9 @@ Realerror=G.error
 		return transmit
 	end
 	
-	function InvalidateTransmit()
+	function RevalidateTransmit()
 		transmit = false
+		GetTransmit()
 	end
 	
 	function AddSub(pl)
@@ -124,7 +125,7 @@ Realerror=G.error
 		
 		if Sub[uid] then return end
 		Sub[uid] = true
-		InvalidateTransmit()
+		RevalidateTransmit()
 		
 		Transmit(IS_EPOE,"_S",pl)
 	end
@@ -138,7 +139,7 @@ Realerror=G.error
 		if not Sub[uid] then return end
 		
 		Sub[uid] = nil
-		InvalidateTransmit()
+		RevalidateTransmit()
 		
 		if notrans then return end
 		
