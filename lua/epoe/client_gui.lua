@@ -527,9 +527,9 @@ function PANEL:Think()
 
 	end
 
-	if ( self.Hovered &&
-         --self.m_bSizable &&
-	     mx > (self.x + self:GetWide() - 20) &&
+	if ( self.Hovered and 
+         --self.m_bSizable and 
+	     mx > (self.x + self:GetWide() - 20) and 
 	     my > (self.y + self:GetTall() - 20) ) then
 
 		self:SetCursor( "sizenwse" )
@@ -537,7 +537,7 @@ function PANEL:Think()
 
 	end
 
-	if ( self.Hovered && my < (self.y + 20) ) then
+	if ( self.Hovered and my < (self.y + 20) ) then
 		self:SetCursor( "sizeall" )
 		self.__highlight=true
 		return
@@ -581,7 +581,7 @@ end
 
 function PANEL:OnMousePressed( mc )
 
-	if mc == MOUSE_RIGHT or ( gui.MouseX() > (self.x + self:GetWide() - 20) &&
+	if mc == MOUSE_RIGHT or ( gui.MouseX() > (self.x + self:GetWide() - 20) and 
 			gui.MouseY() > (self.y + self:GetTall() - 20) ) then
 		self.Sizing = { gui.MouseX() - self:GetWide(), gui.MouseY() - self:GetTall() }
 		self:MouseCapture( true )
