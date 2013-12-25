@@ -26,7 +26,7 @@ local function add(str,k)
 		push(full,str:sub(2,-1))
 	elseif strtype=='"' then -- string
 		str = str:match[[^"(.+)"$]] or str:match[[^"(.+)$]]
-		assert(str!=nil)
+		assert(str~=nil)
 		push(find,str)
 	elseif strtype=='^' then -- regex
 		str=str:sub(2,-1)

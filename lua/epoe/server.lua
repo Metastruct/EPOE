@@ -449,11 +449,11 @@ function PushPayload(flags,text,msgc_col)
 	local size=190 -- usermessage size. GMod13 might want bigger at some point :)
 	local textlen=#text
 	local first=true
-	while txt and txt!="" do
+	while txt and txt~="" do
 	
 		txt=text:sub(i,i+size-1)
 		i=i+size
-		if txt!="" or first then
+		if txt~="" or first then
 			local curflags=flags
 			if textlen>=i then
 				curflags=bit.bor(flags,IS_SEQ) -- enable flag
@@ -621,7 +621,7 @@ function Initialize() InEPOE=true
 		
 		local incoming_clienterr
 		hook.Add("EngineSpew",TagHuman,function(a,msg,c,d, r,g,b)
-			if (!msg or (msg:sub(1,1)!="[" and msg:sub(1,2)!="\n[") or a!=0 or c!="" or d!=0  ) and not incoming_clienterr then return end
+			if (!msg or (msg:sub(1,1)~="[" and msg:sub(1,2)~="\n[") or a~=0 or c~="" or d~=0  ) and not incoming_clienterr then return end
 			if InEPOE then return end
 			
 			if incoming_clienterr then
