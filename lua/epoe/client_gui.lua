@@ -207,8 +207,8 @@ function PANEL:Init()
 		AddFont("Big","Default")
 		AddFont("Bigger","HDRDemoText")
 		
-		AddFont("Huge","HUDNumber1")
-		AddFont("Huger","HUDNumber5")
+		AddFont("Huge","DermaLarge")
+		AddFont("Huger","DermaLarge")
 		
 		AddFont("TEST","BUTOFCOURSE")
 		
