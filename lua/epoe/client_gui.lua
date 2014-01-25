@@ -13,6 +13,7 @@ local epoe_show_in_screenshots = CreateClientConVar("epoe_show_in_screenshots", 
 local epoe_keep_active = CreateClientConVar("epoe_keep_active", "0", true, false)
 local epoe_max_alpha = CreateClientConVar("epoe_max_alpha", "255", true, false)
 local epoe_always_clickable = CreateClientConVar("epoe_always_clickable", "0", true, false)
+local epoe_link_parsing = CreateClientConVar("epoe_link_parsing", "1", true, false)
 
 --- HELPER ---
 local function CheckFor(tbl,a,b)
@@ -274,7 +275,7 @@ function PANEL:Init()
 	local canvas=self.canvas
 	canvas:Dock(FILL)
 
-	self.RichText=vgui.Create('RichText',canvas)
+	self.RichText = vgui.Create('RichText',canvas)
 	local RichText=self.RichText
 		RichText:InsertColorChange(255,255,255,255)
 		RichText:SetPaintBackgroundEnabled( false )
@@ -293,13 +294,33 @@ function PANEL:Init()
 			RichText:DockMargin(0,0,0,0)
 		end
 		RichText:HideScrollbar()
-	function RichText:Paint()
-		if self.__background then
-			surface.SetDrawColor(70,70,70,40)
-			surface.DrawOutlinedRect(0,0,self:GetWide(),self:GetTall())
+		function RichText:Paint()
+			if self.__background then
+				surface.SetDrawColor(70,70,70,40)
+				surface.DrawOutlinedRect(0,0,self:GetWide(),self:GetTall())
+			end
 		end
-	end
+		RichText.AddLink=function(richtext,func,func2)
+			-- warning: infinitely growing list. fix!
+			richtext.__links=richtext.__links or {}
+			local id = table.insert(richtext.__links,func2)
+			richtext.__links[id]=func2
 
+			richtext:InsertClickableTextStart("cb_"..tostring(id))
+				func(richtext)
+			richtext:InsertClickableTextEnd()
+		end
+		RichText.ActionSignal=function(richtext,key,value)
+			if key~="TextClicked" then return end
+
+			local id = value:match("cb_(.+)",1,true)
+			id=tonumber(id)
+			local callback = id and richtext.__links[id]
+			if callback then
+				callback(richtext,value)
+				return
+			end
+		end
 	self:ButtonHolding(false)
 end
 
@@ -338,15 +359,25 @@ function PANEL:AppendText(txt)
 end
 
 function PANEL:AppendTextX(txt)
-	local function func(link,txt)
-		if txt:len()==0 then return end
+	if not epoe_link_parsing:GetBool() then
+		return self:AppendText(txt)
+	end
+	
+	local function func(link,url)
+		if url:len()==0 then return end
 		if link then
-			self.RichText:InsertClickableTextStart(txt)
-			self:ResetLastColor(r,g,b)
-		end
-		self:AppendText(txt)
-		if link then
-			self.RichText:InsertClickableTextEnd()
+			self.RichText:AddLink(
+				function(rich)
+					self:ResetLastColor(r,g,b)
+					self:AppendText(url)
+				end,
+				function()
+					print("Opening",url)
+					gui.OpenURL(url)
+				end
+			)
+		else
+			self:AppendText(url)
 		end
 	end
 
