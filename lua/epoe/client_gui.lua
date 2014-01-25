@@ -13,7 +13,7 @@ local epoe_show_in_screenshots = CreateClientConVar("epoe_show_in_screenshots", 
 local epoe_keep_active = CreateClientConVar("epoe_keep_active", "0", true, false)
 local epoe_max_alpha = CreateClientConVar("epoe_max_alpha", "255", true, false)
 local epoe_always_clickable = CreateClientConVar("epoe_always_clickable", "0", true, false)
-local epoe_link_parsing = CreateClientConVar("epoe_link_parsing", "1", true, false)
+local epoe_links_mode = CreateClientConVar("epoe_links_mode", "1", true, false)
 
 --- HELPER ---
 local function CheckFor(tbl,a,b)
@@ -359,7 +359,8 @@ function PANEL:AppendText(txt)
 end
 
 function PANEL:AppendTextX(txt)
-	if not epoe_link_parsing:GetBool() then
+	local lmode = epoe_links_mode:GetInt()
+	if lmode==0 then
 		return self:AppendText(txt)
 	end
 	
@@ -367,13 +368,22 @@ function PANEL:AppendTextX(txt)
 		if url:len()==0 then return end
 		if link then
 			self.RichText:AddLink(
-				function(rich)
-					self:ResetLastColor(r,g,b)
+				function()
+					self:ResetLastColor()
 					self:AppendText(url)
 				end,
 				function()
-					print("Opening",url)
-					gui.OpenURL(url)
+					local lmode = epoe_links_mode:GetInt()
+					if lmode >= 2 then
+						SetClipboardText(url)
+						-- should probably print this on EPOE?
+						if lmode==2 then
+							LocalPlayer():ChatPrint("Copied to clipboard: "..url.." ")
+						end
+					end
+					if lmode==1 or lmode>2 then
+						gui.OpenURL(url)
+					end
 				end
 			)
 		else
