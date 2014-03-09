@@ -559,7 +559,7 @@ function Initialize() InEPOE=true
 	local module_loaded = false
 	
 	
-	local luaerror2_loaded = pcall(G.require,"luaerror2")
+	local luaerror2_loaded = false--pcall(G.require,"luaerror2")
 	
 	if luaerror2_loaded then
 		luaerror2_loaded = false
