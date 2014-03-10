@@ -574,7 +574,8 @@ function Initialize() InEPOE=true
 	if not module_loaded and luaerror2_loaded then
 		module_loaded = true
 		local inhook = false
-		hook.Add("LuaError", TagHuman,function(serverside, err, stack)
+		hook.Add("LuaError", TagHuman,function(runtime, srcfile, srcline, err, stack)
+
 			if inhook then return end
 			inhook = true
 				
@@ -599,7 +600,7 @@ function Initialize() InEPOE=true
 			inhook = false
 		end)
 		hook.Add("ClientLuaError",TagHuman,function(pl,err)
-			if err and err:sub(1,9)=="\n[ERROR] " then -- Does it change if it's a workshop error? If it does, we're fucked.
+			if err and err:sub(1,9)=="\n[ERROR] " then
 				err=err:sub(10,-1)
 			elseif err then
 				err=err:gsub("^\n",'')
