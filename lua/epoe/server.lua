@@ -97,10 +97,10 @@ Realerror=G.error
 			
 			local gotsubs
 			for k,v in next,Sub do
-				local pl = uids[k] 
+				local pl = uids[k]
 				if pl then
 					table.insert(transmit,pl)
-					gotsubs = true					
+					gotsubs = true
 				end
 			end
 			if gotsubs then
@@ -441,7 +441,7 @@ function DoPush(payload)
 	Messages:push(payload)
 end
 
--- Divides the payload to ok sized chunks and THEN sends it. 
+-- Divides the payload to ok sized chunks and THEN sends it.
 -- GMod13 needs this too as you don't want to receive 66*64KB every second in the mega worst case scenario
 function PushPayload(flags,text,msgc_col)
 	
@@ -487,7 +487,7 @@ function Transmit(flags,msg,targets,msgc_col)
 		net.WriteUInt(flags,8)
 
 		-- seq does not have color
-		if HasMsgCParams(flags) then 
+		if HasMsgCParams(flags) then
 			msgc_col=msgc_col or Color(255,0,255,255)
 			net.WriteUInt(msgc_col.r,8)
 			net.WriteUInt(msgc_col.g,8)
