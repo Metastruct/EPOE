@@ -104,7 +104,14 @@ local function Reload()
 end
 Reload()
 
-concommand.Add("epoe_filter_reload",Reload)
+concommand.Add("epoe_filters_reload",Reload)
+concommand.Add("epoe_filters_panic",function() 
+	table.Empty( full )
+	table.Empty( find )
+	table.Empty( regex )
+	e.filters.hasany = false
+	file.Delete("epoe_filters.txt",'DATA')
+end)
 
 local skipnext=0
 local sfind=string.find
