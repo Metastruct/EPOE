@@ -33,7 +33,7 @@ local table=table
 local bit=bit
 
 -- inform the client of the version
-CreateConVar( "epoe_version", "2.6", FCVAR_NOTIFY )
+CreateConVar( "epoe_version", "2.61", FCVAR_NOTIFY )
 -- TODO: Move these on clientside
 --local epoe_client_traces=CreateConVar("epoe_client_traces","0")
 --local epoe_server_traces=CreateConVar("epoe_server_traces","0")

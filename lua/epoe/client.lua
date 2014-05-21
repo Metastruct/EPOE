@@ -204,7 +204,7 @@ function MODULE.AddText(...)
 			col=Color(v.r,v.g,v.b,255)
 		else
 			local ok,str=pcall(ToStringEx,"",v)
-			ProcessMessage(IS_MSGC,ColorToStr(col)..str)
+			ProcessMessage(IS_MSGC,str,col)
 		end
 	end
 end
