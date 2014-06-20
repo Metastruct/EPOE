@@ -39,7 +39,7 @@ local function add(str,k)
 	elseif strtype=='^' then -- regex
 	
 		local ok,err=pcall(string.find,"test",str)
-		if not ok then 
+		if not ok then
 			ErrorNoHalt"EPOE Regex parse failure: " e.internalPrint("Filters: Line "..k..": Error in regex:"..tostring(err))
 			return false
 		end
@@ -55,7 +55,7 @@ local function add(str,k)
 	return true
 end
 local function ADD(X,Y)
-	concommand.Add("epoe_filter_"..X,function(_,cmd,_,filter) 
+	concommand.Add("epoe_filter_"..X,function(_,cmd,_,filter)
 		local x=filter:sub(2,2)
 		filter=filter:sub(1,1)..filter:sub(3,-1)
 		if x~=" " then
@@ -63,7 +63,7 @@ local function ADD(X,Y)
 			return
 		end
 		
-		if not add(Y..filter,-1) then 
+		if not add(Y..filter,-1) then
 			Msg"[EPOE] "print"Filter add failed"
 			return
 		end
@@ -107,7 +107,7 @@ end
 Reload()
 
 concommand.Add("epoe_filters_reload",Reload)
-concommand.Add("epoe_filters_panic",function() 
+concommand.Add("epoe_filters_panic",function()
 	table.Empty( full )
 	table.Empty( find )
 	table.Empty( regex )
@@ -126,9 +126,9 @@ local function ShouldFilter(txt,flags)
 	
 	--exact match
 	local count=full[txt]
-	if count then 
+	if count then
 		skipnext=count or 0
-		return true 
+		return true
 	end
 
 	-- string match
@@ -137,7 +137,7 @@ local function ShouldFilter(txt,flags)
 			local str=t[1]
 			if sfind(txt,str,1,true) then
 				skipnext=t[2]
-				return true 
+				return true
 			end
 		end
 	end
@@ -147,7 +147,7 @@ local function ShouldFilter(txt,flags)
 			local str=t[1]
 			if sfind(txt,str) then
 				skipnext=t[2]
-				return true 
+				return true
 			end
 		end
 	end
@@ -156,19 +156,19 @@ end
 
 local skipshit
 hook.Add(Tag,Tag,function(txt,flags)
-	if not epoe_filtering:GetBool() 
-	or not e.filters.hasany 
+	if not epoe_filtering:GetBool()
+	or not e.filters.hasany
 	or skipshit
-	then 
-		return 
+	then
+		return
 	end
 
-	if ShouldFilter(txt,flags) then 
+	if ShouldFilter(txt,flags) then
 		if epoe_filtering_dbg:GetBool() then
 			skipshit=true
 			e.MsgC(Color(255,4,3),"~")
 			skipshit=false
 		end
-		return false 
+		return false
 	end
 end)
