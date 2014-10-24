@@ -20,6 +20,7 @@ local len=string.len
 local next=next
 local concommand=concommand
 local player=player
+local select=select
 local net=net
 local timer=timer
 local string=string
@@ -28,7 +29,7 @@ local util=util
 local math=math
 local hook=hook
 local ipairs=ipairs
-
+local unpack=unpack
 local table=table
 local bit=bit
 
@@ -265,24 +266,43 @@ end
 		end
 	end
 
-	-- TODO: Add Colors..
-	function OnMsgC(color,...)
-		if InEPOE or HasNoSubs then pcall(RealMsgC,color,...) else
+	function PushMsgC(color,...)
+		
+		local ok,str=pcall(ToStringEx,"",...)
+
+		if str then
+			local msgc_col = color
+			PushPayload( IS_MSGC , str, msgc_col )
+		end
+	end
+	
+	function OnMsgC(...)
+		if InEPOE or HasNoSubs then pcall(RealMsgC,...) else
 			InEPOE = true
 
 				if HitMaxQueue() then return end
 
 				EnableTick()
-
-				
-				local ok,str=pcall(ToStringEx,"",...)
-
-				if str then
-					local msgc_col = color
-					PushPayload( IS_MSGC , str, msgc_col )
+				local last_col = col_white
+				local vals={}
+				for i=1,select('#',...) do
+					local v=select(i,...)
+					
+					if IsColor(v) then
+						PushMsgC(last_col,unpack(vals))
+						vals={}
+						last_col=v
+					else
+						table.insert(vals,v)
+					end
+					
 				end
-
-				pcall(RealMsgC,color,...)
+				
+				if #vals>0 then
+					PushMsgC(last_col,unpack(vals))
+				end
+				
+				pcall(RealMsgC,...)
 
 			InEPOE=false
 		end

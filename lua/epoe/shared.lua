@@ -21,6 +21,10 @@ local assert=assert
 local getmetatable=debug.getmetatable
 local G=_G
 local bit=bit
+local next=next
+local select=select
+local type=type
+local Color=Color
 
 module( "epoe" )
 
@@ -67,6 +71,7 @@ function HasFlag(byte,flag)
 	return a==flag
 end
 
+-- seq does not have color as it has already been transmitted
 function HasMsgCParams(flags)
 	return HasFlag(flags,IS_MSGC) and not HasFlag(flags,IS_SEQ)
 end
@@ -265,4 +270,23 @@ function ToStringEx(delim,...)
 		res = res .. (n==1 and "" or delim) .. e
 	end
 	return res
+end
+
+
+col_white=Color(255,255,255,255)
+function IsColor(val)
+	
+	if type(val)~="table" then return false end
+	
+	local 	r = val.r
+			g = val.g
+			b = val.b
+			
+	if not r or type(r)~="number"
+	or not g or type(g)~="number"
+	or not b or type(b)~="number"
+	then return false end
+	
+	return true
+	
 end
