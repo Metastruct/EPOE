@@ -274,6 +274,7 @@ end
 
 
 col_white=Color(255,255,255,255)
+col_error=Color(255,1,254,255)
 function IsColor(val)
 	
 	if type(val)~="table" then return false end

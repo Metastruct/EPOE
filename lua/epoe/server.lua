@@ -406,7 +406,7 @@ end
 				
 				local ok,str=pcall(ToStringEx," ",...)
 				if str then
-					PushPayload( IS_ERROR , str:gsub("\n$","") ) -- hack until I fix this for good
+					PushPayload( IS_ERROR , str:gsub("\n$",""), false ) -- hack until I fix this for good
 				end
 
 				pcall(RealErrorNoHalt,...)
@@ -424,7 +424,7 @@ end
 
 				local ok,str=pcall(ToStringEx," ",...)
 				if str then
-					PushPayload( IS_ERROR , str:gsub("\n$","") ) -- hack until I fix this for good
+					PushPayload( IS_ERROR , str:gsub("\n$",""), false ) -- hack until I fix this for good
 				end
 
 				pcall(RealError,...)
@@ -508,7 +508,7 @@ function Transmit(flags,msg,targets,msgc_col)
 
 		-- seq does not have color
 		if HasMsgCParams(flags) then
-			msgc_col=msgc_col or Color(255,0,255,255)
+			msgc_col=msgc_col and IsColor(msgc_col) and msgc_col or col_error
 			net.WriteUInt(msgc_col.r,8)
 			net.WriteUInt(msgc_col.g,8)
 			net.WriteUInt(msgc_col.b,8)
