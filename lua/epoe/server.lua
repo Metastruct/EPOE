@@ -289,7 +289,7 @@ end
 					local v=select(i,...)
 					
 					if IsColor(v) then
-						PushMsgC(last_col,unpack(vals))
+						if #vals>0 then PushMsgC(last_col,unpack(vals)) end
 						vals={}
 						last_col=v
 					else
