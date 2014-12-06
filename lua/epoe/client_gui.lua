@@ -186,7 +186,7 @@ function PANEL:Init()
 		CheckBox("background","epoe_draw_background")
 		CheckBox("screenshots","epoe_show_in_screenshots")
 
-		local FontChooser = vgui.Create("DComboBox", Frame )
+		local FontChooser = vgui.Create("DComboBox", Cfg )
 		local function AddFont(txt,name)
 			local ok=pcall(function() surface.SetFont(name) end)
 			if ok then
@@ -239,8 +239,8 @@ function PANEL:Init()
 		Cfg:AddPanel( FontChooser )
 
 		-- FEEL FREE TO CHANGE/FIX/REMOVE( :( ) THIS
-		pcall(function()
-			local PlaceChooser = vgui.Create("DComboBox", Frame )
+		local ok,err = pcall(function()
+			local PlaceChooser = vgui.Create("DComboBox", Cfg )
 			PlaceChooser:AddChoice("Wherever", "0")
 			PlaceChooser:AddChoice("Top Left", "1")
 			PlaceChooser:AddChoice("Top", "2")
@@ -267,7 +267,7 @@ function PANEL:Init()
 			PlaceChooser:SetWide(PlaceChooser:GetWide()+32)
 			Cfg:AddPanel( PlaceChooser )
 		end)
-
+		if not ok then ErrorNoHalt(err) end
 	self.uppermenu=Cfg
 
 
