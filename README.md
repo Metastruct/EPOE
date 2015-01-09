@@ -1,24 +1,57 @@
+EPOE
+=======================
 
-**EPOE 2.1** (Enhanced Perception Of Errors) is a debugging console for multiplayer. 
+(Enhanced Perception Of Errors) is a debugging console for Garry's Mod servers. It taps into the Lua print and error system of gmod to relay messages to admins. 
+Think of it as server side console on client although technically it isn't one.
 
-It taps into the print and error system of gmod to relay messages to admins. Think of it as server side console on client although technically it isn't one.
+Uses:
 
-Usages include but are not limited to:
+ - Track lua errors
  - Monitor server activity through debug messages
- - Responds to serverside errors from lua files
  - See debug printing from addons
- - Print/Debug serverside variables
- - See players join 
- - etc
+ - Run lua on server and see results
+ - See players joins, leaves if you add custom printing for them.
 
-***Screenshot examples***
+
+***Screenshots***
 
 ![](http://i.imgur.com/k1rhz3b.png)
 
 ![](http://i.imgur.com/SyuCR5i.png)
 
+***Installation***
 
-***Minor features***
+ - Download/clone EPOE to an addon folder
+ - copy the dlls inside ```epoe/lua/bin``` to ```garrysmod/lua/bin``` 
+(since they can't be loaded from addons folders)
+
+ Now you should have folder similar to ``` garrysmod/addons/epoe/lua/ ``` and file ``` garrysmod/lua/bin/gmsv_...dll ```
+
+***Usage***
+
+ * Bind key: ```bind x +epoe```
+ * Hold the key, click ```login``` (and optionally tick ```autologin```) or EPOE won't do anything.
+ * When you hold the key you can resize/move/change settings on the EPOE UI.
+
+Tips:
+
+ - double tap the bind to prevent EPOE from hiding
+ - All epoe console commands start with epoe_, feel free to explore them
+
+
+***Alternative Download*** 
+
+A direct live version from Meta Construct, synced with this git repo
+
+URL: [svn://svn.metastruct.org/srvaddons/EPOE](svn://svn.metastruct.org/srvaddons/EPOE) 
+
+ - Username: anon
+ - Password: anon
+
+***Enginespew Source***: svn://svn.metastruct.org/gbins/enginespew
+
+***Other features***
+
  - parses links from the output and makes them clickable. You could for example print a person's steam profile url when they spawn and click to see a questionable profile for example.
  - Flood protection
  - Can be hidden from screenshots
@@ -28,55 +61,32 @@ Usages include but are not limited to:
  - Login/logout from the stream and autologin with support for delayed admin rights (SQL Based Administration for example)
 
 
-***Alternative Download***
+**Latest changes**
 
-[svn://svn.metastruct.org/srvaddons/EPOE](svn://svn.metastruct.org/srvaddons/EPOE) 
-
-(Direct live version from Meta Construct, synced with this git repo)
-
-Username: anon
-
-Password: anon
-
-Enginespew Source: svn://svn.metastruct.org/gbins/enginespew
-
-***Installation***
-
-Download EPOE to an addon folder and copy the dlls inside ```epoe/lua/bin``` to ```garrysmod/lua/bin``` since they can't be loaded from addons folders.
-
-Now you should have folders similar to
-
-``` garrysmod/addons/epoe/lua/ ```
-
-``` garrysmod/lua/bin/gmsv_ ```
-
-***Usage***
-
-The most important command is ```+epoe```. Bind it to a key you can access easily. For example ```bind x +epoe```. This command brings up the UI whenever it hides (the ui hides when no activity occurs for a period of time).
-When you hold the key the EPOE UI Pops up and you can resize/move/change settings on the UI.
-On first launch remember to click login (and tick autologin) or EPOE won't do anything.
-Tip: double tap the bind to prevent EPOE from hiding.
-Tip2: All epoe console commands start with epoe_, feel free to explore them.
-
-***Changelog***
-
-EPOE1: First version
-EPOE2: Rewritten queue system and UI
-EPOE2.1: Beta compatibility and improved UI + speed improvements
-For more detailed changelog look in the history.
+ - Moved to net messages.
+ - Bugfixed MsgC
 
 ***Warning***
 
-EPOE ships with [Enginespew](http://www.facepunch.com/threads/859870), which is a module that shouldn't crash, but MAY crash. I haven't managed to replicate **even a single crash** on our servers or my testing server from the few that I have been reported though. **EPOE will work **in limited mode **without the module **though.
-EPOE itself is written to crash as gracefully as possible in the case of a such event, circular crash is almost guaranteed to not happen. EPOE also can't flood admins out with spam as the speed is limited and in the case of excessive spam from server console epoe shuts down for a brief period and clears the sending stack from messages.
-TLDR: EPOE won't harm your server or clients or hinder performance except in very special cases. It's supposed to help you hunt down bugs, not create them.
+EPOE ships with [Enginespew](http://www.facepunch.com/threads/859870), which is a module that shouldn't crash, but MAY crash.
+I haven't managed to replicate **even a single crash** on our servers or my testing server from the few that I have been reported though. EPOE will work *in limited mode without the module* though.
+
+EPOE itself is written to crash as gracefully as possible in the case of a such event, circular crash is almost guaranteed to not happen. 
+EPOE also can't flood admins out with spam as the speed is limited and in the case of excessive spam from server console epoe shuts down for a brief period and clears the sending stack from messages.
+
+***TLDR:*** EPOE won't harm your server or clients or hinder performance except in very special cases. It's supposed to help you hunt down bugs, not create them.
+
 
 ***More?***
 
-EPOE comes with hook "EPOE". This hook is called every time a message is relayed. The hook is used by the UI and the console printing to tap into the epoe stream. You can do the same and for example create logging module for epoe.
-EPOE Supports explicit clientside printing of data too, so you can use it on clientside too, just prefix your prints with epoe.Print for example. epoe.Msg,MsgC,Err,AddText are also supported.
+EPOE comes with hook "EPOE". This hook is called every time a message is relayed. 
+
+The hook is used by the UI and the console printing to tap into the epoe stream. You can do the same and for example create logging module for epoe.
+
+EPOE supports explicit clientside printing of data too, so you can use it on clientside too, just prefix your prints with epoe.Print for example. epoe.Msg,MsgC,Err,AddText are also supported.
 Example:
 ```epoe.AddText(Color(255,0,255),"Wow clientside spam\n")```
+
 
 **Bugs**
 
@@ -97,4 +107,10 @@ If so, come join [Our servers](http://metastruct.org) and report your problem.
  - **Agent 47** LuaError2
  - **Animorten** Improvements
  - **Syranide** and **Divran** 80% of EPOE1.0 UI.
+ - **Noiwex** Fixes
+ - **PotcFdk** Maintenance
+ - **Psihusky** Sex and the code
+ - **Collision (co2)** Fixes
  - **Python1320** Codes
+
+***License***
