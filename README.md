@@ -21,7 +21,7 @@ Uses:
 
 ***Installation***
 
- - Download/clone EPOE to an addon folder
+ - Download/clone EPOE to an addon folder (New SVN URL https://github.com/Metastruct/EPOE/trunk )
  - copy the dlls inside ```epoe/lua/bin``` to ```garrysmod/lua/bin``` 
 (since they can't be loaded from addons folders)
 
@@ -38,15 +38,6 @@ Tips:
  - double tap the bind to prevent EPOE from hiding
  - All epoe console commands start with epoe_, feel free to explore them
 
-
-***Alternative Download*** 
-
-A direct live version from Meta Construct, synced with this git repo
-
-URL: [svn://svn.metastruct.org/srvaddons/EPOE](svn://svn.metastruct.org/srvaddons/EPOE) 
-
- - Username: anon
- - Password: anon
 
 ***Enginespew Source***: svn://svn.metastruct.org/gbins/enginespew
 
