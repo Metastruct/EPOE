@@ -434,6 +434,150 @@ end
 	end
 ------------------
 
+------------------
+-- API
+------------------
+	local api = {}
+	
+	function api.Msg(...)
+	
+		if HitMaxQueue() then return end
+
+		EnableTick()
+
+		
+		local ok,str=pcall(ToStringEx,"",...) -- just to be sure
+
+		if str then
+			PushPayload( IS_MSG , str )
+		end
+		
+	end
+
+	local function PushMsgC(color,...)
+		
+		local ok,str=pcall(ToStringEx,"",...)
+
+		if str then
+			local msgc_col = color
+			PushPayload( IS_MSGC , str, msgc_col )
+		end
+		
+	end
+	
+	function api.MsgC(...)
+		
+		if HitMaxQueue() then return end
+		EnableTick()
+		
+		local last_col = col_white
+		local vals={}
+		for i=1,select('#',...) do
+			local v=select(i,...)
+			
+			if IsColor(v) then
+				if #vals>0 then PushMsgC(last_col,unpack(vals)) end
+				vals={}
+				last_col=v
+			else
+				table.insert(vals,v)
+			end
+			
+		end
+		
+		if #vals>0 then
+			PushMsgC(last_col,unpack(vals))
+		end
+				
+	end
+
+	function api.MsgN(...)
+	
+		if HitMaxQueue() then return end
+		EnableTick()
+
+		local ok,str=pcall(ToStringEx,"",...)
+		if str then
+			PushPayload( IS_MSGN , str )
+		end
+
+	end
+
+	function api.print(...)
+	
+		if HitMaxQueue() then return end
+
+		EnableTick()
+
+		
+		local ok,str=pcall(ToStringEx," ",...)
+		if str then
+			PushPayload( IS_PRINT , str )
+		end
+
+	end
+	
+	function api.MsgAll(...)
+		
+		
+		if HitMaxQueue() then return end
+
+		EnableTick()
+
+		local ok,str=pcall(ToStringEx," ",...)
+		if str and epoe_relay_msgall:GetBool() then
+			PushPayload( IS_MSG , str )
+		end
+
+
+	end
+	
+	function api.ClientLuaError(str)
+
+		if HitMaxQueue() then return end
+
+		EnableTick()
+
+		PushPayload( IS_CERROR , tostring(str) )
+
+	end
+	
+	function api.ErrorNoHalt(...)
+
+		if HitMaxQueue() then return end
+
+		EnableTick()
+
+		
+		local ok,str=pcall(ToStringEx," ",...)
+		if str then
+			PushPayload( IS_ERROR , str:gsub("\n$",""), false ) -- hack until I fix this for good
+		end
+
+	end
+	
+	function api.error(...)
+
+		if HitMaxQueue() then return end
+
+		EnableTick()
+
+		local ok,str=pcall(ToStringEx," ",...)
+		if str then
+			PushPayload( IS_ERROR , str:gsub("\n$",""), false ) -- hack until I fix this for good
+		end
+
+	end
+	
+	-- _G api: Eprint, EMsg
+	for k,v in next,api do
+		G['E'..k] = v
+	end
+	
+	_M.api = api
+	
+------------------
+
 
 function SamePayload(a,b)
 	if a==b then return true end -- nil or same message will pass this, hmm
@@ -599,7 +743,6 @@ function Initialize() InEPOE=true
 			if inhook then return end
 			inhook = true
 				
-							
 			local stackinfo={}
 			for level,info in ipairs(stack or {}) do
 				local msg
