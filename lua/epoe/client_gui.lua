@@ -14,6 +14,7 @@ local epoe_keep_active = CreateClientConVar("epoe_keep_active", "0", true, false
 local epoe_max_alpha = CreateClientConVar("epoe_max_alpha", "255", true, false)
 local epoe_always_clickable = CreateClientConVar("epoe_always_clickable", "0", true, false)
 local epoe_links_mode = CreateClientConVar("epoe_links_mode", "1", true, false)
+local epoe_parse_steamids = CreateClientConVar("epoe_parse_steamids", "1", true, false)
 
 --- HELPER ---
 local function CheckFor(tbl,a,b)
@@ -26,54 +27,84 @@ local function CheckFor(tbl,a,b)
         end
     end
 end
-local function AppendTextLink(a,callback)
 
-	local result={}
-	CheckFor(result,a,"https?://[^%s%\"]+")
-	CheckFor(result,a,"ftp://[^%s%\"]+")
-	CheckFor(result,a,"steam://[^%s%\"]+")
+local function make_url(url)
+	
+	if epoe_parse_steamids:GetBool() then
+		if url:find"^76561[0123]%d%d%d%d+$" then
+			return 'http://steamcommunity.com/profiles/'..url
+		end
+		
+		if url:find"^STEAM_0%:[01]:%d+$" then
+			local sid = util.SteamIDTo64(url)
+			if sid then return 'http://steamcommunity.com/profiles/'..sid end
+		end
+	end
+	
+end
 
-	--todo
-	--CheckFor(result,a,"^www%.[^%s%\"]+")
-	--CheckFor(result,a,"[^%s%\"]www%.[^%s%\"]+")
+local function SORT1(a, b)
+	return a[1] < b[1]
+end
+local function AppendTextLink(a, callback)
+	
+	local result = { }
+	
+	CheckFor(result, a, "https?://[^%s%\"]+")
+	CheckFor(result, a, "ftp://[^%s%\"]+")
+	CheckFor(result, a, "steam://[^%s%\"]+")
+	
+	if epoe_parse_steamids:GetBool() then
+		CheckFor(result, a, "76561[0123]%d%d%d%d+")
+		CheckFor(result, a, "STEAM_0%:[01]:%d+")
+	end
 
-	if #result == 0 then return false end
+	if #result == 0 then
+		return false
+	end
 
-	table.sort(result,function(a,b) return a[1]<b[1] end)
-
-	-- Fix overlaps
-	local _l,_r
-	for k,tbl in pairs(result) do
-
-		local l,r=tbl[1],tbl[2]
-
+	table.sort(result, SORT1)
+	local _l, _r
+	for k, tbl in next,result do
+		local l, r = tbl[1], tbl[2]
 		if not _l then
-			_l,_r=tbl[1],tbl[2]
+			_l, _r = tbl[1], tbl[2]
 			continue
 		end
 
-		if l<_r then table.remove(result,k) end
+		if l < _r then
+			table.remove(result, k)
+		end
 
-		_l,_r=tbl[1],tbl[2]
+		_l, _r = tbl[1], tbl[2]
 	end
 
-	local function TEX(str) callback(false,str) end
-	local function LNK(str) callback(true,str) end
+	local function TEX(str)
+		callback(false, str)
+	end
 
-	local offset=1
+	local function LNK(str)
+		callback(true, str, make_url(str))
+	end
+
+	local offset = 1
 	local right
-	for _,tbl in pairs(result) do
-		local l,r=tbl[1],tbl[2]
-		local link=a:sub(l,r)
-		local left=a:sub(offset,l-1)
-		right=a:sub(r+1,-1)
-		offset=r+1
+	for _, tbl in pairs(result) do
+		local l, r = tbl[1], tbl[2]
+		local link = a:sub(l, r)
+		local left = a:sub(offset, l - 1)
+		right = a:sub(r + 1, -1)
+		offset = r + 1
 		TEX(left)
 		LNK(link)
 	end
+
 	TEX(right)
 	return true
 end
+
+
+
 --------------
 
 
@@ -364,8 +395,9 @@ function PANEL:AppendTextX(txt)
 		return self:AppendText(txt)
 	end
 	
-	local function func(link,url)
+	local function func(link,url,real_url)
 		if url:len()==0 then return end
+		real_url = real_url or url
 		if link then
 			self.RichText:AddLink(
 				function()
@@ -375,14 +407,14 @@ function PANEL:AppendTextX(txt)
 				function()
 					local lmode = epoe_links_mode:GetInt()
 					if lmode >= 2 then
-						SetClipboardText(url)
+						SetClipboardText(real_url)
 						-- should probably print this on EPOE?
 						if lmode==2 then
-							LocalPlayer():ChatPrint("Copied to clipboard: "..url.." ")
+							LocalPlayer():ChatPrint("Copied to clipboard: "..real_url.." ")
 						end
 					end
 					if lmode==1 or lmode>2 then
-						gui.OpenURL(url)
+						gui.OpenURL(real_url)
 					end
 				end
 			)
