@@ -18,14 +18,14 @@ local epoe_parse_steamids = CreateClientConVar("epoe_parse_steamids", "1", true,
 
 --- HELPER ---
 local function CheckFor(tbl,a,b)
-    local a_len=#a
-    local res,endpos=true,1
-    while res and endpos < a_len do
-        res,endpos=a:find(b,endpos)
-        if res then
-            tbl[#tbl+1]={res,endpos}
-        end
-    end
+	local a_len=#a
+	local res,endpos=true,1
+	while res and endpos < a_len do
+		res,endpos=a:find(b,endpos)
+		if res then
+			tbl[#tbl+1]={res,endpos}
+		end
+	end
 end
 
 local function make_url(url)
@@ -168,13 +168,13 @@ function PANEL:Init()
 			Button:SizeToContents() Button:SetDrawBorder(false)  Button:SetTall( 16 ) Button:SetWide( Button:GetWide(  ) + 6 ) -- gah
 		Cfg:AddPanel( Button )
 
-		
+
 		local function CheckBox(txt,cvar)
 			local checkbox = vgui.Create( "DCheckBoxLabel" , self )
 				checkbox:SetText( txt )
 				checkbox:SetConVar( cvar )
 				checkbox:SizeToContents()
-				
+
 				checkbox:SetMouseInputEnabled( true )
 				checkbox:SetKeyboardInputEnabled( true )
 				function checkbox.OnMouseReleased( _, mousecode )
@@ -189,7 +189,7 @@ function PANEL:Init()
 				checkbox.Label.OnMouseReleased=checkbox.OnMouseReleased
 				checkbox.Button.OnMousePressed=checkbox.OnMousePressed
 				checkbox.Label.OnMousePressed=checkbox.OnMousePressed
-				
+
 				checkbox.m_iIndent=-16
 				checkbox.Button:SetAlpha(0)
 				checkbox:SetWide(checkbox:GetWide() -8 )
@@ -224,37 +224,37 @@ function PANEL:Init()
 				FontChooser:AddChoice(txt,name)
 			end
 		end
-		
+
 		AddFont("Fixed","BudgetLabel")
 		AddFont("Fixed Shadow","DefaultFixedDropShadow")
 		AddFont("Fixed Tiny","DebugFixed")
-		
+
 		AddFont("Even smaller","DebugFixedSmall")
-		
+
 		AddFont("Smallest","HudHintTextSmall")
 		AddFont("Smaller","ConsoleText")
 		AddFont("Small","DefaultSmall")
 		AddFont("Chat","ChatFont")
-		
+
 		AddFont("Big","Default")
 		AddFont("Bigger","HDRDemoText")
-		
+
 		AddFont("Huge","DermaLarge")
 		AddFont("Huger","DermaLarge")
-		
+
 		AddFont("TEST","BUTOFCOURSE")
-		
+
 		function FontChooser.Think(FontChooser)
 			FontChooser:ConVarStringThink()
 		end
 
 		function FontChooser.PerformLayout(FontChooser,w,h)
 			DComboBox.PerformLayout(FontChooser,w,h)
-			
+
 			FontChooser:SizeToContents()
 			FontChooser:SetTall(16)
 			FontChooser:SetWide(FontChooser:GetWide()+32)
-			
+
 			Cfg:InvalidateLayout()
 		end
 
@@ -357,16 +357,16 @@ end
 
 function PANEL:PostInit()
 	self.RichText:SetVerticalScrollbarEnabled(true)
-	
+
 	local ok = pcall(function()
 		self.RichText:SetFontInternal( epoe_font:GetString() )
 	end)
-	
+
 	if not ok then
 		RunConsoleCommand("epoe_font","BudgetLabel")
 		self.RichText:SetFontInternal( "BudgetLabel" )
 	end
-	
+
 end
 
 
@@ -394,7 +394,7 @@ function PANEL:AppendTextX(txt)
 	if lmode==0 then
 		return self:AppendText(txt)
 	end
-	
+
 	local function func(link,url,real_url)
 		if url:len()==0 then return end
 		real_url = real_url or url
@@ -466,14 +466,14 @@ function PANEL:Paint(w,h)
 
 	if self.__repeatact then
 		if self.__repeatact>RealTime() then
-			
+
 			surface.SetDrawColor(180,230 ,255,196)
 			surface.DrawRect(0,0,3,6)
 		else
 			self.__repeatact = false
 		end
 	end
-	
+
 	if not self.__holding and not epoe_draw_background:GetBool() and not self.being_hovered then return end
 
 	if self.__holding then
@@ -601,9 +601,9 @@ function PANEL:Think()
 	end
 
 	if ( self.Hovered and
-         --self.m_bSizable and
-	     mx > (self.x + self:GetWide() - 20) and
-	     my > (self.y + self:GetTall() - 20) ) then
+		 --self.m_bSizable and
+		 mx > (self.x + self:GetWide() - 20) and
+		 my > (self.y + self:GetTall() - 20) ) then
 
 		self:SetCursor( "sizenwse" )
 		return
@@ -723,7 +723,7 @@ function PANEL:ToggleActive()
 	local state=epoe_keep_active:GetBool()
 
 	RunConsoleCommand("epoe_keep_active",state and "0" or "1")
-		
+
 	e.internalPrint(state and "Fading Enabled" or "Fading Disabled")
 
 end
@@ -825,6 +825,7 @@ concommand.Add('-epoe',epoe_toggle)
 ----------------------------
 
 local epoe_timestamps = CreateClientConVar("epoe_timestamps", 			"1", true, false)
+local epoe_timestamp_format = CreateClientConVar("epoe_timestamp_format", 			"%H:%M", true, false)
 local epoe_show_on_activity = CreateClientConVar("epoe_show_on_activity", 	"1", true, false)
 local epoe_disable_autoscroll = CreateClientConVar("epoe_disable_autoscroll", 	"0", true, false)
 local notimestamp  = false
@@ -847,14 +848,15 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 		if epoe_timestamps:GetBool() then
 			if !notimestamp then
 				e.GUI:SetColor(100,100,100)	e.GUI:AppendText(			"[")
-				e.GUI:SetColor(255,255,255)	e.GUI:AppendText(os.date(	"%H"))
-				e.GUI:SetColor(255,255,255)	e.GUI:AppendText(			":")
-				e.GUI:SetColor(255,255,255)	e.GUI:AppendText(os.date(	"%M"))
+
+				local formatted_stamp = os.date(epoe_timestamp_format:GetString())
+				e.GUI:SetColor(255,255,255)	e.GUI:AppendText(formatted_stamp)
+
 				e.GUI:SetColor(100,100,100)	e.GUI:AppendText(			"] ")
 			end
 			notimestamp = not ( newText:Right(1)=="\n" ) -- negation hard
 		end
-		
+
 		if e.HasFlag(flags,e.IS_EPOE) then
 			e.GUI:SetColor(255,100,100)
 			e.GUI:AppendText("[EPOE] ")
@@ -878,7 +880,7 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 		end
 
 		e.GUI:AppendTextX(newText)
-		
+
 		if not epoe_disable_autoscroll:GetBool() and not e.GUI.being_hovered then
 			e.GUI.RichText:GotoTextEnd()
 		end
