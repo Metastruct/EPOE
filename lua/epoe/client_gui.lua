@@ -50,13 +50,21 @@ local function AppendTextLink(a, callback)
 	
 	local result = { }
 	
-	CheckFor(result, a, "https?://[^%s%\"]+")
-	CheckFor(result, a, "ftp://[^%s%\"]+")
-	CheckFor(result, a, "steam://[^%s%\"]+")
+	local checkpatterns = {
+		"https?://[^%s%\"]+",
+		"ftp://[^%s%\"]+",
+		"steam://[^%s%\"]+"
+	}
 	
 	if epoe_parse_steamids:GetBool() then
-		CheckFor(result, a, "76561[0123]%d%d%d%d+")
-		CheckFor(result, a, "STEAM_0%:[01]:%d+")
+		table.insert(checkpatterns, "76561[0123]%d%d%d%d+")
+		table.insert(checkpatterns, "STEAM_0%:[01]:%d+")
+	end
+	
+	hook.Run("EPOEAddLinkPatterns", checkpatterns)
+	
+	for _, patt in pairs(checkpatterns) do
+		CheckFor(result, a, patt)
 	end
 
 	if #result == 0 then
@@ -414,7 +422,11 @@ function PANEL:AppendTextX(txt)
 						end
 					end
 					if lmode==1 or lmode>2 then
-						gui.OpenURL(real_url)
+						local handled = hook.Run("EPOEOpenLink", real_url)
+						
+						if not handled then
+							gui.OpenURL(real_url)
+						end
 					end
 				end
 			)
