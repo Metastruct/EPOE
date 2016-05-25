@@ -18,6 +18,7 @@ local tostring=tostring
 local type=type
 local string=string
 local usermessage=usermessage
+local rawget=rawget
 local Msg=Msg
 local MsgN=MsgN
 local print=print

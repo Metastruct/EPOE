@@ -12,6 +12,7 @@ local pcall=pcall
 local tostring=tostring
 local tonumber=tonumber
 local CreateConVar=CreateConVar
+local rawget=rawget
 local setmetatable=setmetatable
 local RunStringEx=RunStringEx
 local FrameTime=FrameTime
