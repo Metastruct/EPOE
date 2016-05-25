@@ -437,7 +437,7 @@ end
 ------------------
 -- API
 ------------------
-	local api = {}
+	local api = rawget(_M,"api") or {}
 	
 	function api.Msg(...)
 	

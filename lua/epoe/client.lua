@@ -5,6 +5,9 @@ local setmetatable=setmetatable
 local net=net
 local IsValid=IsValid
 local error=error
+local select=select
+local next=next
+local unpack=unpack
 local player=player
 local pairs=pairs
 local hook=hook
@@ -188,13 +191,36 @@ end
 
 MODULE.errornohalt = MODULE.Err
 
-function MODULE.MsgC(col,...)
+function MODULE._internalMsgC(col,...)
 	if not col or not col.r then return end
 	local ok,str=pcall(ToStringEx,"",...)
 	if not ok then internalPrint(str) return end
 	if not str then return end
 
 	ProcessMessage(IS_MSGC,str,col)
+end
+
+function MODULE.MsgC(col,...)
+
+	local last_col = col_white
+	local vals={} -- todo: use unpack(n,a,b)
+	for i=1,select('#',...) do
+		local v=select(i,...)
+		
+		if IsColor(v) then
+			if next(vals) then _internalMsgC(last_col,unpack(vals)) end
+			vals={}
+			last_col=v
+		else
+			table.insert(vals,v)
+		end
+		
+	end
+	
+	if next(vals) then
+		_internalMsgC(last_col,unpack(vals))
+	end
+	
 end
 
 function MODULE.AddText(...)
@@ -208,3 +234,33 @@ function MODULE.AddText(...)
 		end
 	end
 end
+
+
+------------------
+-- API
+------------------
+local api = rawget(_M,"api") or {}
+
+api.Msg = MODULE.Msg
+
+api.MsgC = MODULE.MsgC
+	
+api.MsgN = MODULE.MsgN
+
+api.print = MODULE.print
+
+api.MsgAll = MODULE.MsgAll
+	
+api.ErrorNoHalt = MODULE.Err
+
+api.error = function(e,n)
+	MODULE.Err(e)
+	error(e,(n or 1)+1)
+end
+
+-- _G api: Eprint, EMsg
+for k,v in next,api do
+	G['E'..k] = v
+end
+
+_M.api = api
