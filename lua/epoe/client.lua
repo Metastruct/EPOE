@@ -201,7 +201,7 @@ function MODULE._internalMsgC(col,...)
 	ProcessMessage(IS_MSGC,str,col)
 end
 
-function MODULE.MsgC(col,...)
+function MODULE.MsgC(...)
 
 	local last_col = col_white
 	local vals={} -- todo: use unpack(n,a,b)
