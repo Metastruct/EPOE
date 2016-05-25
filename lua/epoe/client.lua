@@ -239,20 +239,13 @@ end
 ------------------
 -- API
 ------------------
-local api = rawget(_M,"api") or {}
+local api = rawget(MODULE,"api") or {}
 
 api.Msg = MODULE.Msg
-
 api.MsgC = MODULE.MsgC
-	
 api.MsgN = MODULE.MsgN
-
 api.print = MODULE.print
-
-api.MsgAll = MODULE.MsgAll
-	
 api.ErrorNoHalt = MODULE.Err
-
 api.error = function(e,n)
 	MODULE.Err(e)
 	error(e,(n or 1)+1)
@@ -263,4 +256,4 @@ for k,v in next,api do
 	G['E'..k] = v
 end
 
-_M.api = api
+MODULE.api = api
