@@ -1,6 +1,9 @@
 EPOE
 =======================
 
+[![Build Status](https://travis-ci.org/Metastruct/EPOE.svg?branch=master)](https://travis-ci.org/Metastruct/EPOE)
+
+
 (Enhanced Perception Of Errors) is a debugging console for Garry's Mod servers. It taps into the Lua print and error system of gmod to relay messages to admins. 
 Think of it as server side console on client although technically it isn't one.
 
