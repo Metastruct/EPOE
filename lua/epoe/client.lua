@@ -258,3 +258,12 @@ for k,v in next,api do
 end
 
 MODULE.api = api
+
+function MODULE.setenv(env)
+	local t={}
+	for k,v in next,api do
+		t[k]=v
+	end
+	local fenv = G.setmetatable({  }, { __index = G.setmetatable(t, { __index = env or G.getfenv(2) or G }) })
+	G.setfenv(2, fenv)
+end
