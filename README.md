@@ -24,7 +24,7 @@ Uses:
 
 ***Installation***
 
- - Download/clone EPOE to an addon folder (New SVN URL https://github.com/Metastruct/EPOE/trunk )
+ - Download/clone EPOE to an addon folder
  - copy the dlls inside ```epoe/lua/bin``` to ```garrysmod/lua/bin``` 
 (since they can't be loaded from addons folders)
 
@@ -42,7 +42,7 @@ Tips:
  - All epoe console commands start with epoe_, feel free to explore them
 
 
-***Enginespew Source***: svn://svn.metastruct.org/gbins/enginespew
+***Enginespew Source***: svn://svn.metastruct.net/gbins/enginespew
 
 ***Other features***
 
