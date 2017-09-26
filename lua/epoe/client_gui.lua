@@ -29,40 +29,40 @@ local function CheckFor(tbl,a,b)
 end
 
 local function make_url(url)
-	
+
 	if epoe_parse_steamids:GetBool() then
 		if url:find"^76561[0123]%d%d%d%d+$" then
 			return 'http://steamcommunity.com/profiles/'..url
 		end
-		
+
 		if url:find"^STEAM_0%:[01]:%d+$" then
 			local sid = util.SteamIDTo64(url)
 			if sid then return 'http://steamcommunity.com/profiles/'..sid end
 		end
 	end
-	
+
 end
 
 local function SORT1(a, b)
 	return a[1] < b[1]
 end
 local function AppendTextLink(a, callback)
-	
+
 	local result = { }
-	
+
 	local checkpatterns = {
 		"https?://[^%s%\"]+",
 		"ftp://[^%s%\"]+",
 		"steam://[^%s%\"]+"
 	}
-	
+
 	if epoe_parse_steamids:GetBool() then
 		table.insert(checkpatterns, "76561[0123]%d%d%d%d+")
 		table.insert(checkpatterns, "STEAM_0%:[01]:%d+")
 	end
-	
+
 	hook.Run("EPOEAddLinkPatterns", checkpatterns)
-	
+
 	for _, patt in pairs(checkpatterns) do
 		CheckFor(result, a, patt)
 	end
@@ -423,7 +423,7 @@ function PANEL:AppendTextX(txt)
 					end
 					if lmode==1 or lmode>2 then
 						local handled = hook.Run("EPOEOpenLink", real_url)
-						
+
 						if not handled then
 							gui.OpenURL(real_url)
 						end
@@ -550,7 +550,7 @@ end
 
 local epoe_ui_holdtime=CreateClientConVar("epoe_ui_holdtime","5",true,false)--seconds
 local remainvisible=CreateClientConVar("epoe_ui_obeydrawing","1",true,false)
-local fadespeed = 3--seconds
+local fadespeed=CreateClientConVar("epoe_ui_fadespeed","3",true,false)--seconds
 function PANEL:Think()
 
 	if not self.__starthack then
@@ -636,6 +636,7 @@ function PANEL:Think()
 	local inactive_time = RealTime() - self.LastActivity
 	--print("inactive_time",inactive_time)
 	local epoe_ui_holdtime=epoe_ui_holdtime:GetInt()
+	local fadespeed=fadespeed:GetInt()
 	inactive_time = ( inactive_time - epoe_ui_holdtime ) * ( 255 / fadespeed )
 	--print("inactive_time post",inactive_time)
 
