@@ -197,7 +197,7 @@ local Messages = _M.GetTable and _M.GetTable() or FIFO() -- shared.lua
 function GetTable()	return Messages end -- Now you can print epoe table, not this table.
 
 
--- Flood Protection
+-- Flood Protection, TODO: flood protect flood protection
 function Recover()
 	EnableTick()
 	Messages:clear() -- We were in flood protection mode. Don't continue doing it...
@@ -210,6 +210,41 @@ function Recover()
 
 end
 
+do -- Ultra fuckup protection
+	function RecoverCatastrophe(n)
+		EnableTick()
+
+		InEPOE = false
+
+		local payload={ flag=IS_EPOE,
+		msg="!!! Catastrophic EPOE error %s. Some messages have been lost! !!!." }
+		payload.msg=payload.msg:format(tostring(n))
+		Messages:push(payload)
+
+	end
+
+
+	local recover_count = 0
+	local recover_count_max = 5
+	function InEPOEChecker()
+		if InEPOE then
+			if not recover_count then return end
+			if recover_count > recover_count_max then 
+				local Q=recover_count
+				recover_count = false
+				timer.Simple(15,function()
+					recover_count_max = recover_count_max + 1
+					recover_count = Q
+				end)
+				return
+			end
+			recover_count = recover_count + 1
+			InEPOE = false
+			RecoverCatastrophe(recover_count)
+		end
+	end
+	timer.Create(TagHuman,0.3,0,InEPOEChecker)
+end
 
 local TickEnabled = false
 function EnableTick()
