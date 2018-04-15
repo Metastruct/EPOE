@@ -91,7 +91,7 @@ Example:
 **Other bugs**
 
 Are you sure you're using the latest version? 
-If so, come join [Our servers](http://metastruct.org) and report your problem.
+If so, come join [Our servers](http://metastruct.net) and report your problem.
 
 **Credits**
  - **CapsAdmin** Tweaks
