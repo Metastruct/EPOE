@@ -90,7 +90,7 @@ function ProcessMessage(flags,str,col)
 	local t = PreEPOE{txt=str,flags=flags,color=col}
 	if not t then return end
 	
-	epoe.Output(t.txt or str,t.flags or flags,t.color or col)
+	Output(t.txt or str,t.flags or flags,t.color or col)
 end
 
 function Output(str,flags,col)
