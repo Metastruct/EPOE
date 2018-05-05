@@ -85,7 +85,16 @@ function ProcessMessage(flags,str,col)
 	if not isEpoe and hook.Call(Should_TagHuman,nil,str,flags)==false then
 		return
 	end
-	hook.Call(TagHuman,nil,str,flags,col)
+	
+	-- PRE-hook for modifying or completely rewriting the text
+	local t = PreEPOE{txt=str,flags=flags,color=col}
+	if not t then return end
+	
+	epoe.Output(t.txt or str,t.flags or flags,t.color or col)
+end
+
+function Output(str,flags,col)
+	hook.Run(TagHuman,str,flags,col)
 end
 
 function OnMessage(len)
