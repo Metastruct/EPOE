@@ -33,6 +33,13 @@ Tag='E\''
 TagHuman='EPOE'
 Should_TagHuman='Should'..TagHuman
 
+-- Clientside only for now
+PreEPOE = CLIENT and function(t)
+	local ret = hook.Run("PreEPOE",t)
+	if ret == false then return end
+	return t
+end or nil
+
 flags = { -- One byte overhead for signaling this all. Need to add two with anything more.
 	IS_EPOE=	2^0,
 	IS_ERROR=	2^1,
