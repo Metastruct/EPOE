@@ -9,8 +9,6 @@ local epoe_toconsole_colors=CreateClientConVar("epoe_toconsole_colors", "1", tru
 hook.Add(TagHuman,TagHuman..'_CLI',function(Text,flags,col)
 	flags=flags or 0
 	if e.HasFlag(flags,e.IS_EPOE) then
-		e.ShowGUI() -- Force it
-		e.GUI:Activity()
 		Msg("[EPOE] ")print(Text)
 		return
 	end
