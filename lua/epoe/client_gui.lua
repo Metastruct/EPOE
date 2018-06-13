@@ -846,9 +846,20 @@ local notimestamp  = false
 local prevtext
 hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 	flags = flags or 0
+	
+	-- create the gui (if possible) so we can print epoe.api prints also regardless of subscription status
+	local ok,err  = pcall(e.CreateGUI)
+	if not ok then ErrorNoHalt(err..'\n') end
+			
 	if ValidPanel( e.GUI ) then
-
-		if epoe_show_on_activity:GetBool() then
+		local epoemsg = e.HasFlag(flags,e.IS_EPOE)
+				
+		if epoemsg then
+			e.ShowGUI() -- Force it
+			e.GUI:Activity()
+		end
+				
+		if epoemsg or epoe_show_on_activity:GetBool() then
 			e.ShowGUI()
 			local same = prevtext==newText
 			prevtext=newText
@@ -870,7 +881,7 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 			notimestamp = not ( newText:Right(1)=="\n" ) -- negation hard
 		end
 
-		if e.HasFlag(flags,e.IS_EPOE) then
+		if epoemsg then
 			e.GUI:SetColor(255,100,100)
 			e.GUI:AppendText("[EPOE] ")
 			e.GUI:SetColor(255,250,250)
