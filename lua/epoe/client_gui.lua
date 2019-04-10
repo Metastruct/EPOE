@@ -394,6 +394,12 @@ function PANEL:AppendText(txt)
 		self.__appendNL=false
 	end
 
+	-- fix crashing from big texts
+	-- limit around 512,000
+	if #txt > 510000 then
+		txt = txt:sub(1, 510000) .. "..."
+	end
+
 	self.RichText:AppendText(txt)
 end
 
@@ -464,9 +470,9 @@ end
 ---------------------
 -- Visuals
 ---------------------
-/*function PANEL:PerformLayout()
+--[[function PANEL:PerformLayout()
 	self.RichText:InvalidateLayout()
-end*/
+end]]--
 
 function PANEL:Paint(w,h)
 	-- cvar callback ffs
@@ -764,9 +770,9 @@ vgui.Register( "EPOEUI", PANEL, "EditablePanel" )
 
 
 function e.CreateGUI()
-	if !ValidPanel(e.GUI) then
+	if not ValidPanel(e.GUI) then
 		e.GUI=vgui.Create('EPOEUI')
-		if !ValidPanel(e.GUI) then
+		if not ValidPanel(e.GUI) then
 			return
 		end
 		e.GUI:SetCookieName("epoe2_gui")
@@ -846,19 +852,19 @@ local notimestamp  = false
 local prevtext
 hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 	flags = flags or 0
-	
+
 	-- create the gui (if possible) so we can print epoe.api prints also regardless of subscription status
 	local ok,err  = pcall(e.CreateGUI)
 	if not ok then ErrorNoHalt(err..'\n') end
-			
+
 	if ValidPanel( e.GUI ) then
 		local epoemsg = e.HasFlag(flags,e.IS_EPOE)
-				
+
 		if epoemsg then
 			e.ShowGUI() -- Force it
 			e.GUI:Activity()
 		end
-				
+
 		if epoemsg or epoe_show_on_activity:GetBool() then
 			e.ShowGUI()
 			local same = prevtext==newText
@@ -870,7 +876,7 @@ hook.Add( TagHuman, TagHuman..'_GUI', function(newText,flags,c)
 		end
 
 		if epoe_timestamps:GetBool() then
-			if !notimestamp then
+			if not notimestamp then
 				e.GUI:SetColor(100,100,100)	e.GUI:AppendText(			"[")
 
 				local formatted_stamp = os.date(epoe_timestamp_format:GetString())
