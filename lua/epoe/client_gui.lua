@@ -269,6 +269,7 @@ function PANEL:Init()
 		-- we're overriding big time
 		function FontChooser.OnSelect(FontChooser,_,_,font)
 			self.RichText:SetFontInternal(font)
+			local _ = self.RichText.SetUnderlineFont and self.RichText:SetUnderlineFont(font)
 			RunConsoleCommand("epoe_font",font)
 		end
 		FontChooser:SetConVar("epoe_font")
@@ -339,13 +340,25 @@ function PANEL:Init()
 				surface.DrawOutlinedRect(0,0,self:GetWide(),self:GetTall())
 			end
 		end
+	
+			
+		local function linkhack(self,id)
+			self:InsertClickableTextStart( id )
+			self:AppendText' '
+			self:InsertClickableTextEnd()
+			self:AppendText' '
+		end
+	
 		RichText.AddLink=function(richtext,func,func2)
 			-- warning: infinitely growing list. fix!
 			richtext.__links=richtext.__links or {}
 			local id = table.insert(richtext.__links,func2)
 			richtext.__links[id]=func2
 
-			richtext:InsertClickableTextStart("cb_"..tostring(id))
+			local cbid = "cb_"..tostring(id)
+			linkhack(richtext,cbid)
+			
+			richtext:InsertClickableTextStart(cbid)
 				func(richtext)
 			richtext:InsertClickableTextEnd()
 		end
@@ -368,6 +381,8 @@ function PANEL:PostInit()
 
 	local ok = pcall(function()
 		self.RichText:SetFontInternal( epoe_font:GetString() )
+		
+		local _ = self.RichText.SetUnderlineFont and self.RichText:SetUnderlineFont(epoe_font:GetString())
 	end)
 
 	if not ok then
