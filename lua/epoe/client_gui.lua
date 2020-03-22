@@ -340,15 +340,15 @@ function PANEL:Init()
 				surface.DrawOutlinedRect(0,0,self:GetWide(),self:GetTall())
 			end
 		end
-	
-			
+
+
 		local function linkhack(self,id)
 			self:InsertClickableTextStart( id )
 			self:AppendText' '
 			self:InsertClickableTextEnd()
 			self:AppendText' '
 		end
-	
+
 		RichText.AddLink=function(richtext,func,func2)
 			-- warning: infinitely growing list. fix!
 			richtext.__links=richtext.__links or {}
@@ -357,7 +357,7 @@ function PANEL:Init()
 
 			local cbid = "cb_"..tostring(id)
 			linkhack(richtext,cbid)
-			
+
 			richtext:InsertClickableTextStart(cbid)
 				func(richtext)
 			richtext:InsertClickableTextEnd()
@@ -381,7 +381,7 @@ function PANEL:PostInit()
 
 	local ok = pcall(function()
 		self.RichText:SetFontInternal( epoe_font:GetString() )
-		
+
 		local _ = self.RichText.SetUnderlineFont and self.RichText:SetUnderlineFont(epoe_font:GetString())
 	end)
 
@@ -674,16 +674,6 @@ function PANEL:Think()
 		alphascale=alphascale/255
 	end
 	self:SetAlpha(math.ceil(alpha*alphascale))
-end
-
--- woo clever..
-local _Think=PANEL.Think
-local errorz=false
-PANEL.Think=function (a)
-	if errorz then return end
-	errorz=true
-		_Think(a)
-	errorz=false
 end
 
 function PANEL:OnMousePressed( mc )
