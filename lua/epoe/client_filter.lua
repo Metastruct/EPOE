@@ -100,7 +100,7 @@ local function Reload()
 	end
 	if epoe_filtering:GetBool() and i>1 then
 		timer.Simple(0,function()
-			e.AddText(Color(255,255,255),"[EPOE] Filters: ",Color(255,255,255,255),"Loaded "..i.."filters.")
+			e.AddText(color_white,"[EPOE] Filters: Loaded "..i.."filters.")
 		end)
 	end
 end
