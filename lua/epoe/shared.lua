@@ -214,7 +214,7 @@ function ToString(t) -- depreciated
 	local str = ""
 	str = str .. nl .. MakeTable ( t, nice)
 
-	return str:sub(1,-2) -- remove last redundant space
+	return string.sub(str,1,-2) -- remove last redundant space
 end
 
 
@@ -224,7 +224,7 @@ function ToStringTableInfo(t)
 	local tables
 	local meta=getmetatable(t)
 	local str=tostring(t)
-	str=str:gsub("table: ","table:( ")
+	str=string.gsub(str,"table: ","table:( ")
 	for k,v in pairs(t) do
 		local ktype=type(k)
 		if ktype=="number" then
