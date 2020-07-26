@@ -4,6 +4,9 @@
 local e=epoe
 local Tag=e.Should_TagHuman -- or "EPOE"
 
+local color_white = color_white
+local color_filtered = Color(255,4,3)
+
 ---------------
 -- Clientside Console UI
 ---------------
@@ -56,8 +59,8 @@ local function add(str,k)
 end
 local function ADD(X,Y)
 	concommand.Add("epoe_filter_"..X,function(_,cmd,_,filter)
-		local x=filter:sub(2,2)
-		filter=filter:sub(1,1)..filter:sub(3,-1)
+		local x=string.sub(filter,2,2)
+		filter=string.sub(filter,1,1)..string.sub(filter,3,-1)
 		if x~=" " then
 			Msg"[EPOE] "print"Syntax: epoe_filter_* N PARAMSTR (N is skip extra messages count)"
 			return
@@ -68,7 +71,7 @@ local function ADD(X,Y)
 			return
 		end
 		e.internalPrint("Added filter with extraskips="..filter:sub(1,1).." and filterstr '"..Y..filter.."'")
-		if cmd:find"write" then
+		if string.find(cmd,"write") then
 			file.Append("epoe_filters.txt",Y..filter..'\n')
 		end
 	end , nil,"epoe_filter_"..X..' <skip extra messages count, use 0 by default> <match string>')
@@ -90,9 +93,9 @@ local function Reload()
 	local data=file.Read("epoe_filters.txt",'DATA')
 	if not data then return end
 	local i=0
-	for k,str in pairs(string.Explode("\n",data)) do
+	for k,str in ipairs(string.Explode("\n",data)) do
 		str=string.TrimLeft(str) -- we may have spaces on right side
-		if str:len()>1 then
+		if #str>1 then
 			if add(str,k) then
 				i=i+1
 			end
@@ -166,7 +169,7 @@ hook.Add(Tag,Tag,function(txt,flags)
 	if ShouldFilter(txt,flags) then
 		if epoe_filtering_dbg:GetBool() then
 			skipshit=true
-			e.MsgC(Color(255,4,3),"~")
+			e.MsgC(color_filtered,"~")
 			skipshit=false
 		end
 		return false
