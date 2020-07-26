@@ -218,7 +218,7 @@ do -- Ultra fuckup protection
 
 		local payload={ flag=IS_EPOE,
 		msg="!!! Catastrophic EPOE error %s. Some messages have been lost! !!!." }
-		payload.msg=payload.msg:format(tostring(n))
+		payload.msg=string.format(payload.msg,tostring(n))
 		Messages:push(payload)
 
 	end
@@ -442,7 +442,7 @@ end
 				
 				local ok,str=pcall(ToStringEx," ",...)
 				if str then
-					PushPayload( IS_ERROR , str:gsub("\n$",""), false ) -- hack until I fix this for good
+					PushPayload( IS_ERROR , string.gsub(str,"\n$",""), false ) -- hack until I fix this for good
 				end
 
 				pcall(RealErrorNoHalt,...)
@@ -460,7 +460,7 @@ end
 
 				local ok,str=pcall(ToStringEx," ",...)
 				if str then
-					PushPayload( IS_ERROR , str:gsub("\n$",""), false ) -- hack until I fix this for good
+					PushPayload( IS_ERROR , string.gsub(str,"\n$",""), false ) -- hack until I fix this for good
 				end
 
 				pcall(RealError,...)
@@ -587,7 +587,7 @@ end
 		
 		local ok,str=pcall(ToStringEx," ",...)
 		if str then
-			PushPayload( IS_ERROR , str:gsub("\n$",""), false ) -- hack until I fix this for good
+			PushPayload( IS_ERROR , string.gsub(str,"\n$",""), false ) -- hack until I fix this for good
 		end
 
 	end
@@ -600,7 +600,7 @@ end
 
 		local ok,str=pcall(ToStringEx," ",...)
 		if str then
-			PushPayload( IS_ERROR , str:gsub("\n$",""), false ) -- hack until I fix this for good
+			PushPayload( IS_ERROR , string.gsub(str,"\n$",""), false ) -- hack until I fix this for good
 		end
 
 	end
@@ -651,7 +651,7 @@ function PushPayload(flags,text,msgc_col)
 	local first=true
 	while txt and txt~="" do
 	
-		txt=text:sub(i,i+size-1)
+		txt=string.sub(text,i,i+size-1)
 		i=i+size
 		if txt~="" or first then
 			local curflags=flags
@@ -799,13 +799,13 @@ function Initialize() InEPOE=true
 			inhook = false
 		end)
 		hook.Add("ClientLuaError",TagHuman,function(pl,err)
-			if err and err:sub(1,9)=="\n[ERROR] " then
-				err=err:sub(10,-1)
+			if err and string.sub(err,1,9)=="\n[ERROR] " then
+				err=string.sub(err,10,-1)
 			elseif err then
-				err=err:gsub("^\n",'')
+				err=string.gsub(err,"^\n",'')
 			end
 			
-			err=err and err:gsub("\n$",'') -- temp
+			err=err and string.gsub(err,"\n$",'') -- temp
 			
 			OnClientLuaError(tostring(pl)..' ERROR: '..tostring(err))
 		end)
@@ -821,44 +821,44 @@ function Initialize() InEPOE=true
 		
 		local incoming_clienterr
 		hook.Add("EngineSpew",TagHuman,function(a,msg,c,d, r,g,b)
-			if (!msg or (msg:sub(1,1)~="[" and msg:sub(1,2)~="\n[") or a~=0 or c~="" or d~=0  ) and not incoming_clienterr then return end
+			if (!msg or (string.sub(msg,1,1)~="[" and string.sub(msg,1,2)~="\n[") or a~=0 or c~="" or d~=0  ) and not incoming_clienterr then return end
 			if InEPOE then return end
 			
 			if incoming_clienterr then
 				--RealPrint("CLERRSTOP: '"..msg.."'")
 				--if not epoe_client_errors:GetBool() then return end
-				local pl,userid=false,incoming_clienterr:match(".+|(%d*)|.-$")
+				local pl,userid=false,string.match(incoming_clienterr,".+|(%d*)|.-$")
 				incoming_clienterr=false
 				if userid then
 					userid=tonumber(userid)
-					for k,v in pairs(player.GetAll()) do
+					for k,v in ipairs(player.GetAll()) do
 						if v:UserID()==userid then
 							pl=v
 							break
 						end
 					end
 				end
-				msg=msg and msg:gsub("^\n*","") -- trim newlines from beginning
+				msg=msg and string.gsub(msg,"^\n*","") -- trim newlines from beginning
 				
 				-- epoe_client_traces 1 = print everything from the error
-				local newmsg = --[[not  epoe_client_traces:GetBool() and msg:match("%[ERROR%] (.-)\n") or]] tostring(msg:match("%[ERROR%] (.+)") or msg)
+				local newmsg = --[[not  epoe_client_traces:GetBool() and string.match(msg,"%[ERROR%] (.-)\n") or]] tostring(string.match(msg,"%[ERROR%] (.+)") or msg)
 				
 				-- Remove spaces and newlines from end since Garry loves adding those
-				newmsg = newmsg:gsub("[\n ]+$","")
+				newmsg = string.gsub(newmsg,"[\n ]+$","")
 				
 				OnClientLuaError( (pl and tostring(pl) or incoming_clienterr and tostring(incoming_clienterr) or "CLIENT").." ERR: "..newmsg )
 				
 				return
 				
 			end
-			if msg:find("] Lua Error:",1,true) then
+			if string.find(msg,"] Lua Error:",1,true) then
 				--RealPrint("CLERRSTART: '"..msg.."'")
 				incoming_clienterr=msg
 				return
 			end
-			if msg:sub(1,9)=="\n[ERROR] " then -- Does it change if it's a workshop error? If it does, we're fucked.
-				msg=msg:sub(10,-1)
-				local newmsg = --[[not epoe_server_traces:GetBool() and msg:match("(.-)\n") or]] msg
+			if string.sub(msg,1,9)=="\n[ERROR] " then -- Does it change if it's a workshop error? If it does, we're fucked.
+				msg=string.sub(msg,10,-1)
+				local newmsg = --[[not epoe_server_traces:GetBool() and string.match(msg,"(.-)\n") or]] msg
 				
 				OnLuaError( newmsg )
 				return
