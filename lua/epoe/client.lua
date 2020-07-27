@@ -9,7 +9,7 @@ local select=select
 local next=next
 local unpack=unpack
 local player=player
-local pairs=pairs
+local ipairs=ipairs
 local hook=hook
 local table=table
 local pcall=pcall
@@ -235,7 +235,7 @@ end
 
 function MODULE.AddText(...)
 	local col=Color(255,255,255,255)
-	for k, v in pairs({...}) do
+	for k, v in ipairs({...}) do
 		if type(v) == "table" and type(v.r) == "number" and type(v.g) == "number" and type(v.b) == "number" then
 			col=Color(v.r,v.g,v.b,255)
 		else
