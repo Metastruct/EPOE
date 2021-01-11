@@ -846,16 +846,18 @@ function Initialize() InEPOE=true
 				-- Remove spaces and newlines from end since Garry loves adding those
 				newmsg = newmsg:gsub("[\n ]+$","")
 				
+				if hook.Run("EPOEShouldShowClientLuaError", pl, newmsg) == false then return end
 				OnClientLuaError( (pl and tostring(pl) or incoming_clienterr and tostring(incoming_clienterr) or "CLIENT").." ERR: "..newmsg )
 				
 				return
-				
 			end
+				
 			if msg:find("] Lua Error:",1,true) then
 				--RealPrint("CLERRSTART: '"..msg.."'")
 				incoming_clienterr=msg
 				return
 			end
+				
 			if msg:sub(1,9)=="\n[ERROR] " then -- Does it change if it's a workshop error? If it does, we're fucked.
 				msg=msg:sub(10,-1)
 				local newmsg = --[[not epoe_server_traces:GetBool() and msg:match("(.-)\n") or]] msg
