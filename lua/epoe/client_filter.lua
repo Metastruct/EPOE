@@ -120,7 +120,7 @@ local sfind=string.find
 local function ShouldFilter(txt,flags)
 	if skipnext>0 then
 		skipnext=skipnext-1
-		print("SKIP",txt)
+		--print("SKIP",txt)
 		return true
 	end
 	
