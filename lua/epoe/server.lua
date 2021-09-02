@@ -894,7 +894,7 @@ function Initialize() InEPOE=true
 				InEPOE=true
 				local err = table.concat{...}
 				InEPOE=false
-				local ok,err = pcall(RelayRegistry, debug.traceback(err))
+				local ok,err = pcall(RelayRegistry, debug.traceback(err,2))
 				InEPOE=true
 				if not ok then
 					RealPrint(err)
