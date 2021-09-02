@@ -890,9 +890,12 @@ function Initialize() InEPOE=true
 			G.print	"[EPOE WARNING] Loaded, but EngineSpew/LuaError2 are not working! \n\t Error viewing will use a hacky system! \n\t In addition, clientside errors cannot be shown! \n\t Disable by creating the following file: cfg/epoe_block_registryhack.cfg"
 
 			_R[1] = function(...)
+				if InEPOE then return end
 				InEPOE=true
 				local err = table.concat{...}
+				InEPOE=false
 				local ok,err = pcall(RelayRegistry, debug.traceback(err))
+				InEPOE=true
 				if not ok then
 					RealPrint(err)
 				end
