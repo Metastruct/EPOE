@@ -3,7 +3,7 @@
 require ( "hook" )
 
 local G=_G
-
+local file=file
 local IsValid=IsValid
 local assert=assert
 local error=error
@@ -19,6 +19,7 @@ local FrameTime=FrameTime
 local Color=Color
 local len=string.len
 local next=next
+local type=type
 local concommand=concommand
 local player=player
 local select=select
@@ -33,9 +34,9 @@ local ipairs=ipairs
 local unpack=unpack
 local table=table
 local bit=bit
-
+local debug=debug
 -- inform the client of the version
-CreateConVar( "epoe_version", "2.61", FCVAR_NOTIFY )
+CreateConVar( "epoe_version", "2.62", FCVAR_NOTIFY )
 -- TODO: Move these on clientside
 --local epoe_client_traces=CreateConVar("epoe_client_traces","0")
 --local epoe_server_traces=CreateConVar("epoe_server_traces","0")
@@ -877,8 +878,30 @@ function Initialize() InEPOE=true
 		else
 			G.print	"[EPOE] Tested and operational! (Using EngineSpew)"
 		end
-	else
-		G.print	"[EPOE WARNING] Loaded, but EngineSpew/LuaError2 are not working! Errors will not show!"
+	elseif not file.Exists("cfg/epoe_block_registryhack.cfg",'MOD') then
+		
+		local function RelayRegistry(err)
+			OnLuaError( err )
+		end
+
+		local _R = debug.getregistry()
+		if type(_R[1])=="function" then
+			EPOE_REGISTRY_1_ORIG = EPOE_REGISTRY_1_ORIG or _R[1]
+			G.print	"[EPOE WARNING] Loaded, but EngineSpew/LuaError2 are not working! \n\t Error viewing will use a hacky system! \n\t In addition, clientside errors cannot be shown! \n\t Disable by creating the following file: cfg/epoe_block_registryhack.cfg"
+
+			_R[1] = function(...)
+				InEPOE=true
+				local err = table.concat{...}
+				local ok,err = pcall(RelayRegistry, debug.traceback(err))
+				if not ok then
+					RealPrint(err)
+				end
+				InEPOE=false
+				return EPOE_REGISTRY_1_ORIG(...)
+			end
+		else
+			G.print	"[EPOE WARNING] Loaded, but EngineSpew/LuaError2 are not working! ERRORS CANNOT BE SHOWN!"
+		end
 	end
 
 end
