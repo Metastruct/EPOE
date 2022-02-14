@@ -799,6 +799,7 @@ function Initialize() InEPOE=true
 			
 			inhook = false
 		end)
+		local preverror
 		hook.Add("ClientLuaError",TagHuman,function(pl,err)
 			if err and err:sub(1,9)=="\n[ERROR] " then
 				err=err:sub(10,-1)
@@ -807,8 +808,12 @@ function Initialize() InEPOE=true
 			end
 			
 			err=err and err:gsub("\n$",'') -- temp
-			
-			OnClientLuaError(tostring(pl)..' ERROR: '..tostring(err))
+			if preverror==err then
+				OnClientLuaError(tostring(pl)..' DUPLICATE ERROR')
+			else
+				OnClientLuaError(tostring(pl)..' ERROR: '..tostring(err))
+				preverror=err
+			end
 		end)
 	end
 	
@@ -821,6 +826,7 @@ function Initialize() InEPOE=true
 		module_loaded = true
 		
 		local incoming_clienterr
+		local prev_err
 		hook.Add("EngineSpew",TagHuman,function(a,msg,c,d, r,g,b)
 			if (!msg or (msg:sub(1,1)~="[" and msg:sub(1,2)~="\n[") or a~=0 or c~="" or d~=0  ) and not incoming_clienterr then return end
 			if InEPOE then return end
@@ -848,8 +854,12 @@ function Initialize() InEPOE=true
 				newmsg = newmsg:gsub("[\n ]+$","")
 				
 				if hook.Run("EPOEShouldShowClientLuaError", pl, newmsg) == false then return end
-				OnClientLuaError( (pl and tostring(pl) or incoming_clienterr and tostring(incoming_clienterr) or "CLIENT").." ERR: "..newmsg )
-				
+				if prev_err==newmsg then
+					OnClientLuaError( (pl and tostring(pl) or incoming_clienterr and tostring(incoming_clienterr) or "CLIENT").." DUPLICATE ERROR" )
+				else
+					OnClientLuaError( (pl and tostring(pl) or incoming_clienterr and tostring(incoming_clienterr) or "CLIENT").." ERR: "..newmsg )
+					prev_err=newmsg
+				end
 				return
 			end
 				
