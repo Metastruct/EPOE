@@ -763,8 +763,8 @@ function Initialize()
 		local incoming_clienterr
 		local prev_err
 
-		hook.Add("EngineSpew", TagHuman, function(a, msg, c, d, r, g, b)
-			if (not msg or (msg:sub(1, 1) ~= "[" and msg:sub(1, 2) ~= "\n[") or a ~= 0 or c ~= "" or d ~= 0) and not incoming_clienterr then return end
+		hook.Add("EngineSpew", TagHuman, function(a, msg, c, d, col_r, col_g, col_b)
+			if (not msg or (msg:sub(1, 1) ~= "[" and msg:sub(1, 2) ~= "\n[") or (a ~= 0 and a~=1) or (c ~= "" and c~="Console") or d ~= 0) and not incoming_clienterr then return end
 			if InEPOE then return end
 
 			if incoming_clienterr then
@@ -861,4 +861,4 @@ function Initialize()
 end
 
 -- TODO: Initialize earlier to hook even module prints
-Initialize()
+Initialize() 
