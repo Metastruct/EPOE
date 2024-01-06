@@ -827,7 +827,9 @@ function Initialize()
 		else
 			G.print"[EPOE] Tested and operational! (Using EngineSpew)"
 		end
-	elseif not file.Exists("cfg/epoe_block_registryhack.cfg", 'MOD') then
+	elseif not file.Exists("cfg/epoe_block_registryhack.cfg", 'MOD') and debug.getregistry and debug.getregistry() and type(_R[1]) == "function" then
+		--TODO: https://wiki.facepunch.com/gmod/GM:OnLuaError
+		
 		local function RelayRegistry(err)
 			OnLuaError(err)
 		end
