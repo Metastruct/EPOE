@@ -231,6 +231,7 @@ function PANEL:Init()
 
 		local FontChooser = vgui.Create("DComboBox", Cfg )
 		local function AddFont(txt,name)
+			--TODO: FIXME: no longer works
 			local ok=pcall(function() surface.SetFont(name) end)
 			if ok then
 				FontChooser:AddChoice(txt,name)
@@ -244,7 +245,7 @@ function PANEL:Init()
 		AddFont("Even smaller","DebugFixedSmall")
 
 		AddFont("Smallest","HudHintTextSmall")
-		AddFont("Smaller","ConsoleText")
+		--AddFont("Smaller","ConsoleText")
 		AddFont("Small","DefaultSmall")
 		AddFont("Chat","ChatFont")
 
@@ -254,7 +255,7 @@ function PANEL:Init()
 		AddFont("Huge","DermaLarge")
 		AddFont("Huger","DermaLarge")
 
-		AddFont("TEST","BUTOFCOURSE")
+		--AddFont("TEST","BUTOFCOURSE")
 
 		function FontChooser.Think(FontChooser)
 			FontChooser:ConVarStringThink()
