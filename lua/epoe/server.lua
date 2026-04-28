@@ -159,7 +159,7 @@ function OnSubCmd(pl, _, argz)
 	end
 end
 
-concommand.Add(Tag, OnSubCmd)
+concommand.Add(EPOE_SUBSCRIBE, OnSubCmd)
 
 function GetSubscribers()
 	return Sub

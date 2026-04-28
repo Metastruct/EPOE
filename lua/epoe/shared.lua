@@ -32,6 +32,7 @@ module( "epoe" )
 
 -- Consts
 Tag='E\''
+EPOE_SUBSCRIBE = '_epoe_subscribe'
 TagHuman='EPOE'
 Should_TagHuman='Should'..TagHuman
 

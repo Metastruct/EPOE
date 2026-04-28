@@ -131,13 +131,13 @@ subscribed=false
 
 function AddSub()
 	if subscribed then 	internalPrint("Already subscribed.") return end
-	RunConsoleCommand("cmd",Tag,"1")
+	RunConsoleCommand("cmd",EPOE_SUBSCRIBE,"1")
 end
 concommand.Add('epoe_login',AddSub,nil,"Login to EPOE stream")
 
 function DelSub()
 	if !subscribed then 	internalPrint("Not subscribed.") return end
-	RunConsoleCommand("cmd",Tag,"0")
+	RunConsoleCommand("cmd",EPOE_SUBSCRIBE,"0")
 end
 concommand.Add('epoe_logout',DelSub,nil,"Logout from EPOE stream")
 
