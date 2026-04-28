@@ -251,9 +251,7 @@ function ToStringTableInfo(t)
 			str=str..', #'..num..'/'..nums
 		end
 	end
-	/*if num>0 and nonnum>0 then
-		str=str..', count='..(num+nonnum)
-	end*/
+
 	if meta then
 		str=str..', meta'
 	end
