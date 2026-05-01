@@ -1,8 +1,14 @@
 local e = epoe -- we cant be in epoe table or we'd need to add locals here on everything too
 local TagHuman = e.TagHuman
 
+if not e then
+	ErrorNoHalt('EPOE load order fail\n')
+
+	return
+end
+
 -- For reloading
-if e.GUI and e.GUI:IsValid() then
+if IsValid(e.GUI) then
 	e.GUI:Remove()
 end
 
@@ -120,6 +126,7 @@ function PANEL:Init()
 	self:SetPaintBorderEnabled(false)
 	self:DockPadding(3, 6, 3, 3)
 	local Cfg = vgui.Create('DHorizontalScroller', self)
+	if not Cfg then return end
 	Cfg:DockMargin(-8, 0, -8, 4)
 	Cfg:SetOverlap(-4)
 	Cfg:SetTall(16)
@@ -781,9 +788,15 @@ end
 vgui.Register('EPOEUI', PANEL, 'EditablePanel')
 
 function e.CreateGUI()
-	if not ValidPanel(e.GUI) then
+	if not e.CAN_VGUI then
+		MsgN('EPOE CreateGUI but CAN_VGUI=false')
+
+		return false
+	end
+
+	if not IsValid(e.GUI) then
 		e.GUI = vgui.Create('EPOEUI')
-		if not ValidPanel(e.GUI) then return end
+		if not IsValid(e.GUI) then return false end
 		e.GUI:SetCookieName('epoe2_gui')
 		local w = tonumber(e.GUI:GetCookie('w')) or ScrW() * 0.5
 		local h = tonumber(e.GUI:GetCookie('h')) or ScrH() * 0.25
@@ -791,17 +804,37 @@ function e.CreateGUI()
 		local y = tonumber(e.GUI:GetCookie('y')) or ScrH() - h
 		e.GUI:SetSize(w, h)
 		e.GUI:SetPos(x, y)
+		e._flush_queued_messages()
 	end
+
+	return IsValid(e.GUI)
 end
 
+hook.Add('OnGamemodeLoaded', TagHuman .. '_GUI', function()
+	e.CAN_VGUI = true
+end)
+
+hook.Add('Initialize', TagHuman .. '_GUI', function()
+	e.CAN_VGUI = true
+end)
+
+e.CAN_VGUI = IsValid(LocalPlayer()) -- when hot updating
+
 function e.ShowGUI(show)
-	e.CreateGUI()
+	if not e.CreateGUI() then
+		print('cannot create EPOE GUI')
+
+		return false
+	end
+
 	e.GUI:SetVisible(show == nil or show)
 	e.GUI:Activity()
+
+	return true
 end
 
 function e.ClearLog()
-	if ValidPanel(e.GUI) then
+	if IsValid(e.GUI) then
 		e.GUI:Clear()
 	end
 end
@@ -810,7 +843,7 @@ concommand.Add('epoe_clearlog', e.ClearLog)
 
 -- Debug
 concommand.Add('epoe_ui_remove', function()
-	if ValidPanel(e.GUI) then
+	if IsValid(e.GUI) then
 		e.GUI:Remove()
 	end
 end)
@@ -824,7 +857,7 @@ local function epoe_toggle(_, cmd, args)
 		e.ShowGUI() -- also creates it
 		local egui = e.GUI
 
-		if ValidPanel(egui) then
+		if IsValid(egui) then
 			local x, y = egui:LocalToScreen()
 			x, y = x + egui:GetWide() * 0.5, y + 10
 			gui.SetMousePos(x, y)
@@ -841,7 +874,10 @@ local function epoe_toggle(_, cmd, args)
 		end
 	else
 		gui.EnableScreenClicker(false)
-		e.GUI:ButtonHolding(false)
+
+		if IsValid(e.GUI) then
+			e.GUI:ButtonHolding(false)
+		end
 	end
 end
 
@@ -853,13 +889,14 @@ hook.Add('ContextMenuOpened', TagHuman, function()
 	if not g_ContextMenu or not g_ContextMenu:IsValid() then return end
 	if not epoe_context_menu:GetBool() then return end
 	ctxopen = true
-	e.ShowGUI()
+	if not e.ShowGUI() then return end
 	e.GUI:ButtonHolding(true) -- sets parent
 	e.GUI:SetParent(g_ContextMenu) -- so set it to context menu
 end)
 
 hook.Add('ContextMenuClosed', TagHuman, function()
 	if not ctxopen then return end
+	if not IsValid(e.GUI) then return end
 	e.GUI:ButtonHolding(false)
 end)
 
@@ -872,77 +909,112 @@ local epoe_show_on_activity = CreateClientConVar('epoe_show_on_activity', '1', t
 local epoe_disable_autoscroll = CreateClientConVar('epoe_disable_autoscroll', '0', true, false)
 local notimestamp = false
 local prevtext
+e._queued_messages = e._queued_messages or {}
 
-hook.Add(TagHuman, TagHuman .. '_GUI', function(newText, flags, c)
-	flags = flags or 0
-	-- create the gui (if possible) so we can print epoe.api prints also regardless of subscription status
-	local ok, err = pcall(e.CreateGUI)
+function e._startup_queue_message(...)
+	if #e._queued_messages > 9999 then return false end
 
-	if not ok then
-		ErrorNoHalt(err .. '\n')
+	table.insert(e._queued_messages, {...})
+
+	return true
+end
+
+function e._flush_queued_messages()
+	local msgs = {}
+
+	for k, v in pairs(e._queued_messages) do
+		msgs[k] = v
+		e._queued_messages[k] = nil
 	end
 
-	if ValidPanel(e.GUI) then
-		local epoemsg = e.HasFlag(flags, e.IS_EPOE)
+	for _, msg in pairs(msgs) do
+		e.on_message_gui(unpack(msg))
+	end
+end
 
-		if epoemsg then
-			e.ShowGUI() -- Force it
-			e.GUI:Activity()
+function e.on_message_gui(newText, flags, c)
+	flags = flags or 0
+
+	-- create the gui (if possible) so we can print epoe.api prints also regardless of subscription status
+	if not e.CreateGUI() or not IsValid(e.GUI) then
+		local ok = e._startup_queue_message(newText, flags, c)
+
+		if not ok then
+			e._queue_overflow = true
 		end
 
-		if epoemsg or epoe_show_on_activity:GetBool() then
-			e.ShowGUI()
-			local same = prevtext == newText
-			prevtext = newText
+		return
+	end
 
-			if same then
-				e.GUI:Repeat()
-			end
+	local epoemsg = e.HasFlag(flags, e.IS_EPOE)
 
-			e.GUI:Activity()
+	if epoemsg then
+		e.ShowGUI() -- Force it
+		e.GUI:Activity()
+	end
+
+	if epoemsg or epoe_show_on_activity:GetBool() then
+		e.ShowGUI()
+		local same = prevtext == newText
+		prevtext = newText
+
+		if same then
+			e.GUI:Repeat()
 		end
 
-		if epoe_timestamps:GetBool() then
-			if not notimestamp then
-				e.GUI:SetColor(100, 100, 100)
-				e.GUI:AppendText('[')
-				local formatted_stamp = os.date(epoe_timestamp_format:GetString())
-				e.GUI:SetColor(255, 255, 255)
-				e.GUI:AppendText(formatted_stamp)
-				e.GUI:SetColor(100, 100, 100)
-				e.GUI:AppendText('] ')
-			end
+		e.GUI:Activity()
+	end
 
-			notimestamp = not (newText:Right(1) == '\n') -- negation hard
-		end
-
-		if epoemsg then
-			e.GUI:SetColor(255, 100, 100)
-			e.GUI:AppendText('[EPOE] ')
-			e.GUI:SetColor(255, 250, 250)
-			e.GUI:AppendTextX(newText .. '\n')
-			notimestamp = false
-
-			return
-		end
-
-		-- did I really write this. Oh well...
-		if e.HasFlag(flags, e.IS_MSGC) and c and type(c) == 'table' and type(c.r) == 'number' and type(c.g) == 'number' and type(c.b) == 'number' then
-			e.GUI:SetColor(c.r, c.g, c.b)
-		elseif e.HasFlag(flags, e.IS_ERROR) then
-			e.GUI:SetColor(255, 80, 80)
-		elseif e.HasFlag(flags, e.IS_CERROR) then
-			e.GUI:SetColor(234, 111, 111)
-		elseif e.HasFlag(flags, e.IS_MSGN) or e.HasFlag(flags, e.IS_MSG) then
-			e.GUI:SetColor(255, 181, 80)
-		else
+	if epoe_timestamps:GetBool() then
+		if not notimestamp then
+			e.GUI:SetColor(100, 100, 100)
+			e.GUI:AppendText('[')
+			local formatted_stamp = os.date(epoe_timestamp_format:GetString())
 			e.GUI:SetColor(255, 255, 255)
+			e.GUI:AppendText(formatted_stamp)
+			e.GUI:SetColor(100, 100, 100)
+			e.GUI:AppendText('] ')
 		end
 
-		e.GUI:AppendTextX(newText)
+		notimestamp = not (newText:Right(1) == '\n') -- negation hard
+	end
 
-		if not epoe_disable_autoscroll:GetBool() and not e.GUI.being_hovered then
-			e.GUI.RichText:GotoTextEnd()
-		end
+	if epoemsg then
+		e.GUI:SetColor(255, 100, 100)
+		e.GUI:AppendText('[EPOE] ')
+		e.GUI:SetColor(255, 250, 250)
+		e.GUI:AppendTextX(newText .. '\n')
+		notimestamp = false
+
+		return
+	end
+
+	-- did I really write this. Oh well...
+	if e.HasFlag(flags, e.IS_MSGC) and c and type(c) == 'table' and type(c.r) == 'number' and type(c.g) == 'number' and type(c.b) == 'number' then
+		e.GUI:SetColor(c.r, c.g, c.b)
+	elseif e.HasFlag(flags, e.IS_ERROR) then
+		e.GUI:SetColor(255, 80, 80)
+	elseif e.HasFlag(flags, e.IS_CERROR) then
+		e.GUI:SetColor(234, 111, 111)
+	elseif e.HasFlag(flags, e.IS_MSGN) or e.HasFlag(flags, e.IS_MSG) then
+		e.GUI:SetColor(255, 181, 80)
+	else
+		e.GUI:SetColor(255, 255, 255)
+	end
+
+	e.GUI:AppendTextX(newText)
+
+	if not epoe_disable_autoscroll:GetBool() and not e.GUI.being_hovered then
+		e.GUI.RichText:GotoTextEnd()
+	end
+end
+
+hook.Add(TagHuman, TagHuman .. '_GUI', function(...)
+	local ok, err = xpcall(e.on_message_gui, debug.traceback, ...)
+
+	if not ok then
+		if e._errored_gui then return end
+		e._errored_gui = true
+		ErrorNoHalt(err .. '\n')
 	end
 end)
