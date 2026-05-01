@@ -764,7 +764,7 @@ function Initialize()
 		local prev_err
 
 		hook.Add("EngineSpew", TagHuman, function(a, msg, c, d, col_r, col_g, col_b)
-			if (not msg or (msg:sub(1, 1) ~= "[" and msg:sub(1, 2) ~= "\n[") or (a ~= 0 and a~=1) or (c ~= "" and c~="Console") or d ~= 0) and not incoming_clienterr then return end
+			if (not msg or (msg:sub(1, 1) ~= "[" and msg:sub(1, 2) ~= "\n[") or (a ~= 0 and a ~= 1) or (c ~= "" and c ~= "Console") or d ~= 0) and not incoming_clienterr then return end
 			if InEPOE then return end
 
 			if incoming_clienterr then
@@ -829,7 +829,6 @@ function Initialize()
 		end
 	elseif not file.Exists("cfg/epoe_block_registryhack.cfg", 'MOD') and debug.getregistry and debug.getregistry() and type(_R[1]) == "function" then
 		--TODO: https://wiki.facepunch.com/gmod/GM:OnLuaError
-		
 		local function RelayRegistry(err)
 			OnLuaError(err)
 		end
@@ -863,4 +862,4 @@ function Initialize()
 end
 
 -- TODO: Initialize earlier to hook even module prints
-Initialize() 
+Initialize()
