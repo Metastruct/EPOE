@@ -313,11 +313,13 @@ function PANEL:Init()
 			PlaceChooser:SetWide(PlaceChooser:GetWide() + 32)
 		end
 
-		function PlaceChooser:OnSelect(index, value, data)
-			LocalPlayer():ConCommand('epoe_autoplace ' .. (index - 1))
-		end
 
 		PlaceChooser:ChooseOptionID((GetConVarNumber('epoe_autoplace') or 0) + 1)
+		function PlaceChooser:OnSelect(index, value, data)
+			local me = LocalPlayer()
+			if not IsValid(me) then return end
+			me:ConCommand('epoe_autoplace ' .. (index - 1))
+		end
 		PlaceChooser:SizeToContents()
 		PlaceChooser:SetTall(16)
 		PlaceChooser:SetWide(PlaceChooser:GetWide() + 32)
